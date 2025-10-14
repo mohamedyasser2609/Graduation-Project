@@ -1,0 +1,6 @@
+# FIXED
+
+ECUAL/IMU/IMU.obj: ../ECUAL/IMU/IMU.c
+
+../ECUAL/IMU/IMU.c:
+

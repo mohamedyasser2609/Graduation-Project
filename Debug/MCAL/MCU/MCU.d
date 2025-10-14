@@ -1,0 +1,6 @@
+# FIXED
+
+MCAL/MCU/MCU.obj: ../MCAL/MCU/MCU.c
+
+../MCAL/MCU/MCU.c:
+

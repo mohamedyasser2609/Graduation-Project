@@ -16,7 +16,7 @@ FreeRTOS/Source/tasks.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LT
 FreeRTOS/Source/tasks.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_types.h
 FreeRTOS/Source/tasks.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 FreeRTOS/Source/tasks.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h
-FreeRTOS/Source/tasks.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOSConfig.h
+FreeRTOS/Source/tasks.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/SERVICES/RTOS/FreeRTOSConfig.h
 FreeRTOS/Source/tasks.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/projdefs.h
 FreeRTOS/Source/tasks.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/portable.h
 FreeRTOS/Source/tasks.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/deprecated_definitions.h
@@ -59,7 +59,7 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h:
 
-C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOSConfig.h:
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/SERVICES/RTOS/FreeRTOSConfig.h:
 
 C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/projdefs.h:
 

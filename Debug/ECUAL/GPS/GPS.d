@@ -1,0 +1,6 @@
+# FIXED
+
+ECUAL/GPS/GPS.obj: ../ECUAL/GPS/GPS.c
+
+../ECUAL/GPS/GPS.c:
+

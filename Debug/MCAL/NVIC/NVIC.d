@@ -1,0 +1,6 @@
+# FIXED
+
+MCAL/NVIC/NVIC.obj: ../MCAL/NVIC/NVIC.c
+
+../MCAL/NVIC/NVIC.c:
+

@@ -112,7 +112,27 @@ PDE_DEPS__QUOTED :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 . \
+APP \
+CONFIG \
+ECUAL/ENCODER \
+ECUAL/GPS \
+ECUAL/IMU \
+ECUAL/MOTOR \
 FreeRTOS/Source \
 FreeRTOS/Source/portable/CCS/ARM_CM3 \
 FreeRTOS/Source/portable/MemMang \
+MCAL/GPIO \
+MCAL/I2C \
+MCAL/MCU \
+MCAL/NVIC \
+MCAL/PLL \
+MCAL/PWM \
+MCAL/QEI \
+MCAL/TIMER \
+MCAL/UART \
+MCAL/WDG \
+SERVICES/COMM \
+SERVICES/DIAG \
+SERVICES/RTOS \
+SERVICES/SYSTEM \
 

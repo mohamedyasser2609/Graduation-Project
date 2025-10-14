@@ -12,6 +12,16 @@ GEN_CMDS__FLAG :=
 ORDERED_OBJS += \
 "./main.obj" \
 "./tm4c123gh6pm_startup_ccs.obj" \
+"./APP/App_ControlTask.obj" \
+"./APP/App_Main.obj" \
+"./APP/App_SafteyTask.obj" \
+"./APP/App_SensorTask.obj" \
+"./APP/App_commTask.obj" \
+"./CONFIG/Det.obj" \
+"./ECUAL/ENCODER/ENCODER.obj" \
+"./ECUAL/GPS/GPS.obj" \
+"./ECUAL/IMU/IMU.obj" \
+"./ECUAL/MOTOR/MOTOR.obj" \
 "./FreeRTOS/Source/croutine.obj" \
 "./FreeRTOS/Source/event_groups.obj" \
 "./FreeRTOS/Source/list.obj" \
@@ -21,6 +31,22 @@ ORDERED_OBJS += \
 "./FreeRTOS/Source/portable/CCS/ARM_CM3/port.obj" \
 "./FreeRTOS/Source/portable/CCS/ARM_CM3/portasm.obj" \
 "./FreeRTOS/Source/portable/MemMang/heap_4.obj" \
+"./MCAL/GPIO/GPIO.obj" \
+"./MCAL/I2C/I2C.obj" \
+"./MCAL/MCU/MCU.obj" \
+"./MCAL/NVIC/NVIC.obj" \
+"./MCAL/PLL/PLL.obj" \
+"./MCAL/PWM/PWM.obj" \
+"./MCAL/QEI/QEI.obj" \
+"./MCAL/TIMER/TIMER.obj" \
+"./MCAL/UART/UART.obj" \
+"./MCAL/WDG/WDG.obj" \
+"./SERVICES/COMM/ComStack.obj" \
+"./SERVICES/COMM/UART_ComBridge.obj" \
+"./SERVICES/DIAG/Diagnostics.obj" \
+"./SERVICES/RTOS/Tasks_Init.obj" \
+"./SERVICES/SYSTEM/System_Init.obj" \
+"./SERVICES/SYSTEM/System_Tasks.obj" \
 "../tm4c123gh6pm.cmd" \
 $(GEN_CMDS__FLAG) \
 -llibc.a \
@@ -33,13 +59,53 @@ RMDIR := RMDIR /S/Q
 # All of the sources participating in the build are defined here
 -include sources.mk
 -include subdir_vars.mk
+-include APP/subdir_vars.mk
+-include CONFIG/subdir_vars.mk
+-include ECUAL/ENCODER/subdir_vars.mk
+-include ECUAL/GPS/subdir_vars.mk
+-include ECUAL/IMU/subdir_vars.mk
+-include ECUAL/MOTOR/subdir_vars.mk
 -include FreeRTOS/Source/subdir_vars.mk
 -include FreeRTOS/Source/portable/CCS/ARM_CM3/subdir_vars.mk
 -include FreeRTOS/Source/portable/MemMang/subdir_vars.mk
+-include MCAL/GPIO/subdir_vars.mk
+-include MCAL/I2C/subdir_vars.mk
+-include MCAL/MCU/subdir_vars.mk
+-include MCAL/NVIC/subdir_vars.mk
+-include MCAL/PLL/subdir_vars.mk
+-include MCAL/PWM/subdir_vars.mk
+-include MCAL/QEI/subdir_vars.mk
+-include MCAL/TIMER/subdir_vars.mk
+-include MCAL/UART/subdir_vars.mk
+-include MCAL/WDG/subdir_vars.mk
+-include SERVICES/COMM/subdir_vars.mk
+-include SERVICES/DIAG/subdir_vars.mk
+-include SERVICES/RTOS/subdir_vars.mk
+-include SERVICES/SYSTEM/subdir_vars.mk
 -include subdir_rules.mk
+-include APP/subdir_rules.mk
+-include CONFIG/subdir_rules.mk
+-include ECUAL/ENCODER/subdir_rules.mk
+-include ECUAL/GPS/subdir_rules.mk
+-include ECUAL/IMU/subdir_rules.mk
+-include ECUAL/MOTOR/subdir_rules.mk
 -include FreeRTOS/Source/subdir_rules.mk
 -include FreeRTOS/Source/portable/CCS/ARM_CM3/subdir_rules.mk
 -include FreeRTOS/Source/portable/MemMang/subdir_rules.mk
+-include MCAL/GPIO/subdir_rules.mk
+-include MCAL/I2C/subdir_rules.mk
+-include MCAL/MCU/subdir_rules.mk
+-include MCAL/NVIC/subdir_rules.mk
+-include MCAL/PLL/subdir_rules.mk
+-include MCAL/PWM/subdir_rules.mk
+-include MCAL/QEI/subdir_rules.mk
+-include MCAL/TIMER/subdir_rules.mk
+-include MCAL/UART/subdir_rules.mk
+-include MCAL/WDG/subdir_rules.mk
+-include SERVICES/COMM/subdir_rules.mk
+-include SERVICES/DIAG/subdir_rules.mk
+-include SERVICES/RTOS/subdir_rules.mk
+-include SERVICES/SYSTEM/subdir_rules.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -157,8 +223,8 @@ Graduation_Project.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)
-	-$(RM) "main.obj" "tm4c123gh6pm_startup_ccs.obj" "FreeRTOS\Source\croutine.obj" "FreeRTOS\Source\event_groups.obj" "FreeRTOS\Source\list.obj" "FreeRTOS\Source\queue.obj" "FreeRTOS\Source\tasks.obj" "FreeRTOS\Source\timers.obj" "FreeRTOS\Source\portable\CCS\ARM_CM3\port.obj" "FreeRTOS\Source\portable\CCS\ARM_CM3\portasm.obj" "FreeRTOS\Source\portable\MemMang\heap_4.obj" 
-	-$(RM) "main.d" "tm4c123gh6pm_startup_ccs.d" "FreeRTOS\Source\croutine.d" "FreeRTOS\Source\event_groups.d" "FreeRTOS\Source\list.d" "FreeRTOS\Source\queue.d" "FreeRTOS\Source\tasks.d" "FreeRTOS\Source\timers.d" "FreeRTOS\Source\portable\CCS\ARM_CM3\port.d" "FreeRTOS\Source\portable\MemMang\heap_4.d" 
+	-$(RM) "main.obj" "tm4c123gh6pm_startup_ccs.obj" "APP\App_ControlTask.obj" "APP\App_Main.obj" "APP\App_SafteyTask.obj" "APP\App_SensorTask.obj" "APP\App_commTask.obj" "CONFIG\Det.obj" "ECUAL\ENCODER\ENCODER.obj" "ECUAL\GPS\GPS.obj" "ECUAL\IMU\IMU.obj" "ECUAL\MOTOR\MOTOR.obj" "FreeRTOS\Source\croutine.obj" "FreeRTOS\Source\event_groups.obj" "FreeRTOS\Source\list.obj" "FreeRTOS\Source\queue.obj" "FreeRTOS\Source\tasks.obj" "FreeRTOS\Source\timers.obj" "FreeRTOS\Source\portable\CCS\ARM_CM3\port.obj" "FreeRTOS\Source\portable\CCS\ARM_CM3\portasm.obj" "FreeRTOS\Source\portable\MemMang\heap_4.obj" "MCAL\GPIO\GPIO.obj" "MCAL\I2C\I2C.obj" "MCAL\MCU\MCU.obj" "MCAL\NVIC\NVIC.obj" "MCAL\PLL\PLL.obj" "MCAL\PWM\PWM.obj" "MCAL\QEI\QEI.obj" "MCAL\TIMER\TIMER.obj" "MCAL\UART\UART.obj" "MCAL\WDG\WDG.obj" "SERVICES\COMM\ComStack.obj" "SERVICES\COMM\UART_ComBridge.obj" "SERVICES\DIAG\Diagnostics.obj" "SERVICES\RTOS\Tasks_Init.obj" "SERVICES\SYSTEM\System_Init.obj" "SERVICES\SYSTEM\System_Tasks.obj" 
+	-$(RM) "main.d" "tm4c123gh6pm_startup_ccs.d" "APP\App_ControlTask.d" "APP\App_Main.d" "APP\App_SafteyTask.d" "APP\App_SensorTask.d" "APP\App_commTask.d" "CONFIG\Det.d" "ECUAL\ENCODER\ENCODER.d" "ECUAL\GPS\GPS.d" "ECUAL\IMU\IMU.d" "ECUAL\MOTOR\MOTOR.d" "FreeRTOS\Source\croutine.d" "FreeRTOS\Source\event_groups.d" "FreeRTOS\Source\list.d" "FreeRTOS\Source\queue.d" "FreeRTOS\Source\tasks.d" "FreeRTOS\Source\timers.d" "FreeRTOS\Source\portable\CCS\ARM_CM3\port.d" "FreeRTOS\Source\portable\MemMang\heap_4.d" "MCAL\GPIO\GPIO.d" "MCAL\I2C\I2C.d" "MCAL\MCU\MCU.d" "MCAL\NVIC\NVIC.d" "MCAL\PLL\PLL.d" "MCAL\PWM\PWM.d" "MCAL\QEI\QEI.d" "MCAL\TIMER\TIMER.d" "MCAL\UART\UART.d" "MCAL\WDG\WDG.d" "SERVICES\COMM\ComStack.d" "SERVICES\COMM\UART_ComBridge.d" "SERVICES\DIAG\Diagnostics.d" "SERVICES\RTOS\Tasks_Init.d" "SERVICES\SYSTEM\System_Init.d" "SERVICES\SYSTEM\System_Tasks.d" 
 	-$(RM) "FreeRTOS\Source\portable\CCS\ARM_CM3\portasm.d" 
 	-@echo 'Finished clean'
 	-@echo ' '

@@ -1,0 +1,6 @@
+# FIXED
+
+MCAL/UART/UART.obj: ../MCAL/UART/UART.c
+
+../MCAL/UART/UART.c:
+

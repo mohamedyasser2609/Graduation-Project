@@ -1,0 +1,6 @@
+# FIXED
+
+MCAL/WDG/WDG.obj: ../MCAL/WDG/WDG.c
+
+../MCAL/WDG/WDG.c:
+

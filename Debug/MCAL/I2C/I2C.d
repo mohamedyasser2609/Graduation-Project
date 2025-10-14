@@ -1,0 +1,6 @@
+# FIXED
+
+MCAL/I2C/I2C.obj: ../MCAL/I2C/I2C.c
+
+../MCAL/I2C/I2C.c:
+

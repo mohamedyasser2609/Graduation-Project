@@ -1,0 +1,6 @@
+# FIXED
+
+MCAL/QEI/QEI.obj: ../MCAL/QEI/QEI.c
+
+../MCAL/QEI/QEI.c:
+

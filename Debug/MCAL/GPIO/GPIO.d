@@ -1,0 +1,6 @@
+# FIXED
+
+MCAL/GPIO/GPIO.obj: ../MCAL/GPIO/GPIO.c
+
+../MCAL/GPIO/GPIO.c:
+
