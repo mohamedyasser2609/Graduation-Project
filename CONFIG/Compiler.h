@@ -121,12 +121,14 @@
 #ifdef COMPILER_TI_CCS
     /* TI Code Composer Studio specific pragmas */
     #define COMPILER_PRAGMA(x)   _Pragma(#x)
+    #define COMPILER_DATA_SECTION(section) COMPILER_PRAGMA(DATA_SECTION(section))
     #define COMPILER_DIAG_SUPPRESS(x) COMPILER_PRAGMA(diag_suppress x)
     #define COMPILER_DIAG_ERROR(x)   COMPILER_PRAGMA(diag_error x)
     #define COMPILER_DIAG_WARNING(x) COMPILER_PRAGMA(diag_warning x)
 #else
     /* Generic pragma support */
     #define COMPILER_PRAGMA(x)   _Pragma(#x)
+    #define COMPILER_DATA_SECTION(section) COMPILER_PRAGMA(DATA_SECTION(section))
     #define COMPILER_DIAG_SUPPRESS(x)
     #define COMPILER_DIAG_ERROR(x)
     #define COMPILER_DIAG_WARNING(x)

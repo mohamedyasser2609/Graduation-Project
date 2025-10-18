@@ -13,6 +13,9 @@
 /* Include DET interface */
 #include "Det.h"
 
+/* Include platform types for PLATFORM_VENDOR_ID */
+#include "Platform_Types.h"
+
 /* Include compiler abstraction */
 #include "Compiler.h"
 
@@ -30,20 +33,16 @@ typedef enum {
 } Det_InternalStateType;
 
 /* ===================[DET Internal Variables]=================== */
-/* DET Error Buffer - placed in specific memory section */
-MEMMAP_DEFAULT_DATA_START_SEC
+/* DET Error Buffer */
 static Det_ErrorReportType Det_ErrorBuffer[DET_MAX_ERROR_REPORTS];
 static uint8 Det_ErrorCount = 0u;
 static uint8 Det_ErrorIndex = 0u;
 static Det_InternalStateType Det_State = DET_STATE_UNINIT;
 static uint32 Det_Timestamp = 0u;
-MEMMAP_DEFAULT_DATA_STOP_SEC
 
 #if (DET_CALLBACK_ENABLED == 1u)
 /* DET Callback Function */
-MEMMAP_DEFAULT_CONST_START_SEC
 static Det_CallbackType Det_Callback = NULL_PTR;
-MEMMAP_DEFAULT_CONST_STOP_SEC
 #endif
 
 /* ===================[DET Internal Functions]=================== */
@@ -247,4 +246,6 @@ Det_ReturnType Det_SetCallback(Det_CallbackType Callback)
     
     return ReturnValue;
 }
+
 #endif
+
