@@ -6,27 +6,21 @@ SHELL = cmd.exe
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../MCAL/GPIO/GPIO.c \
-../MCAL/GPIO/Gpio_PBCfg.c 
+../ECUAL/Buttons/Buttons.c 
 
 C_DEPS += \
-./MCAL/GPIO/GPIO.d \
-./MCAL/GPIO/Gpio_PBCfg.d 
+./ECUAL/Buttons/Buttons.d 
 
 OBJS += \
-./MCAL/GPIO/GPIO.obj \
-./MCAL/GPIO/Gpio_PBCfg.obj 
+./ECUAL/Buttons/Buttons.obj 
 
 OBJS__QUOTED += \
-"MCAL\GPIO\GPIO.obj" \
-"MCAL\GPIO\Gpio_PBCfg.obj" 
+"ECUAL\Buttons\Buttons.obj" 
 
 C_DEPS__QUOTED += \
-"MCAL\GPIO\GPIO.d" \
-"MCAL\GPIO\Gpio_PBCfg.d" 
+"ECUAL\Buttons\Buttons.d" 
 
 C_SRCS__QUOTED += \
-"../MCAL/GPIO/GPIO.c" \
-"../MCAL/GPIO/Gpio_PBCfg.c" 
+"../ECUAL/Buttons/Buttons.c" 
 
 

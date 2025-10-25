@@ -1,0 +1,6 @@
+# FIXED
+
+ECUAL/LED/LED.obj: ../ECUAL/LED/LED.c
+
+../ECUAL/LED/LED.c:
+

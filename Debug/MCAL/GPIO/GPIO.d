@@ -1,6 +1,63 @@
 # FIXED
 
 MCAL/GPIO/GPIO.obj: ../MCAL/GPIO/GPIO.c
+MCAL/GPIO/GPIO.obj: ../MCAL/GPIO/Gpio.h
+MCAL/GPIO/GPIO.obj: ../CONFIG/std_types.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_stdint40.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/stdint.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/cdefs.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_types.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_types.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h
+MCAL/GPIO/GPIO.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h
+MCAL/GPIO/GPIO.obj: ../CONFIG/Compiler.h
+MCAL/GPIO/GPIO.obj: ../CONFIG/Det.h
+MCAL/GPIO/GPIO.obj: ../MCAL/GPIO/GPIO_Types.h
+MCAL/GPIO/GPIO.obj: ../CONFIG/Platform_Types.h
+MCAL/GPIO/GPIO.obj: ../MCAL/GPIO/Gpio_Cfg.h
+MCAL/GPIO/GPIO.obj: ../MCAL/GPIO/Gpio_Regs.h
 
 ../MCAL/GPIO/GPIO.c:
+
+../MCAL/GPIO/Gpio.h:
+
+../CONFIG/std_types.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_stdint40.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/stdint.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/cdefs.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_types.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_types.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h:
+
+C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
+
+../CONFIG/Compiler.h:
+
+../CONFIG/Det.h:
+
+../MCAL/GPIO/GPIO_Types.h:
+
+../CONFIG/Platform_Types.h:
+
+../MCAL/GPIO/Gpio_Cfg.h:
+
+../MCAL/GPIO/Gpio_Regs.h:
 
