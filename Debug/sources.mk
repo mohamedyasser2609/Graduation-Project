@@ -114,9 +114,11 @@ SUBDIRS := \
 . \
 APP \
 CONFIG \
+ECUAL/Button \
 ECUAL/ENCODER \
 ECUAL/GPS \
 ECUAL/IMU \
+ECUAL/LED \
 ECUAL/MOTOR \
 FreeRTOS/Source \
 FreeRTOS/Source/portable/CCS/ARM_CM3 \
