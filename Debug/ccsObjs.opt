@@ -32,6 +32,7 @@
 "./MCAL/PWM/PWM.obj"
 "./MCAL/QEI/QEI.obj"
 "./MCAL/TIMER/TIMER.obj"
+"./MCAL/TIMER/Timer_PBCfg.obj"
 "./MCAL/UART/UART.obj"
 "./MCAL/WDG/WDG.obj"
 "./SERVICES/COMM/ComStack.obj"

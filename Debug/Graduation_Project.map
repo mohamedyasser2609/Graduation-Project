@@ -1,33 +1,33 @@
 ******************************************************************************
                   TI ARM Linker PC v20.2.7                     
 ******************************************************************************
->> Linked Sun Oct 26 13:19:44 2025
+>> Linked Sun Oct 26 15:49:52 2025
 
 OUTPUT FILE NAME:   <Graduation_Project.out>
-ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 000018d5
+ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 000020dd
 
 
 MEMORY CONFIGURATION
 
          name            origin    length      used     unused   attr    fill
 ----------------------  --------  ---------  --------  --------  ----  --------
-  FLASH                 00000000   00040000  00001a0b  0003e5f5  R  X
-  SRAM                  20000000   00008000  00000306  00007cfa  RW X
+  FLASH                 00000000   00040000  0000223b  0003ddc5  R  X
+  SRAM                  20000000   00008000  000003c6  00007c3a  RW X
 
 
 SEGMENT ALLOCATION MAP
 
 run origin  load origin   length   init length attrs members
 ----------  ----------- ---------- ----------- ----- -------
-00000000    00000000    00001a10   00001a10    r-x
+00000000    00000000    00002240   00002240    r-x
   00000000    00000000    0000026c   0000026c    r-- .intvecs
-  0000026c    0000026c    000016da   000016da    r-x .text
-  00001948    00001948    0000008d   0000008d    r-- .const
-  000019d8    000019d8    00000038   00000038    r-- .cinit
-20000000    20000000    00000306   00000000    rw-
+  0000026c    0000026c    00001ee2   00001ee2    r-x .text
+  00002150    00002150    000000b5   000000b5    r-- .const
+  00002208    00002208    00000038   00000038    r-- .cinit
+20000000    20000000    000003c6   00000000    rw-
   20000000    20000000    00000200   00000000    rw- .stack
-  20000200    20000200    000000c0   00000000    rw- .bss
-  200002c0    200002c0    00000046   00000000    rw- .data
+  20000200    20000200    000001b0   00000000    rw- .bss
+  200003b0    200003b0    00000016   00000000    rw- .data
 
 
 SECTION ALLOCATION MAP
@@ -38,52 +38,51 @@ section   page    origin      length       input sections
 .intvecs   0    00000000    0000026c     
                   00000000    0000026c     tm4c123gh6pm_startup_ccs.obj (.intvecs)
 
-.text      0    0000026c    000016da     
+.text      0    0000026c    00001ee2     
                   0000026c    00000d04     GPIO.obj (.text)
-                  00000f70    00000274     Det.obj (.text)
-                  000011e4    00000200     main.obj (.text)
-                  000013e4    000001f8     Button.obj (.text)
-                  000015dc    00000136     LED.obj (.text)
-                  00001712    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
-                  000017ae    0000007a                                   : memset_t2.asm.obj (.text)
-                  00001828    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
-                  00001890    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
-                  000018d4    00000034                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
-                  00001908    0000001c                                   : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset:__TI_zero_init_nomemset)
-                  00001924    0000000e                                   : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
-                  00001932    0000000c     tm4c123gh6pm_startup_ccs.obj (.text)
-                  0000193e    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
-                  00001942    00000004                                   : exit.c.obj (.text:abort:abort)
+                  00000f70    00000a4c     TIMER.obj (.text)
+                  000019bc    00000274     Det.obj (.text)
+                  00001c30    000001b4     main.obj (.text)
+                  00001de4    00000136     LED.obj (.text)
+                  00001f1a    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
+                  00001fb6    0000007a                                   : memset_t2.asm.obj (.text)
+                  00002030    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
+                  00002098    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
+                  000020dc    00000034                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
+                  00002110    0000001c                                   : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset:__TI_zero_init_nomemset)
+                  0000212c    0000000e                                   : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
+                  0000213a    0000000c     tm4c123gh6pm_startup_ccs.obj (.text)
+                  00002146    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
+                  0000214a    00000004                                   : exit.c.obj (.text:abort:abort)
 
-.const     0    00001948    0000008d     
-                  00001948    0000006e     Gpio_PBCfg.obj (.const:Gpio_PinConfigurations)
-                  000019b6    00000002     --HOLE-- [fill = 0]
-                  000019b8    00000008     Gpio_PBCfg.obj (.const:Gpio_Configuration)
-                  000019c0    00000006     main.obj (.const:$P$T3$5)
-                  000019c6    00000006     main.obj (.const:$P$T4$6)
-                  000019cc    00000003     main.obj (.const:$P$T0$2)
-                  000019cf    00000003     main.obj (.const:$P$T1$3)
-                  000019d2    00000003     main.obj (.const:$P$T2$4)
+.const     0    00002150    000000b5     
+                  00002150    0000006e     Gpio_PBCfg.obj (.const:Gpio_PinConfigurations)
+                  000021be    00000002     --HOLE-- [fill = 0]
+                  000021c0    0000001c     main.obj (.const:$P$T0$1)
+                  000021dc    00000018     TIMER.obj (.const:Timer_BaseAddress)
+                  000021f4    00000008     Gpio_PBCfg.obj (.const:Gpio_Configuration)
+                  000021fc    00000003     Led_PBCfg.obj (.const:Led_Blue)
+                  000021ff    00000003     Led_PBCfg.obj (.const:Led_Green)
+                  00002202    00000003     Led_PBCfg.obj (.const:Led_Red)
 
-.cinit     0    000019d8    00000038     
-                  000019d8    0000000e     (.cinit..data.load) [load image, compression = lzss]
-                  000019e6    00000002     --HOLE-- [fill = 0]
-                  000019e8    0000000c     (__TI_handler_table)
-                  000019f4    00000004     --HOLE-- [fill = 0]
-                  000019f8    00000008     (.cinit..bss.load) [load image, compression = zero_init]
-                  00001a00    00000010     (__TI_cinit_table)
+.cinit     0    00002208    00000038     
+                  00002208    00000011     (.cinit..data.load) [load image, compression = lzss]
+                  00002219    00000003     --HOLE-- [fill = 0]
+                  0000221c    0000000c     (__TI_handler_table)
+                  00002228    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  00002230    00000010     (__TI_cinit_table)
 
 .init_array 
 *          0    00000000    00000000     UNINITIALIZED
 
-.bss       0    20000200    000000c0     UNINITIALIZED
-                  20000200    000000c0     Det.obj (.bss:Det_ErrorBuffer)
+.bss       0    20000200    000001b0     UNINITIALIZED
+                  20000200    000000f0     TIMER.obj (.bss:Timer_RuntimeState)
+                  200002f0    000000c0     Det.obj (.bss:Det_ErrorBuffer)
 
-.data      0    200002c0    00000046     UNINITIALIZED
-                  200002c0    00000030     Button.obj (.data:Button_PreviousStates)
-                  200002f0    0000000c     Det.obj (.data)
-                  200002fc    00000009     GPIO.obj (.data)
-                  20000305    00000001     main.obj (.data)
+.data      0    200003b0    00000016     UNINITIALIZED
+                  200003b0    0000000c     Det.obj (.data)
+                  200003bc    00000009     GPIO.obj (.data)
+                  200003c5    00000001     main.obj (.data)
 
 .stack     0    20000000    00000200     UNINITIALIZED
                   20000000    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : boot_cortex_m.c.obj (.stack)
@@ -98,30 +97,31 @@ MODULE SUMMARY
        ------                         ----   -------   -------
     .\
        tm4c123gh6pm_startup_ccs.obj   12     620       0      
-       main.obj                       512    21        1      
+       main.obj                       436    28        1      
     +--+------------------------------+------+---------+---------+
-       Total:                         524    641       1      
+       Total:                         448    648       1      
                                                               
     .\CONFIG\
        Det.obj                        628    0         204    
     +--+------------------------------+------+---------+---------+
        Total:                         628    0         204    
                                                               
-    .\ECUAL\Button\
-       Button.obj                     504    0         48     
-    +--+------------------------------+------+---------+---------+
-       Total:                         504    0         48     
-                                                              
     .\ECUAL\LED\
        LED.obj                        310    0         0      
+       Led_PBCfg.obj                  0      9         0      
     +--+------------------------------+------+---------+---------+
-       Total:                         310    0         0      
+       Total:                         310    9         0      
                                                               
     .\MCAL\GPIO\
        GPIO.obj                       3332   0         9      
        Gpio_PBCfg.obj                 0      118       0      
     +--+------------------------------+------+---------+---------+
        Total:                         3332   118       9      
+                                                              
+    .\MCAL\TIMER\
+       TIMER.obj                      2636   24        240    
+    +--+------------------------------+------+---------+---------+
+       Total:                         2636   24        240    
                                                               
     C:\ti\ccs1281\ccs\tools\compiler\ti-cgt-arm_20.2.7.LTS\lib\rtsv7M4_T_le_v4SPD16_eabi.lib
        memcpy_t2.asm.obj              156    0         0      
@@ -137,21 +137,21 @@ MODULE SUMMARY
        Total:                         552    0         0      
                                                               
        Stack:                         0      0         512    
-       Linker Generated:              0      50        0      
+       Linker Generated:              0      53        0      
     +--+------------------------------+------+---------+---------+
-       Grand Total:                   5850   809       774    
+       Grand Total:                   7906   852       966    
 
 
 LINKER GENERATED COPY TABLES
 
-__TI_cinit_table @ 00001a00 records: 2, size/record: 8, table size: 16
-	.data: load addr=000019d8, load size=0000000e bytes, run addr=200002c0, run size=00000046 bytes, compression=lzss
-	.bss: load addr=000019f8, load size=00000008 bytes, run addr=20000200, run size=000000c0 bytes, compression=zero_init
+__TI_cinit_table @ 00002230 records: 2, size/record: 8, table size: 16
+	.data: load addr=00002208, load size=00000011 bytes, run addr=200003b0, run size=00000016 bytes, compression=lzss
+	.bss: load addr=00002228, load size=00000008 bytes, run addr=20000200, run size=000001b0 bytes, compression=zero_init
 
 
 LINKER GENERATED HANDLER TABLE
 
-__TI_handler_table @ 000019e8 records: 3, size/record: 4, table size: 12
+__TI_handler_table @ 0000221c records: 3, size/record: 4, table size: 12
 	index: 0, handler: __TI_decompress_lzss
 	index: 1, handler: __TI_decompress_none
 	index: 2, handler: __TI_zero_init
@@ -161,22 +161,17 @@ GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name
 
 address   name                          
 -------   ----                          
-000015a1  Button_GetVersionInfo         
-0000153f  Button_HasStateChanged        
-00001457  Button_Init                   
-000014b9  Button_ReadState              
-000014e7  Button_ReadStateDebounced     
-00001943  C$$EXIT                       
-0000116b  Det_ClearErrorBuffer          
-00001017  Det_DeInit                    
-0000119d  Det_GetErrorCount             
-000010f5  Det_GetErrorReport            
-000010b7  Det_GetVersionInfo            
-00000fdb  Det_Init                      
-0000105b  Det_ReportError               
-000011a3  Det_SetCallback               
+0000214b  C$$EXIT                       
+00001bb7  Det_ClearErrorBuffer          
+00001a63  Det_DeInit                    
+00001be9  Det_GetErrorCount             
+00001b41  Det_GetErrorReport            
+00001b03  Det_GetVersionInfo            
+00001a27  Det_Init                      
+00001aa7  Det_ReportError               
+00001bef  Det_SetCallback               
 00000e89  Gpio_ClearInterrupt           
-000019b8  Gpio_Configuration            
+000021f4  Gpio_Configuration            
 00000e1f  Gpio_DisableInterrupt         
 00000db9  Gpio_EnableInterrupt          
 00000a93  Gpio_FlipChannel              
@@ -191,52 +186,68 @@ address   name
 0000096d  Gpio_WriteChannel             
 00000d3b  Gpio_WriteChannelGroup        
 00000a49  Gpio_WritePort                
-000016ad  Led_GetState                  
-000016db  Led_GetVersionInfo            
-0000163f  Led_Init                      
-0000165f  Led_SetState                  
-00001691  Led_Toggle                    
-00001933  ResetISR                      
+000021fc  Led_Blue                      
+00001eb5  Led_GetState                  
+00001ee3  Led_GetVersionInfo            
+000021ff  Led_Green                     
+00001e47  Led_Init                      
+00002202  Led_Red                       
+00001e67  Led_SetState                  
+00001e99  Led_Toggle                    
+0000213b  ResetISR                      
+00001c31  SetLedColor                   
+00001d3b  Timer2A_Handler               
+000018b9  Timer_ClearInterrupt          
+0000123d  Timer_DeInit                  
+000017cd  Timer_DisableInterrupt        
+000016e7  Timer_EnableInterrupt         
+00001457  Timer_GetElapsedTime          
+00001523  Timer_GetRemainingTime        
+0000164d  Timer_GetState                
+00001987  Timer_GetVersionInfo          
+0000100f  Timer_Init                    
+000015a5  Timer_SetLoadValue            
+00001363  Timer_Start                   
+000013dd  Timer_Stop                    
 20000200  __STACK_END                   
 00000200  __STACK_SIZE                  
 20000200  __STACK_TOP                   
-00001a00  __TI_CINIT_Base               
-00001a10  __TI_CINIT_Limit              
-000019e8  __TI_Handler_Table_Base       
-000019f4  __TI_Handler_Table_Limit      
-00001891  __TI_auto_init_nobinit_nopinit
-00001829  __TI_decompress_lzss          
-00001925  __TI_decompress_none          
+00002230  __TI_CINIT_Base               
+00002240  __TI_CINIT_Limit              
+0000221c  __TI_Handler_Table_Base       
+00002228  __TI_Handler_Table_Limit      
+00002099  __TI_auto_init_nobinit_nopinit
+00002031  __TI_decompress_lzss          
+0000212d  __TI_decompress_none          
 ffffffff  __TI_pprof_out_hndl           
 ffffffff  __TI_prof_data_size           
 ffffffff  __TI_prof_data_start          
 00000000  __TI_static_base__            
-00001909  __TI_zero_init_nomemset       
-000017af  __aeabi_memclr                
-000017af  __aeabi_memclr4               
-000017af  __aeabi_memclr8               
-00001713  __aeabi_memcpy                
-00001713  __aeabi_memcpy4               
-00001713  __aeabi_memcpy8               
-000017b1  __aeabi_memset                
-000017b1  __aeabi_memset4               
-000017b1  __aeabi_memset8               
+00002111  __TI_zero_init_nomemset       
+00001fb7  __aeabi_memclr                
+00001fb7  __aeabi_memclr4               
+00001fb7  __aeabi_memclr8               
+00001f1b  __aeabi_memcpy                
+00001f1b  __aeabi_memcpy4               
+00001f1b  __aeabi_memcpy8               
+00001fb9  __aeabi_memset                
+00001fb9  __aeabi_memset4               
+00001fb9  __aeabi_memset8               
 ffffffff  __binit__                     
 ffffffff  __c_args__                    
 UNDEFED   __mpu_init                    
 20000000  __stack                       
 20000000  __start___llvm_prf_cnts       
 20000000  __stop___llvm_prf_cnts        
-000018d5  _c_int00_noargs               
+000020dd  _c_int00_noargs               
 UNDEFED   _system_post_cinit            
-0000193f  _system_pre_init              
-00001943  abort                         
+00002147  _system_pre_init              
+0000214b  abort                         
 ffffffff  binit                         
-000011e5  delay_ms                      
 00000000  g_pfnVectors                  
-0000120b  main                          
-00001713  memcpy                        
-000017b7  memset                        
+00001d67  main                          
+00001f1b  memcpy                        
+00001fbf  memset                        
 
 
 GLOBAL SYMBOLS: SORTED BY Symbol Address 
@@ -261,51 +272,62 @@ address   name
 00000e1f  Gpio_DisableInterrupt         
 00000e89  Gpio_ClearInterrupt           
 00000ef5  Gpio_GetInterruptStatus       
-00000fdb  Det_Init                      
-00001017  Det_DeInit                    
-0000105b  Det_ReportError               
-000010b7  Det_GetVersionInfo            
-000010f5  Det_GetErrorReport            
-0000116b  Det_ClearErrorBuffer          
-0000119d  Det_GetErrorCount             
-000011a3  Det_SetCallback               
-000011e5  delay_ms                      
-0000120b  main                          
-00001457  Button_Init                   
-000014b9  Button_ReadState              
-000014e7  Button_ReadStateDebounced     
-0000153f  Button_HasStateChanged        
-000015a1  Button_GetVersionInfo         
-0000163f  Led_Init                      
-0000165f  Led_SetState                  
-00001691  Led_Toggle                    
-000016ad  Led_GetState                  
-000016db  Led_GetVersionInfo            
-00001713  __aeabi_memcpy                
-00001713  __aeabi_memcpy4               
-00001713  __aeabi_memcpy8               
-00001713  memcpy                        
-000017af  __aeabi_memclr                
-000017af  __aeabi_memclr4               
-000017af  __aeabi_memclr8               
-000017b1  __aeabi_memset                
-000017b1  __aeabi_memset4               
-000017b1  __aeabi_memset8               
-000017b7  memset                        
-00001829  __TI_decompress_lzss          
-00001891  __TI_auto_init_nobinit_nopinit
-000018d5  _c_int00_noargs               
-00001909  __TI_zero_init_nomemset       
-00001925  __TI_decompress_none          
-00001933  ResetISR                      
-0000193f  _system_pre_init              
-00001943  C$$EXIT                       
-00001943  abort                         
-000019b8  Gpio_Configuration            
-000019e8  __TI_Handler_Table_Base       
-000019f4  __TI_Handler_Table_Limit      
-00001a00  __TI_CINIT_Base               
-00001a10  __TI_CINIT_Limit              
+0000100f  Timer_Init                    
+0000123d  Timer_DeInit                  
+00001363  Timer_Start                   
+000013dd  Timer_Stop                    
+00001457  Timer_GetElapsedTime          
+00001523  Timer_GetRemainingTime        
+000015a5  Timer_SetLoadValue            
+0000164d  Timer_GetState                
+000016e7  Timer_EnableInterrupt         
+000017cd  Timer_DisableInterrupt        
+000018b9  Timer_ClearInterrupt          
+00001987  Timer_GetVersionInfo          
+00001a27  Det_Init                      
+00001a63  Det_DeInit                    
+00001aa7  Det_ReportError               
+00001b03  Det_GetVersionInfo            
+00001b41  Det_GetErrorReport            
+00001bb7  Det_ClearErrorBuffer          
+00001be9  Det_GetErrorCount             
+00001bef  Det_SetCallback               
+00001c31  SetLedColor                   
+00001d3b  Timer2A_Handler               
+00001d67  main                          
+00001e47  Led_Init                      
+00001e67  Led_SetState                  
+00001e99  Led_Toggle                    
+00001eb5  Led_GetState                  
+00001ee3  Led_GetVersionInfo            
+00001f1b  __aeabi_memcpy                
+00001f1b  __aeabi_memcpy4               
+00001f1b  __aeabi_memcpy8               
+00001f1b  memcpy                        
+00001fb7  __aeabi_memclr                
+00001fb7  __aeabi_memclr4               
+00001fb7  __aeabi_memclr8               
+00001fb9  __aeabi_memset                
+00001fb9  __aeabi_memset4               
+00001fb9  __aeabi_memset8               
+00001fbf  memset                        
+00002031  __TI_decompress_lzss          
+00002099  __TI_auto_init_nobinit_nopinit
+000020dd  _c_int00_noargs               
+00002111  __TI_zero_init_nomemset       
+0000212d  __TI_decompress_none          
+0000213b  ResetISR                      
+00002147  _system_pre_init              
+0000214b  C$$EXIT                       
+0000214b  abort                         
+000021f4  Gpio_Configuration            
+000021fc  Led_Blue                      
+000021ff  Led_Green                     
+00002202  Led_Red                       
+0000221c  __TI_Handler_Table_Base       
+00002228  __TI_Handler_Table_Limit      
+00002230  __TI_CINIT_Base               
+00002240  __TI_CINIT_Limit              
 20000000  __stack                       
 20000000  __start___llvm_prf_cnts       
 20000000  __stop___llvm_prf_cnts        
@@ -320,4 +342,4 @@ ffffffff  binit
 UNDEFED   __mpu_init                    
 UNDEFED   _system_post_cinit            
 
-[76 symbols]
+[87 symbols]
