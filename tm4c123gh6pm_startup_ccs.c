@@ -54,7 +54,7 @@ extern uint32_t __STACK_TOP;
 // External declarations for the interrupt handlers used by the application.
 //
 //*****************************************************************************
-// Timer interrupt handler
+// Timer interrupt handler for auto-cycling
 extern void Timer2A_Handler(void);
 
 //*****************************************************************************

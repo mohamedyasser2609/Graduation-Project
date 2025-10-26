@@ -34,6 +34,7 @@
 "./MCAL/TIMER/TIMER.obj"
 "./MCAL/TIMER/Timer_PBCfg.obj"
 "./MCAL/UART/UART.obj"
+"./MCAL/UART/Uart_PBCfg.obj"
 "./MCAL/WDG/WDG.obj"
 "./SERVICES/COMM/ComStack.obj"
 "./SERVICES/COMM/UART_ComBridge.obj"

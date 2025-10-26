@@ -19,10 +19,14 @@ main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Gr
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/GPIO/GPIO_Types.h
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Platform_Types.h
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/GPIO/Gpio_Cfg.h
+main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/UART/Uart.h
+main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/UART/Uart_Types.h
+main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/UART/Uart_Cfg.h
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer.h
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer_Types.h
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer_Cfg.h
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/ECUAL/LED/Led.h
+main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/ECUAL/Button/Button.h
 
 ../main.c:
 
@@ -62,6 +66,12 @@ C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_P
 
 C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/GPIO/Gpio_Cfg.h:
 
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/UART/Uart.h:
+
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/UART/Uart_Types.h:
+
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/UART/Uart_Cfg.h:
+
 C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer.h:
 
 C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer_Types.h:
@@ -69,4 +79,6 @@ C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_P
 C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer_Cfg.h:
 
 C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/ECUAL/LED/Led.h:
+
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/ECUAL/Button/Button.h:
 
