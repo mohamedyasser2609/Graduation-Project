@@ -119,16 +119,21 @@ static void Gpio_EnablePortClock(Gpio_PortType Port)
  *          - Write 0x4C4F434B to LOCK register to unlock
  *          - Set corresponding bit in CR register to allow changes
  *          - Lock is automatically re-locked after CR write
+ *          - JTAG pins (PC0-PC3) are NEVER unlocked to preserve debug capability
  */
 static void Gpio_UnlockPin(Gpio_PortType Port, Gpio_PinType Pin)
 {
     Gpio_RegisterType* portReg = Gpio_GetPortRegister(Port);
     uint8 pinMask = (1u << Pin);
     
-    /* Check if pin needs unlocking (PF0, PD7, PC0-PC3 for JTAG) */
+    /* CRITICAL: Never unlock JTAG pins (PC0-PC3) - this would disable debugging! */
+    if (Port == GPIO_PORT_C && Pin <= GPIO_PIN_3) {
+        return;  /* JTAG pins must remain locked */
+    }
+    
+    /* Check if pin needs unlocking (PF0, PD7 only) */
     if ((Port == GPIO_PORT_F && Pin == GPIO_PIN_0) ||
-        (Port == GPIO_PORT_D && Pin == GPIO_PIN_7) ||
-        (Port == GPIO_PORT_C && Pin <= GPIO_PIN_3)) {
+        (Port == GPIO_PORT_D && Pin == GPIO_PIN_7)) {
         
 #if (GPIO_CRITICAL_SECTION_PROTECTION == STD_ON)
         SchM_Enter_Gpio_GPIO_EXCLUSIVE_AREA_01();
@@ -176,11 +181,21 @@ static Gpio_RegisterType* Gpio_GetPortRegister(Gpio_PortType Port)
  * @brief Configure individual GPIO pin
  * @param[in] PinConfig - Pointer to pin configuration
  * @details All RMW register sequences are protected with critical sections
+ *          JTAG pins (PC0-PC3) are protected and will not be configured
  */
 static void Gpio_ConfigurePin(const Gpio_PinConfigType* PinConfig)
 {
     Gpio_RegisterType* portReg = Gpio_GetPortRegister(PinConfig->Port);
     uint8 pinMask = (1u << PinConfig->Pin);
+    
+    /* CRITICAL: Protect JTAG pins (PC0-PC3) from configuration */
+    if (PinConfig->Port == GPIO_PORT_C && PinConfig->Pin <= GPIO_PIN_3) {
+#if (GPIO_DEV_ERROR_DETECT == STD_ON)
+        Det_ReportError(GPIO_MODULE_ID, GPIO_INSTANCE_ID, 
+                       GPIO_INIT_SID, GPIO_E_JTAG_PIN_PROTECTED);
+#endif
+        return;  /* Skip JTAG pin configuration to preserve debug capability */
+    }
     
     /* Enable port clock if not already enabled */
     Gpio_EnablePortClock(PinConfig->Port);

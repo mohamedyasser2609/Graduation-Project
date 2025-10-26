@@ -6,21 +6,27 @@ SHELL = cmd.exe
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../ECUAL/Buttons/Buttons.c 
+../ECUAL/Button/Button.c \
+../ECUAL/Button/Button_PBCfg.c 
 
 C_DEPS += \
-./ECUAL/Buttons/Buttons.d 
+./ECUAL/Button/Button.d \
+./ECUAL/Button/Button_PBCfg.d 
 
 OBJS += \
-./ECUAL/Buttons/Buttons.obj 
+./ECUAL/Button/Button.obj \
+./ECUAL/Button/Button_PBCfg.obj 
 
 OBJS__QUOTED += \
-"ECUAL\Buttons\Buttons.obj" 
+"ECUAL\Button\Button.obj" \
+"ECUAL\Button\Button_PBCfg.obj" 
 
 C_DEPS__QUOTED += \
-"ECUAL\Buttons\Buttons.d" 
+"ECUAL\Button\Button.d" \
+"ECUAL\Button\Button_PBCfg.d" 
 
 C_SRCS__QUOTED += \
-"../ECUAL/Buttons/Buttons.c" 
+"../ECUAL/Button/Button.c" \
+"../ECUAL/Button/Button_PBCfg.c" 
 
 

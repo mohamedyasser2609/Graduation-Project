@@ -114,7 +114,7 @@ SUBDIRS := \
 . \
 APP \
 CONFIG \
-ECUAL/Buttons \
+ECUAL/Button \
 ECUAL/ENCODER \
 ECUAL/GPS \
 ECUAL/IMU \

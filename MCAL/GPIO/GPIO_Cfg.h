@@ -200,6 +200,12 @@
  */
 #define GPIO_E_ALREADY_INITIALIZED            (0x13u)
 
+/**
+ * @brief JTAG pin protection
+ * @details Attempted to configure JTAG pins (PC0-PC3) which are protected
+ */
+#define GPIO_E_JTAG_PIN_PROTECTED             (0x14u)
+
 /* ===================[Hardware Configuration]=================== */
 /**
  * @brief GPIO Lock Key Value
