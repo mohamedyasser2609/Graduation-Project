@@ -60,15 +60,8 @@
 #define DET_ERROR_TYPE_TIMEOUT          0x09u  /* Timeout error */
 #define DET_ERROR_TYPE_HARDWARE         0x0Au  /* Hardware error */
 
-/* ===================[DET Data Types]=================== */
-/* Standard Version Information Structure */
-typedef struct {
-    uint16 vendorID;         /**< @brief Vendor ID */
-    uint16 moduleID;         /**< @brief Module ID */
-    uint8  sw_major_version; /**< @brief Software major version */
-    uint8  sw_minor_version; /**< @brief Software minor version */
-    uint8  sw_patch_version; /**< @brief Software patch version */
-} Std_VersionInfoType;
+/* ===================[Type Definitions]=================== */
+/* Note: Std_VersionInfoType is defined in std_types.h */
 
 /* DET Error Report Structure */
 typedef struct {

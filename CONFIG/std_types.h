@@ -73,4 +73,17 @@ typedef uint8                StatusType;     /**< @brief Status type for operati
 #define INITIALIZED          (0x02u)         /**< @brief Module is initialized */
 #define UNINITIALIZED        (0x03u)         /**< @brief Module is not initialized */
 
+/* ===================[Version Information Type]=================== */
+/**
+ * @brief Standard version information structure
+ * @details Used by GetVersionInfo APIs to return module version information
+ */
+typedef struct {
+    uint16 vendorID;              /**< @brief Vendor ID */
+    uint16 moduleID;              /**< @brief Module ID */
+    uint8  sw_major_version;      /**< @brief Software major version */
+    uint8  sw_minor_version;      /**< @brief Software minor version */
+    uint8  sw_patch_version;      /**< @brief Software patch version */
+} Std_VersionInfoType;
+
 #endif /* STD_TYPES_H_ */

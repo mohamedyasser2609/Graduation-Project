@@ -27,47 +27,6 @@
  *          - PB6-PB7 (I2C0) - Alternate function with open-drain
  */
 static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
-    /* LED Pins - Port F */
-    {
-        .Port = GPIO_PORT_F,
-        .Pin = GPIO_PIN_1,
-        .Direction = GPIO_PIN_OUT,
-        .InitialLevel = GPIO_LEVEL_LOW,
-        .Mode = GPIO_MODE_DIO,
-        .InternalResistor = GPIO_RESISTOR_OFF,
-        .DriveStrength = GPIO_DRIVE_2MA,
-        .SlewRate = GPIO_SLEW_RATE_NORMAL,
-        .IntTrigger = GPIO_INT_DISABLED,
-        .AlternateFuncNum = 0u,
-        .DirectionChangeable = FALSE
-    },
-    {
-        .Port = GPIO_PORT_F,
-        .Pin = GPIO_PIN_2,
-        .Direction = GPIO_PIN_OUT,
-        .InitialLevel = GPIO_LEVEL_LOW,
-        .Mode = GPIO_MODE_DIO,
-        .InternalResistor = GPIO_RESISTOR_OFF,
-        .DriveStrength = GPIO_DRIVE_2MA,
-        .SlewRate = GPIO_SLEW_RATE_NORMAL,
-        .IntTrigger = GPIO_INT_DISABLED,
-        .AlternateFuncNum = 0u,
-        .DirectionChangeable = FALSE
-    },
-    {
-        .Port = GPIO_PORT_F,
-        .Pin = GPIO_PIN_3,
-        .Direction = GPIO_PIN_OUT,
-        .InitialLevel = GPIO_LEVEL_LOW,
-        .Mode = GPIO_MODE_DIO,
-        .InternalResistor = GPIO_RESISTOR_OFF,
-        .DriveStrength = GPIO_DRIVE_2MA,
-        .SlewRate = GPIO_SLEW_RATE_NORMAL,
-        .IntTrigger = GPIO_INT_DISABLED,
-        .AlternateFuncNum = 0u,
-        .DirectionChangeable = FALSE
-    },
-    
     /* Switch Pins - Port F */
     {
         .Port = GPIO_PORT_F,
@@ -93,6 +52,47 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
         .SlewRate = GPIO_SLEW_RATE_NORMAL,
         .IntTrigger = GPIO_INT_FALLING_EDGE,
         .AlternateFuncNum = 0u,
+        .DirectionChangeable = FALSE
+    },
+    
+    /* PWM Pins for RGB LEDs - Port F (PF1=Red, PF2=Blue, PF3=Green) */
+    {
+        .Port = GPIO_PORT_F,
+        .Pin = GPIO_PIN_1,
+        .Direction = GPIO_PIN_OUT,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_OFF,
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 5u,  /* M1PWM5 - Red LED PWM */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_F,
+        .Pin = GPIO_PIN_2,
+        .Direction = GPIO_PIN_OUT,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_OFF,
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 5u,  /* M1PWM6 - Blue LED PWM */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_F,
+        .Pin = GPIO_PIN_3,
+        .Direction = GPIO_PIN_OUT,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_OFF,
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 5u,  /* M1PWM7 - Green LED PWM */
         .DirectionChangeable = FALSE
     },
     

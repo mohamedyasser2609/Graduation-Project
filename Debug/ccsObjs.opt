@@ -30,6 +30,7 @@
 "./MCAL/NVIC/NVIC.obj"
 "./MCAL/PLL/PLL.obj"
 "./MCAL/PWM/PWM.obj"
+"./MCAL/PWM/PWM_PBCfg.obj"
 "./MCAL/QEI/QEI.obj"
 "./MCAL/TIMER/TIMER.obj"
 "./MCAL/TIMER/Timer_PBCfg.obj"

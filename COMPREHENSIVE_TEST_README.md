@@ -1,6 +1,6 @@
-# TM4C123GH6PM Multi-Driver Integration Test
+# TM4C123GH6PM Multi-Driver Integration Test with PWM
 
-**Version:** 3.0.0  
+**Version:** 4.0.0  
 **Date:** October 26, 2025  
 **Target:** TM4C123GH6PM LaunchPad
 
@@ -8,12 +8,13 @@
 
 ## 🎯 Overview
 
-This comprehensive test program demonstrates the **integration of multiple AUTOSAR-compliant drivers** working together in real-time:
+This comprehensive test program demonstrates the **integration of 6 AUTOSAR-compliant drivers** working together in real-time:
 
 | Driver | Function | Status |
 |--------|----------|--------|
 | **GPIO** | Pin configuration and control | ✅ Active |
 | **LED** | High-level LED abstraction | ✅ Active |
+| **PWM** | Hardware brightness control (0-100%) | ✅ Active |
 | **Button** | Debounced button input with events | ✅ Active |
 | **UART** | Bidirectional serial communication | ✅ Active |
 | **Timer** | Periodic interrupts (2s) | ✅ Active |
@@ -22,32 +23,43 @@ This comprehensive test program demonstrates the **integration of multiple AUTOS
 
 ## ✨ Features
 
-### **1. Automatic LED Cycling (Timer-Driven)**
+### **1. PWM Brightness Control (NEW!)**
+- Hardware-based PWM on all RGB LEDs
+- Smooth brightness adjustment (0-100%)
+- 1 kHz PWM frequency (flicker-free)
+- Independent control of each LED channel
+- Brightness applies to all colors
+
+### **2. Automatic LED Cycling (Timer-Driven)**
 - Timer2A generates interrupts every 2 seconds
 - Automatically cycles through 8 LED colors
+- Respects current brightness setting
 - Can be enabled/disabled via UART commands
 
-### **2. Manual LED Control (UART-Driven)**
+### **3. Manual LED Control (UART-Driven)**
 - Send commands from PC terminal
 - Instantly control LED colors
+- Adjust brightness on-the-fly
 - Automatically switches to manual mode when commanded
 
-### **3. Physical Button Control**
+### **4. Physical Button Control**
 - **SW1 (PF4)**: Toggle between AUTO and MANUAL modes
 - **SW2 (PF0)**: Next color (manual) or Pause/Resume (auto)
 - Hardware debouncing (20ms)
 - Event-driven with state change detection
 
-### **4. Real-Time Status Reporting**
+### **5. Real-Time Status Reporting**
 - Uptime counter (seconds)
 - Color cycle count
 - Button press counters
+- Current brightness level
 - Current mode (AUTO/MANUAL/PAUSED)
 - System statistics on demand
 
-### **5. Interactive Command Interface**
+### **6. Interactive Command Interface**
 - Echo functionality
 - Help menu
+- Brightness control commands
 - Mode switching
 - Statistics display
 
@@ -89,6 +101,16 @@ This comprehensive test program demonstrates the **integration of multiple AUTOS
 | `a` | Enable AUTO mode (Timer cycling) |
 | `s` | STOP auto mode (Manual control) |
 
+### **PWM Brightness Control (NEW!)**
+| Key | Action |
+|-----|--------|
+| `+` | Increase brightness (+10%) |
+| `-` | Decrease brightness (-10%) |
+| `f` | Full brightness (100%) |
+| `d` | Dim (25%) |
+
+**Note:** Brightness changes apply immediately to current color and persist for all subsequent colors.
+
 ### **Information**
 | Key | Action |
 |-----|--------|
@@ -127,43 +149,54 @@ This comprehensive test program demonstrates the **integration of multiple AUTOS
 ### **Step 3: Observe Welcome Message**
 
 ```
-************************************************
-*  TM4C123GH6PM Multi-Driver Integration Test *
-************************************************
+****************************************************
+*   TM4C123GH6PM Multi-Driver Integration Test    *
+*              With PWM Brightness Control         *
+****************************************************
 Drivers Active:
   [x] GPIO Driver
   [x] LED Driver
+  [x] PWM Driver (RGB brightness control)
+  [x] Button Driver (SW1, SW2 with debounce)
   [x] UART Driver (115200 bps, 8N1)
   [x] Timer Driver (2s periodic interrupt)
 
 System Configuration:
   System Clock: 16 MHz
-  Auto-Cycle: ENABLED (press 's' to stop)
-  Initial Color: OFF
+  Mode: MANUAL (LEDs OFF)
+  Waiting for your command...
 
-============================================
-  TM4C123 Multi-Driver Integration Test
-  UART + Timer + GPIO + LED
-============================================
-LED Commands:
-  0 - All LEDs OFF
-  1 - Red LED
-  2 - Green LED
-  3 - Blue LED
-  4 - Yellow (Red + Green)
-  5 - Magenta (Red + Blue)
-  6 - Cyan (Green + Blue)
-  7 - White (All LEDs)
+Quick Start:
+  - Press SW1 or type 'a' for AUTO mode
+  - Press SW2 or type '1-7' for LED colors
+  - Type 'h' for full help menu
+
+=======================================================
+  TM4C123 Multi-Driver Integration Test + PWM
+  UART + Timer + GPIO + LED + Button + PWM
+=======================================================
+Color Commands:
+  0-7 : Set LED color (OFF/R/G/B/Y/M/C/W)
 
 Mode Commands:
-  a - Enable AUTO mode (Timer cycling)
-  s - STOP auto mode (Manual control)
+  a   : Enable AUTO mode (Timer cycling)
+  s   : STOP auto mode (Manual control)
+
+PWM Brightness Commands:
+  +   : Increase brightness (+10%)
+  -   : Decrease brightness (-10%)
+  f   : Full brightness (100%)
+  d   : Dim (25%)
 
 Info Commands:
-  t - Show uptime & statistics
-  h - Show this menu
-============================================
-Mode: AUTO | Color: OFF
+  t   : Show uptime & statistics
+  h   : Show this menu
+
+Button Controls:
+  SW1 (PF4): Toggle AUTO/MANUAL mode
+  SW2 (PF0): Brightness +/- or Next color
+=======================================================
+Status: MANUAL | Color: OFF | Brightness: 50%
 Ready > 
 ```
 
@@ -242,7 +275,45 @@ Ready >
 
 Now the timer still runs (uptime still counts), but LEDs don't change automatically.
 
-### **Example 6: Button Control - Toggle Mode**
+### **Example 6: PWM Brightness Control (NEW!)**
+
+```
+Ready > 1
+[MANUAL] LED set to: RED
+Ready > +
+[PWM] Brightness: 60%
+Ready > +
+[PWM] Brightness: 70%
+Ready > f
+[PWM] Full Brightness (100%)
+Ready > d
+[PWM] Dimmed (25%)
+Ready > 
+```
+
+**The LED smoothly changes brightness - no flickering!**
+
+### **Example 7: Brightness with Auto-Cycling**
+
+```
+Ready > a
+[AUTO MODE ENABLED] Timer will cycle colors every 2s
+Ready > +
+[PWM] Brightness: 60%
+Ready > 
+[AUTO] RED (at 60% brightness)
+Ready > 
+[AUTO] GREEN (at 60% brightness)
+Ready > +
+[PWM] Brightness: 70%
+Ready > 
+[AUTO] BLUE (at 70% brightness)
+Ready > 
+```
+
+**All colors respect the current brightness setting!**
+
+### **Example 8: Button Control - Toggle Mode**
 
 Press **SW1** (left button on LaunchPad):
 
@@ -323,15 +394,26 @@ Ready >
 
 ### **GPIO Driver**
 - ✅ Port A configuration (UART pins)
-- ✅ Port F configuration (LED pins)
-- ✅ Alternate function mode (UART)
+- ✅ Port F configuration (LED pins + Buttons)
+- ✅ Alternate function mode (UART + PWM)
 - ✅ Digital output mode (LEDs)
+- ✅ Digital input mode (Buttons with pull-ups)
 
 ### **LED Driver**
 - ✅ LED initialization
 - ✅ LED state control (ON/OFF)
 - ✅ Multiple LED combinations
 - ✅ Real-time LED updates
+- ✅ Fallback mode when PWM disabled
+
+### **PWM Driver (NEW!)**
+- ✅ PWM module initialization (Module 1)
+- ✅ Generator configuration (Gen 2, Gen 3)
+- ✅ Duty cycle control (0-100%)
+- ✅ Hardware-based signal generation
+- ✅ Independent RGB channel control
+- ✅ Smooth brightness transitions
+- ✅ 1 kHz PWM frequency (flicker-free)
 
 ### **Button Driver**
 - ✅ Button initialization (SW1, SW2)
@@ -357,42 +439,46 @@ Ready >
 - ✅ Interrupt flag clearing
 
 ### **Integration**
-- ✅ Multiple drivers working simultaneously
+- ✅ 6 drivers working simultaneously
 - ✅ ISR + main loop coordination
-- ✅ Shared resource management (LEDs)
+- ✅ Shared resource management (LEDs via PWM)
 - ✅ Mode switching (auto/manual/paused)
 - ✅ Real-time statistics tracking
-- ✅ Button + UART + Timer interaction
+- ✅ Button + UART + Timer + PWM interaction
 - ✅ Event-driven architecture
+- ✅ Brightness control across all modes
+- ✅ Hardware PWM + software control coordination
 
 ---
 
 ## 📊 System Architecture
 
 ```
-┌──────────────────────────────────────────────────┐
-│              Main Application                    │
-│  - Button polling & event handling               │
-│  - UART command processing                       │
-│  - Statistics tracking                           │
-│  - Mode management (AUTO/MANUAL/PAUSED)          │
-└──────────┬───────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│              Main Application                          │
+│  - Button polling & event handling                     │
+│  - UART command processing                             │
+│  - PWM brightness control                              │
+│  - Statistics tracking                                 │
+│  - Mode management (AUTO/MANUAL/PAUSED)                │
+└──────────┬─────────────────────────────────────────────┘
            │
-           ├─────────┬──────────┬──────────┬──────────┐
-           │         │          │          │          │
-     ┌─────▼────┐ ┌─▼─────┐ ┌──▼────┐ ┌───▼───┐ ┌───▼────┐
-     │  Button  │ │ UART  │ │ Timer │ │  LED  │ │  GPIO  │
-     │  Driver  │ │Driver │ │Driver │ │Driver │ │ Driver │
-     └─────┬────┘ └───┬───┘ └───┬───┘ └───┬───┘ └───┬────┘
-           │          │         │         │         │
-           │          │         │         │         │
-     ┌─────▼──────────▼─────────▼─────────▼─────────▼────┐
-     │            Hardware Abstraction Layer              │
-     │  - UART0 (PA0/PA1)                                │
-     │  - Timer2A (32-bit periodic)                      │
-     │  - GPIO Port F (PF0/PF1/PF2/PF3/PF4)             │
-     │  - Buttons (SW1/SW2 with debounce)               │
-     └───────────────────────────────────────────────────┘
+           ├──────┬──────┬──────┬──────┬──────┐
+           │      │      │      │      │      │
+     ┌─────▼──┐ ┌▼────┐ ┌▼────┐ ┌▼───┐ ┌▼───┐ ┌▼────┐
+     │ Button │ │UART │ │Timer│ │PWM │ │LED │ │GPIO │
+     │ Driver │ │Drvr │ │Drvr │ │Drvr│ │Drvr│ │Drvr │
+     └─────┬──┘ └┬────┘ └┬────┘ └┬───┘ └┬───┘ └┬────┘
+           │     │       │       │      │      │
+           │     │       │       │      │      │
+     ┌─────▼─────▼───────▼───────▼──────▼──────▼─────┐
+     │         Hardware Abstraction Layer             │
+     │  - UART0 (PA0/PA1)                            │
+     │  - Timer2A (32-bit periodic)                  │
+     │  - PWM1 Module (Gen 2/3 for RGB)              │
+     │  - GPIO Port F (PF0/PF1/PF2/PF3/PF4)         │
+     │  - Buttons (SW1/SW2 with debounce)           │
+     └───────────────────────────────────────────────┘
 ```
 
 ---
@@ -400,13 +486,14 @@ Ready >
 ## 🔄 Program Flow
 
 ```
-1. Initialize GPIO → Configure all pins (LEDs + Buttons + UART)
+1. Initialize GPIO → Configure all pins (LEDs + Buttons + UART + PWM)
 2. Initialize LEDs → Set initial state (OFF)
-3. Initialize Buttons → SW1 and SW2 with debouncing
-4. Initialize UART → 115200 baud, 8N1
-5. Initialize Timer → 2s periodic, interrupt enabled
-6. Enable NVIC → Timer2A interrupt
-7. Start Timer → Begin auto-cycling
+3. Initialize PWM → Configure RGB channels at 1 kHz, 50% default brightness
+4. Initialize Buttons → SW1 and SW2 with debouncing
+5. Initialize UART → 115200 baud, 8N1
+6. Initialize Timer → 2s periodic, interrupt enabled
+7. Enable NVIC → Timer2A interrupt
+8. Start Timer → Begin auto-cycling
 8. Send welcome message → Via UART
 9. Main loop (foreground):
    ├─ Poll SW1 button
@@ -514,13 +601,20 @@ After running this test, you understand:
 
 | File | Lines | Description |
 |------|-------|-------------|
-| `main.c` | 481 | Application logic with button integration |
+| `main.c` | 553 | Application logic with PWM + button integration |
 | `Gpio.c` | 500+ | GPIO driver |
 | `Led.c` | 200+ | LED driver |
 | `Button.c` | 300+ | Button driver with debouncing |
+| `Pwm.c` | 501 | PWM driver with hardware control |
+| `Pwm_PBCfg.c` | 92 | PWM configuration (RGB LEDs) |
 | `Uart.c` | 422 | UART driver |
 | `Timer.c` | 600+ | Timer driver |
-| **Total** | **2500+** | Production-ready code |
+| **Total** | **3100+** | Production-ready code |
+
+**New in v4.0.0:**
+- ✅ Complete PWM driver (~600 lines)
+- ✅ Enhanced main.c with brightness control
+- ✅ Updated GPIO config for PWM alternate functions
 
 ---
 

@@ -5,13 +5,15 @@
  *          - UART: Bidirectional communication with PC terminal
  *          - Timer: Periodic interrupts for automatic LED cycling
  *          - GPIO: Pin control for LEDs and buttons
+ *          - PWM: Hardware-based brightness control for RGB LEDs
  *          - LED: High-level LED control abstraction
  *          - Button: Debounced button input with event detection
  *
  * Features:
+ *          - PWM brightness control (0-100%) for smooth LED dimming
  *          - Auto-cycling LEDs every 2 seconds (Timer2A interrupt)
  *          - Manual LED control via UART commands
- *          - Button control: SW1 (mode toggle), SW2 (next color)
+ *          - Button control: SW1 (mode toggle), SW2 (brightness/color)
  *          - Real-time status reporting via UART
  *          - Uptime counter and statistics
  *          - Button press counter
@@ -41,22 +43,32 @@
  * - '0'-'7' = Set LED color (OFF, RED, GREEN, BLUE, YELLOW, MAGENTA, CYAN, WHITE)
  * - 'a' = Enable auto-cycling (Timer)
  * - 's' = Stop auto-cycling (Manual mode)
+ * - '+' = Increase brightness (+10%)
+ * - '-' = Decrease brightness (-10%)
+ * - 'f' = Full brightness (100%)
+ * - 'd' = Dim (25%)
  * - 't' = Show uptime and statistics
  * - 'h' = Show help menu
  *
  * @author Mohamed Yasser
  * @date Oct 26, 2025
- * @version 3.0.0
+ * @version 4.0.0 - Added PWM brightness control
  */
 
 #include "../../MCAL/GPIO/Gpio.h"
 #include "../../MCAL/UART/Uart.h"
 #include "../../MCAL/TIMER/Timer.h"
+#include "../../MCAL/PWM/PWM.h"
 #include "../../ECUAL/LED/Led.h"
 #include "../../ECUAL/Button/Button.h"
 
 /* ===================[NVIC Register]=================== */
 #define NVIC_EN0_R              (*((volatile uint32*)0xE000E100UL))
+
+/* ===================[PWM Channel Definitions]=================== */
+#define PWM_CHANNEL_RED         (0u)
+#define PWM_CHANNEL_BLUE        (1u)
+#define PWM_CHANNEL_GREEN       (2u)
 
 /* ===================[External Configurations]=================== */
 extern const Led_ConfigType Led_Red;
@@ -64,6 +76,7 @@ extern const Led_ConfigType Led_Blue;
 extern const Led_ConfigType Led_Green;
 extern const Button_ConfigType Button_SW1;
 extern const Button_ConfigType Button_SW2;
+extern const Pwm_ConfigType Pwm_Configuration;
 
 /* ===================[Global Variables]=================== */
 static volatile uint8 currentColor = 0;      /* Current LED color (0-7) */
@@ -73,57 +86,58 @@ static volatile uint32 uptimeSeconds = 0;     /* Uptime in seconds */
 static volatile uint32 sw1PressCount = 0;     /* SW1 button press counter */
 static volatile uint32 sw2PressCount = 0;     /* SW2 button press counter */
 static volatile boolean pauseAuto = FALSE;    /* Pause auto-cycling temporarily */
+static volatile uint8 brightness = 50;        /* Global brightness (0-100%) */
+static volatile boolean pwmEnabled = TRUE;    /* PWM mode enabled */
 
 /* ===================[Helper Functions]=================== */
 
 /**
- * @brief Set LED color based on command
+ * @brief Set LED color with PWM brightness control
  * @param color Color code (0-7)
  */
 void SetLedColor(uint8 color) {
+    uint8 r = 0, g = 0, b = 0;
+    
+    /* Determine RGB values based on color */
     switch(color) {
         case 0:  /* OFF */
-            Led_SetState(&Led_Red, LED_OFF);
-            Led_SetState(&Led_Green, LED_OFF);
-            Led_SetState(&Led_Blue, LED_OFF);
+            r = 0; g = 0; b = 0;
             break;
         case 1:  /* RED */
-            Led_SetState(&Led_Red, LED_ON);
-            Led_SetState(&Led_Green, LED_OFF);
-            Led_SetState(&Led_Blue, LED_OFF);
+            r = brightness; g = 0; b = 0;
             break;
         case 2:  /* GREEN */
-            Led_SetState(&Led_Red, LED_OFF);
-            Led_SetState(&Led_Green, LED_ON);
-            Led_SetState(&Led_Blue, LED_OFF);
+            r = 0; g = brightness; b = 0;
             break;
         case 3:  /* BLUE */
-            Led_SetState(&Led_Red, LED_OFF);
-            Led_SetState(&Led_Green, LED_OFF);
-            Led_SetState(&Led_Blue, LED_ON);
+            r = 0; g = 0; b = brightness;
             break;
         case 4:  /* YELLOW */
-            Led_SetState(&Led_Red, LED_ON);
-            Led_SetState(&Led_Green, LED_ON);
-            Led_SetState(&Led_Blue, LED_OFF);
+            r = brightness; g = brightness; b = 0;
             break;
         case 5:  /* MAGENTA */
-            Led_SetState(&Led_Red, LED_ON);
-            Led_SetState(&Led_Green, LED_OFF);
-            Led_SetState(&Led_Blue, LED_ON);
+            r = brightness; g = 0; b = brightness;
             break;
         case 6:  /* CYAN */
-            Led_SetState(&Led_Red, LED_OFF);
-            Led_SetState(&Led_Green, LED_ON);
-            Led_SetState(&Led_Blue, LED_ON);
+            r = 0; g = brightness; b = brightness;
             break;
         case 7:  /* WHITE */
-            Led_SetState(&Led_Red, LED_ON);
-            Led_SetState(&Led_Green, LED_ON);
-            Led_SetState(&Led_Blue, LED_ON);
+            r = brightness; g = brightness; b = brightness;
             break;
         default:
             break;
+    }
+    
+    /* Apply PWM brightness */
+    if (pwmEnabled) {
+        Pwm_SetDutyCyclePercent(PWM_CHANNEL_RED, r);
+        Pwm_SetDutyCyclePercent(PWM_CHANNEL_GREEN, g);
+        Pwm_SetDutyCyclePercent(PWM_CHANNEL_BLUE, b);
+    } else {
+        /* Fallback to digital ON/OFF */
+        Led_SetState(&Led_Red, (r > 0) ? LED_ON : LED_OFF);
+        Led_SetState(&Led_Green, (g > 0) ? LED_ON : LED_OFF);
+        Led_SetState(&Led_Blue, (b > 0) ? LED_ON : LED_OFF);
     }
 }
 
@@ -174,21 +188,30 @@ void Uint32ToString(uint32 value, uint8* buffer) {
  * @brief Display help menu via UART
  */
 void ShowMenu(void) {
+    uint8 buffer[12];
+    
     Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n");
-    Uart_SendString(UART_MODULE_0, (const uint8*)"================================================\r\n");
-    Uart_SendString(UART_MODULE_0, (const uint8*)"  TM4C123 Multi-Driver Integration Test\r\n");
-    Uart_SendString(UART_MODULE_0, (const uint8*)"  UART + Timer + GPIO + LED + Button\r\n");
-    Uart_SendString(UART_MODULE_0, (const uint8*)"================================================\r\n");
-    Uart_SendString(UART_MODULE_0, (const uint8*)"UART Commands:\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"=======================================================\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"  TM4C123 Multi-Driver Integration Test + PWM\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"  UART + Timer + GPIO + LED + Button + PWM\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"=======================================================\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"Color Commands:\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  0-7 : Set LED color (OFF/R/G/B/Y/M/C/W)\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nMode Commands:\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  a   : Enable AUTO mode (Timer cycling)\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  s   : STOP auto mode (Manual control)\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nPWM Brightness Commands:\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"  +   : Increase brightness (+10%)\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"  -   : Decrease brightness (-10%)\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"  f   : Full brightness (100%)\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"  d   : Dim (25%)\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nInfo Commands:\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  t   : Show uptime & statistics\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  h   : Show this menu\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nButton Controls:\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  SW1 (PF4): Toggle AUTO/MANUAL mode\r\n");
-    Uart_SendString(UART_MODULE_0, (const uint8*)"  SW2 (PF0): Next color / Pause-Resume\r\n");
-    Uart_SendString(UART_MODULE_0, (const uint8*)"================================================\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"  SW2 (PF0): Brightness +/- or Next color\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"=======================================================\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"Status: ");
     Uart_SendString(UART_MODULE_0, autoMode ? (const uint8*)"AUTO" : (const uint8*)"MANUAL");
     if (pauseAuto && autoMode) {
@@ -196,7 +219,10 @@ void ShowMenu(void) {
     }
     Uart_SendString(UART_MODULE_0, (const uint8*)" | Color: ");
     Uart_SendString(UART_MODULE_0, GetColorName(currentColor));
-    Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nReady > ");
+    Uart_SendString(UART_MODULE_0, (const uint8*)" | Brightness: ");
+    Uint32ToString(brightness, buffer);
+    Uart_SendString(UART_MODULE_0, buffer);
+    Uart_SendString(UART_MODULE_0, (const uint8*)"%\r\nReady > ");
 }
 
 /**
@@ -283,6 +309,46 @@ void ProcessCommand(uint8 cmd) {
     else if (cmd == 'h' || cmd == 'H') {
         /* Show help menu */
         ShowMenu();
+    }
+    else if (cmd == '+') {
+        /* Increase brightness */
+        if (brightness <= 90) {
+            brightness += 10;
+        } else {
+            brightness = 100;
+        }
+        SetLedColor(currentColor);
+        Uart_SendString(UART_MODULE_0, (const uint8*)"[PWM] Brightness: ");
+        uint8 buffer[12];
+        Uint32ToString(brightness, buffer);
+        Uart_SendString(UART_MODULE_0, buffer);
+        Uart_SendString(UART_MODULE_0, (const uint8*)"%\r\n");
+    }
+    else if (cmd == '-') {
+        /* Decrease brightness */
+        if (brightness >= 10) {
+            brightness -= 10;
+        } else {
+            brightness = 0;
+        }
+        SetLedColor(currentColor);
+        Uart_SendString(UART_MODULE_0, (const uint8*)"[PWM] Brightness: ");
+        uint8 buffer[12];
+        Uint32ToString(brightness, buffer);
+        Uart_SendString(UART_MODULE_0, buffer);
+        Uart_SendString(UART_MODULE_0, (const uint8*)"%\r\n");
+    }
+    else if (cmd == 'f' || cmd == 'F') {
+        /* Full brightness */
+        brightness = 100;
+        SetLedColor(currentColor);
+        Uart_SendString(UART_MODULE_0, (const uint8*)"[PWM] Full Brightness (100%)\r\n");
+    }
+    else if (cmd == 'd' || cmd == 'D') {
+        /* Dim */
+        brightness = 25;
+        SetLedColor(currentColor);
+        Uart_SendString(UART_MODULE_0, (const uint8*)"[PWM] Dimmed (25%)\r\n");
     }
     else {
         /* Unknown command */
@@ -371,16 +437,38 @@ int main(void) {
     Led_Init(&Led_Blue);
     Led_Init(&Led_Green);
 
-    /* Turn off all LEDs initially */
+    /* Step 3: Disable PWM mode initially to prevent glitches */
+    pwmEnabled = FALSE;
+    
+    /* Turn off LEDs using digital I/O first */
     Led_SetState(&Led_Red, LED_OFF);
     Led_SetState(&Led_Blue, LED_OFF);
     Led_SetState(&Led_Green, LED_OFF);
+    
+    /* Initialize PWM driver for brightness control */
+    Pwm_Init(&Pwm_Configuration);
+    
+    /* Small delay after PWM init for hardware stability */
+    {
+        volatile uint32 delay;
+        for (delay = 0; delay < 1000; delay++) { }
+    }
+    
+    /* CRITICAL: Set all PWM channels to 0% duty cycle FIRST */
+    Pwm_SetDutyCyclePercent(PWM_CHANNEL_RED, 0);
+    Pwm_SetDutyCyclePercent(PWM_CHANNEL_BLUE, 0);
+    Pwm_SetDutyCyclePercent(PWM_CHANNEL_GREEN, 0);
+    
+    /* Now enable PWM mode and set color to OFF */
+    pwmEnabled = TRUE;
+    currentColor = 0;
+    SetLedColor(0);
 
-    /* Step 3: Initialize Button driver */
+    /* Step 4: Initialize Button driver */
     Button_Init(&Button_SW1);
     Button_Init(&Button_SW2);
 
-    /* Step 4: Configure UART0 - 115200 baud, 8N1 */
+    /* Step 5: Configure UART0 - 115200 baud, 8N1 */
     const Uart_ConfigType Uart0_Config = {
         .Module = UART_MODULE_0,
         .BaudRate = UART_BAUD_115200,
@@ -395,10 +483,13 @@ int main(void) {
         .TxCallback = NULL_PTR
     };
 
-    /* Step 5: Initialize UART */
+    /* Step 6: Initialize UART */
     Uart_Init(&Uart0_Config);
+    
+    /* UART Test - Send immediately after init */
+    Uart_SendString(UART_MODULE_0, (const uint8*)"UART TEST - If you see this, UART works!\r\n");
 
-    /* Step 6: Configure Timer2A - 2 seconds periodic for auto-cycling */
+    /* Step 7: Configure Timer2A - 2 seconds periodic for auto-cycling */
     const Timer_ConfigType Timer2A_Config = {
         .Module = TIMER_MODULE_2,
         .Block = TIMER_BLOCK_A,
@@ -415,23 +506,25 @@ int main(void) {
         .MatchCallback = NULL_PTR
     };
 
-    /* Step 7: Initialize Timer */
+    /* Step 8: Initialize Timer */
     Timer_Init(&Timer2A_Config);
 
-    /* Step 8: Enable Timer2A interrupt in NVIC (IRQ 23) */
+    /* Step 9: Enable Timer2A interrupt in NVIC (IRQ 23) */
     NVIC_EN0_R |= (1 << 23);
 
-    /* Step 9: Start Timer */
+    /* Step 10: Start Timer */
     Timer_Start(TIMER_MODULE_2, TIMER_BLOCK_A);
 
-    /* Step 10: Send welcome message */
+    /* Step 11: Send welcome message */
     Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"****************************************************\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"*   TM4C123GH6PM Multi-Driver Integration Test    *\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"*              With PWM Brightness Control         *\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"****************************************************\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"Drivers Active:\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  [x] GPIO Driver\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  [x] LED Driver\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"  [x] PWM Driver (RGB brightness control)\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  [x] Button Driver (SW1, SW2 with debounce)\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  [x] UART Driver (115200 bps, 8N1)\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"  [x] Timer Driver (2s periodic interrupt)\r\n");
@@ -447,7 +540,7 @@ int main(void) {
     /* Show menu */
     ShowMenu();
 
-    /* Step 11: Main loop - Poll buttons and UART */
+    /* Step 12: Main loop - Poll buttons and UART */
     while(1) {
         /* Poll SW1 button - Mode toggle */
         if (Button_HasStateChanged(&Button_SW1, &sw1State) == TRUE) {

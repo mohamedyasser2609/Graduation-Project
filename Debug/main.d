@@ -25,6 +25,8 @@ main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Gr
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer.h
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer_Types.h
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer_Cfg.h
+main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/PWM/PWM.h
+main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/PWM/PWM_Cfg.h
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/ECUAL/LED/Led.h
 main.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/ECUAL/Button/Button.h
 
@@ -77,6 +79,10 @@ C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_P
 C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer_Types.h:
 
 C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/TIMER/Timer_Cfg.h:
+
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/PWM/PWM.h:
+
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/MCAL/PWM/PWM_Cfg.h:
 
 C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/ECUAL/LED/Led.h:
 
