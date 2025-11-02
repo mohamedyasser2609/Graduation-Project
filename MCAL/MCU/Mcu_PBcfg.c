@@ -47,4 +47,5 @@ const Mcu_ConfigType Mcu_Config_50MHz = {
 /**
  * @brief Default configuration pointer (80MHz)
  */
+
 const Mcu_ConfigType* Mcu_ConfigPtr = &Mcu_Config_80MHz;

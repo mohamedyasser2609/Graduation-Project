@@ -21,57 +21,8 @@
 #define MCAL_MCU_MCU_H_
 
 #include "../../CONFIG/Std_Types.h"
+#include "Mcu_Types.h"
 #include "Mcu_Cfg.h"
-
-/* ===================[Clock Settings]=================== */
-typedef enum {
-    MCU_CLOCK_16MHZ = 0,    /* Main oscillator 16MHz (no PLL) */
-    MCU_CLOCK_20MHZ,        /* PLL: 20MHz */
-    MCU_CLOCK_25MHZ,        /* PLL: 25MHz */
-    MCU_CLOCK_40MHZ,        /* PLL: 40MHz */
-    MCU_CLOCK_50MHZ,        /* PLL: 50MHz */
-    MCU_CLOCK_80MHZ         /* PLL: 80MHz (maximum) */
-} Mcu_ClockType;
-
-/* ===================[PLL Status]=================== */
-typedef enum {
-    MCU_PLL_LOCKED = 0,     /* PLL is locked and stable */
-    MCU_PLL_UNLOCKED,       /* PLL is not locked */
-    MCU_PLL_STATUS_UNDEFINED /* PLL status cannot be determined */
-} Mcu_PllStatusType;
-
-/* ===================[Reset Reasons]=================== */
-typedef enum {
-    MCU_POWER_ON_RESET = 0,
-    MCU_EXTERNAL_RESET,
-    MCU_WATCHDOG_RESET,
-    MCU_BROWN_OUT_RESET,
-    MCU_SOFTWARE_RESET,
-    MCU_RESET_UNDEFINED
-} Mcu_ResetType;
-
-/* ===================[Power Modes]=================== */
-typedef enum {
-    MCU_MODE_NORMAL = 0,    /* Normal run mode */
-    MCU_MODE_SLEEP,         /* Sleep mode (CPU halted, peripherals active) */
-    MCU_MODE_DEEP_SLEEP     /* Deep sleep mode (CPU and most peripherals halted) */
-} Mcu_ModeType;
-
-/* ===================[Clock Source]=================== */
-typedef enum {
-    MCU_CLOCK_SOURCE_MOSC = 0,  /* Main Oscillator (16MHz crystal) */
-    MCU_CLOCK_SOURCE_PIOSC,     /* Precision Internal Oscillator (16MHz) */
-    MCU_CLOCK_SOURCE_PIOSC_DIV4,/* PIOSC / 4 (4MHz) */
-    MCU_CLOCK_SOURCE_LFIOSC     /* Low-Frequency Internal Oscillator (30kHz) */
-} Mcu_ClockSourceType;
-
-/* ===================[MCU Configuration]=================== */
-typedef struct {
-    Mcu_ClockType DefaultClock;         /* Default clock setting */
-    Mcu_ClockSourceType ClockSource;    /* Clock source */
-    boolean PllEnabled;                 /* Enable PLL */
-    uint8 NumberOfClockSettings;        /* Number of available clock configs */
-} Mcu_ConfigType;
 
 /* ===================[Function Prototypes]=================== */
 

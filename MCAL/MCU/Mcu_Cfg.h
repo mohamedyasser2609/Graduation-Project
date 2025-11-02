@@ -15,6 +15,29 @@
 #include "../../CONFIG/Std_Types.h"
 #include "MCU_Types.h"
 
+/* ===================[Helper Macros]=================== */
+
+/**
+ * @brief Encode peripheral clock register offset and bit mask into a single value
+ */
+#define MCU_PERIPHERAL_ENCODE(offset, mask) \
+    ((((uint32)(offset)) & 0xFFFFUL) << 16) | ((uint32)(mask) & 0xFFFFUL)
+
+/**
+ * @brief Extract register offset from encoded peripheral value
+ */
+#define MCU_PERIPHERAL_GET_OFFSET(value)     (((uint32)(value) >> 16) & 0xFFFFUL)
+
+/**
+ * @brief Extract bit mask from encoded peripheral value
+ */
+#define MCU_PERIPHERAL_GET_MASK(value)       ((uint32)(value) & 0xFFFFUL)
+
+/**
+ * @brief Helper macro to encode GPIO peripheral clock masks
+ */
+#define MCU_PERIPHERAL_GPIO(mask)            MCU_PERIPHERAL_ENCODE(MCU_RCGCGPIO_OFFSET, (mask))
+
 /* ===================[Pre-compile Configuration Parameters]=================== */
 
 /**
@@ -253,5 +276,6 @@
 #define MCU_RESC_SW_MASK                (0x00000010UL)   /**< @brief Software Reset */
 #define MCU_RESC_WDT1_MASK              (0x00000020UL)   /**< @brief Watchdog Timer 1 Reset */
 #define MCU_RESC_MOSCFAIL_MASK          (0x00010000UL)   /**< @brief MOSC Failure Reset */
+
 
 #endif /* MCAL_MCU_MCU_CFG_H_ */

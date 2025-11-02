@@ -13,9 +13,12 @@
 #include "Mcu_Cfg.h"
 #include "tm4c123gh6pm.h"
 
+/* ===================[Register Helpers]=================== */
+#define MCU_SCB_SCR_REG              (*((volatile uint32*)0xE000ED10UL))
+#define MCU_SCB_SCR_SLEEPDEEP_MASK   (0x4UL)
+
 /* ===================[Private Variables]=================== */
 static boolean Mcu_ModuleInitialized = FALSE;    /**< @brief MCU module initialization status */
-static Mcu_ClockType Mcu_CurrentClockSetting;    /**< @brief Current clock setting */
 static uint32 Mcu_SystemClockFrequency = 0UL;    /**< @brief Current system clock frequency */
 static boolean Mcu_PllEnabled = FALSE;           /**< @brief PLL enable status */
 
@@ -38,9 +41,8 @@ void Mcu_Init(const Mcu_ConfigType* ConfigPtr)
     }
 
     /* Store configuration */
-    Mcu_CurrentClockSetting = ConfigPtr->DefaultClock;
     Mcu_PllEnabled = ConfigPtr->PllEnabled;
-    
+
     /* Set default system clock frequency */
     Mcu_SystemClockFrequency = MCU_CLOCK_FREQ_MOSC_16MHZ;
 
@@ -67,8 +69,7 @@ Std_ReturnType Mcu_InitClock(Mcu_ClockType ClockSetting)
 
     /* Configure system clock */
     Mcu_SetSystemClock(ClockSetting);
-    Mcu_CurrentClockSetting = ClockSetting;
-    
+
     return E_OK;
 }
 
@@ -206,14 +207,16 @@ void Mcu_SetMode(Mcu_ModeType McuMode)
             break;
             
         case MCU_MODE_SLEEP:
-            /* Enter sleep mode */
+            /* Ensure deep sleep bit is cleared and enter sleep */
+            MCU_SCB_SCR_REG &= ~MCU_SCB_SCR_SLEEPDEEP_MASK;
             __asm("    WFI\n");  /* Wait for interrupt */
             break;
             
         case MCU_MODE_DEEP_SLEEP:
             /* Set deep sleep bit and wait for interrupt */
-            SCB_SCR_R |= SCB_SCR_SLEEPDEEP;
+            MCU_SCB_SCR_REG |= MCU_SCB_SCR_SLEEPDEEP_MASK;
             __asm("    WFI\n");
+            MCU_SCB_SCR_REG &= ~MCU_SCB_SCR_SLEEPDEEP_MASK;  /* Restore configuration */
             break;
             
         default:
@@ -246,9 +249,17 @@ void Mcu_EnablePeripheralClock(uint32 Peripheral)
         return;
     }
 
-    /* Enable the peripheral clock - Peripheral is the actual register bit */
-    /* This is a simplified version - user should use SYSCTL registers directly */
-    
+    uint32 offset = MCU_PERIPHERAL_GET_OFFSET(Peripheral);
+    uint32 mask = MCU_PERIPHERAL_GET_MASK(Peripheral);
+
+    if (mask == 0UL)
+    {
+        return;
+    }
+
+    volatile uint32* reg = (volatile uint32*)(MCU_SYSCTL_BASE_ADDR + MCU_RCGC_OFFSET + offset);
+    *reg |= mask;
+
     /* Small delay to allow clock to stabilize */
     Mcu_Delay(3);
 }
@@ -264,8 +275,16 @@ void Mcu_DisablePeripheralClock(uint32 Peripheral)
         return;
     }
 
-    /* Disable the peripheral clock - Peripheral is the actual register bit */
-    /* This is a simplified version - user should use SYSCTL registers directly */
+    uint32 offset = MCU_PERIPHERAL_GET_OFFSET(Peripheral);
+    uint32 mask = MCU_PERIPHERAL_GET_MASK(Peripheral);
+
+    if (mask == 0UL)
+    {
+        return;
+    }
+
+    volatile uint32* reg = (volatile uint32*)(MCU_SYSCTL_BASE_ADDR + MCU_RCGC_OFFSET + offset);
+    *reg &= ~mask;
 }
 
 /* ===================[Private Functions]=================== */
@@ -326,7 +345,6 @@ static void Mcu_SetSystemClock(Mcu_ClockType ClockSetting)
             break;
     }
     
-    Mcu_CurrentClockSetting = ClockSetting;
 }
 
 /**
@@ -431,4 +449,6 @@ static void Mcu_Delay(uint32 Count)
     {
         Delay--;
     }
+
 }
+
