@@ -199,5 +199,5 @@ typedef void (*Det_CallbackType)(const Det_ErrorReportType* ErrorReport);
 Det_ReturnType Det_SetCallback(Det_CallbackType Callback);
 #endif
 
-#endif /* CONFIG_DET_H_ */
 
+#endif /* CONFIG_DET_H_ */
