@@ -55,6 +55,34 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
         .DirectionChangeable = FALSE
     },
     
+    /* UART1 Pins for GPS Module - Port B (PB0=RX, PB1=TX) */
+    {
+        .Port = GPIO_PORT_B,
+        .Pin = GPIO_PIN_0,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_OFF,
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 1u,  /* UART1 RX - GPS TX */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_B,
+        .Pin = GPIO_PIN_1,
+        .Direction = GPIO_PIN_OUT,
+        .InitialLevel = GPIO_LEVEL_HIGH,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_OFF,
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 1u,  /* UART1 TX - GPS RX */
+        .DirectionChangeable = FALSE
+    },
+    
     /* PWM Pins for RGB LEDs - Port F (PF1=Red, PF2=Blue, PF3=Green) */
     {
         .Port = GPIO_PORT_F,

@@ -1,4 +1,7 @@
 "./main.obj"
+"./main_gps.obj"
+"./main_imu.obj"
+"./main_ros2.obj"
 "./tm4c123gh6pm_startup_ccs.obj"
 "./APP/App_ControlTask.obj"
 "./APP/App_Main.obj"

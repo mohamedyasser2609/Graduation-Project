@@ -1,4 +1,13 @@
 /*
+ * ============================================================================
+ * THIS FILE IS CURRENTLY COMMENTED OUT - GPS VERSION IS ACTIVE (main_gps.c)
+ * To use this PWM/LED test version, uncomment this file and comment main_gps.c
+ * ============================================================================
+ */
+
+#if 0  /* <<<< ENTIRE FILE COMMENTED OUT - REMOVE THIS LINE TO ACTIVATE >>>> */
+
+/*
  * @file main.c
  * @brief Comprehensive Multi-Driver Test for TM4C123GH6PM LaunchPad
  * @details This program demonstrates integration of multiple drivers:
@@ -572,3 +581,5 @@ int main(void) {
 
     /* In embedded systems, main() should never return */
 }
+
+#endif  /* <<<< END OF COMMENTED OUT PWM/LED TEST CODE >>>> */

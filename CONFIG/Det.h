@@ -200,4 +200,3 @@ Det_ReturnType Det_SetCallback(Det_CallbackType Callback);
 #endif
 
 #endif /* CONFIG_DET_H_ */
-
