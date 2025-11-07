@@ -16,6 +16,15 @@ main_mcu_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/includ
 main_mcu_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h
 main_mcu_test.obj: ../MCAL/MCU/Mcu_Types.h
 main_mcu_test.obj: ../MCAL/MCU/Mcu_Cfg.h
+main_mcu_test.obj: ../MCAL/UART/UART.h
+main_mcu_test.obj: ../CONFIG/Det.h
+main_mcu_test.obj: ../MCAL/UART/Uart_Types.h
+main_mcu_test.obj: ../MCAL/UART/Uart_Cfg.h
+main_mcu_test.obj: ../MCAL/GPIO/Gpio.h
+main_mcu_test.obj: ../CONFIG/Compiler.h
+main_mcu_test.obj: ../MCAL/GPIO/GPIO_Types.h
+main_mcu_test.obj: ../CONFIG/Platform_Types.h
+main_mcu_test.obj: ../MCAL/GPIO/Gpio_Cfg.h
 
 ../main_mcu_test.c:
 
@@ -48,4 +57,22 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 ../MCAL/MCU/Mcu_Types.h:
 
 ../MCAL/MCU/Mcu_Cfg.h:
+
+../MCAL/UART/UART.h:
+
+../CONFIG/Det.h:
+
+../MCAL/UART/Uart_Types.h:
+
+../MCAL/UART/Uart_Cfg.h:
+
+../MCAL/GPIO/Gpio.h:
+
+../CONFIG/Compiler.h:
+
+../MCAL/GPIO/GPIO_Types.h:
+
+../CONFIG/Platform_Types.h:
+
+../MCAL/GPIO/Gpio_Cfg.h:
 

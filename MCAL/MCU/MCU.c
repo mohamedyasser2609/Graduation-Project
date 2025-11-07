@@ -20,6 +20,7 @@
 /* ===================[Private Variables]=================== */
 static boolean Mcu_ModuleInitialized = FALSE;    /**< @brief MCU module initialization status */
 static uint32 Mcu_SystemClockFrequency = 0UL;    /**< @brief Current system clock frequency */
+static uint32 Mcu_TargetClockFrequency = 0UL;    /**< @brief Target clock frequency (after PLL distribution) */
 static boolean Mcu_PllEnabled = FALSE;           /**< @brief PLL enable status */
 
 /* ===================[Private Function Prototypes]=================== */
@@ -90,9 +91,17 @@ Std_ReturnType Mcu_DistributePllClock(void)
         return E_NOT_OK;
     }
 
-    /* Clear the bypass bit to switch to PLL */
-    SYSCTL_RCC_R &= ~SYSCTL_RCC_BYPASS;
+    /* Clear BYPASS2 to enable PLL (RCC2 overrides RCC when USERCC2 is set) */
     SYSCTL_RCC2_R &= ~SYSCTL_RCC2_BYPASS2;
+    
+    /* Hardware delay - wait a few cycles for clock to stabilize */
+    __asm("    nop\n"
+          "    nop\n"
+          "    nop\n"
+          "    nop\n");
+    
+    /* NOW update the actual system clock frequency */
+    Mcu_SystemClockFrequency = Mcu_TargetClockFrequency;
 
     return E_OK;
 }
@@ -299,48 +308,58 @@ static void Mcu_SetSystemClock(Mcu_ClockType ClockSetting)
     {
         case MCU_CLOCK_16MHZ:
             /* Configure for 16MHz main oscillator (no PLL) */
+            /* Bypass PLL to use main oscillator directly */
+            SYSCTL_RCC2_R |= 0x00000800;  /* BYPASS2 = 1 */
+            SYSCTL_RCC_R |= 0x00000800;   /* BYPASS = 1 */
+            /* Power down PLL to save power */
+            SYSCTL_RCC2_R |= 0x00002000;  /* PWRDN2 = 1 */
+            /* Clear DIV400 and SYSDIV to use raw oscillator */
+            SYSCTL_RCC2_R &= ~0x40000000; /* DIV400 = 0 */
+            /* Update software clock frequency */
             Mcu_SystemClockFrequency = 16000000UL;
+            Mcu_TargetClockFrequency = 16000000UL;
             Mcu_PllEnabled = FALSE;
             break;
             
         case MCU_CLOCK_20MHZ:
             /* Configure PLL for 20MHz */
             Mcu_ConfigurePll(MCU_CLOCK_20MHZ);
-            Mcu_SystemClockFrequency = 20000000UL;
+            Mcu_TargetClockFrequency = 20000000UL;
             Mcu_PllEnabled = TRUE;
             break;
             
         case MCU_CLOCK_25MHZ:
             /* Configure PLL for 25MHz */
             Mcu_ConfigurePll(MCU_CLOCK_25MHZ);
-            Mcu_SystemClockFrequency = MCU_CLOCK_FREQ_PLL_25MHZ;
+            Mcu_TargetClockFrequency = MCU_CLOCK_FREQ_PLL_25MHZ;
             Mcu_PllEnabled = TRUE;
             break;
             
         case MCU_CLOCK_40MHZ:
             /* Configure PLL for 40MHz */
             Mcu_ConfigurePll(MCU_CLOCK_40MHZ);
-            Mcu_SystemClockFrequency = MCU_CLOCK_FREQ_PLL_40MHZ;
+            Mcu_TargetClockFrequency = MCU_CLOCK_FREQ_PLL_40MHZ;
             Mcu_PllEnabled = TRUE;
             break;
             
         case MCU_CLOCK_50MHZ:
             /* Configure PLL for 50MHz */
             Mcu_ConfigurePll(MCU_CLOCK_50MHZ);
-            Mcu_SystemClockFrequency = MCU_CLOCK_FREQ_PLL_50MHZ;
+            Mcu_TargetClockFrequency = MCU_CLOCK_FREQ_PLL_50MHZ;
             Mcu_PllEnabled = TRUE;
             break;
             
         case MCU_CLOCK_80MHZ:
             /* Configure PLL for 80MHz */
             Mcu_ConfigurePll(MCU_CLOCK_80MHZ);
-            Mcu_SystemClockFrequency = MCU_CLOCK_FREQ_PLL_80MHZ;
+            Mcu_TargetClockFrequency = MCU_CLOCK_FREQ_PLL_80MHZ;
             Mcu_PllEnabled = TRUE;
             break;
             
         default:
             /* Default to 16MHz main oscillator */
             Mcu_SystemClockFrequency = 16000000UL;
+            Mcu_TargetClockFrequency = 16000000UL;
             Mcu_PllEnabled = FALSE;
             break;
     }
@@ -353,89 +372,46 @@ static void Mcu_SetSystemClock(Mcu_ClockType ClockSetting)
  */
 static void Mcu_ConfigurePll(Mcu_ClockType ClockSetting)
 {
-    volatile uint32* RccReg = (volatile uint32*)(MCU_SYSCTL_BASE_ADDR + MCU_RCC_OFFSET);
-    volatile uint32* Rcc2Reg = (volatile uint32*)(MCU_SYSCTL_BASE_ADDR + MCU_RCC2_OFFSET);
-    volatile uint32* PllFreq0Reg = (volatile uint32*)(MCU_SYSCTL_BASE_ADDR + MCU_PLLFREQ0_OFFSET);
-    volatile uint32* PllFreq1Reg = (volatile uint32*)(MCU_SYSCTL_BASE_ADDR + MCU_PLLFREQ1_OFFSET);
-    volatile uint32* PllStatReg = (volatile uint32*)(MCU_SYSCTL_BASE_ADDR + MCU_PLLSTAT_OFFSET);
+    uint32 sysdiv2;
     
-    uint32 MInt = 0UL, MFrac = 0UL, N = 0UL, Q = 0UL;
-    uint32 Timeout = 0UL;
-    
-    /* Set PLL parameters based on clock setting */
+    /* Calculate SYSDIV2 value: (400MHz / target_freq) - 1 */
     switch (ClockSetting)
     {
-        case MCU_CLOCK_80MHZ:
-            MInt = MCU_PLL_MINT_80MHZ;
-            MFrac = MCU_PLL_MFRAC_80MHZ;
-            N = MCU_PLL_N_80MHZ;
-            Q = MCU_PLL_Q_80MHZ;
-            break;
-            
-        case MCU_CLOCK_50MHZ:
-            MInt = MCU_PLL_MINT_50MHZ;
-            MFrac = MCU_PLL_MFRAC_50MHZ;
-            N = MCU_PLL_N_50MHZ;
-            Q = MCU_PLL_Q_50MHZ;
-            break;
-            
-        case MCU_CLOCK_40MHZ:
-            MInt = MCU_PLL_MINT_40MHZ;
-            MFrac = MCU_PLL_MFRAC_40MHZ;
-            N = MCU_PLL_N_40MHZ;
-            Q = MCU_PLL_Q_40MHZ;
-            break;
-            
-        case MCU_CLOCK_25MHZ:
-            MInt = MCU_PLL_MINT_25MHZ;
-            MFrac = MCU_PLL_MFRAC_25MHZ;
-            N = MCU_PLL_N_25MHZ;
-            Q = MCU_PLL_Q_25MHZ;
-            break;
-            
-        case MCU_CLOCK_20MHZ:
-            /* Use 25MHz settings for now - can be refined */
-            MInt = MCU_PLL_MINT_25MHZ;
-            MFrac = MCU_PLL_MFRAC_25MHZ;
-            N = MCU_PLL_N_25MHZ;
-            Q = MCU_PLL_Q_25MHZ;
-            break;
-            
-        default:
-            return;  /* Invalid setting */
+        case MCU_CLOCK_80MHZ:  sysdiv2 = 4;  break;  /* 400/(4+1) = 80MHz */
+        case MCU_CLOCK_50MHZ:  sysdiv2 = 7;  break;  /* 400/(7+1) = 50MHz */
+        case MCU_CLOCK_40MHZ:  sysdiv2 = 9;  break;  /* 400/(9+1) = 40MHz */
+        case MCU_CLOCK_25MHZ:  sysdiv2 = 15; break;  /* 400/(15+1) = 25MHz */
+        case MCU_CLOCK_20MHZ:  sysdiv2 = 19; break;  /* 400/(19+1) = 20MHz */
+        default: sysdiv2 = 4; break;
     }
     
-    /* Enable main oscillator */
-    *RccReg &= ~MCU_RCC_MOSCDIS_MASK;
+    /* TI-recommended PLL configuration sequence for TM4C123 */
     
-    /* Wait for oscillator to stabilize */
-    Mcu_Delay(524288UL);  /* Approx 3ms delay at 16MHz */
+    /* Step 1: Bypass PLL while initializing */
+    SYSCTL_RCC2_R |= 0x80000000;  /* USERCC2 */
+    SYSCTL_RCC2_R |= 0x00000800;  /* BYPASS2 */
     
-    /* Configure crystal value (16MHz) */
-    *RccReg &= ~MCU_RCC_XTAL_MASK;
-    *RccReg |= MCU_RCC_XTAL_16MHZ;
+    /* Step 2: Select 16MHz external crystal */
+    SYSCTL_RCC_R = (SYSCTL_RCC_R & ~0x000007C0) | 0x00000540;  /* XTAL = 16MHz */
     
-    /* Configure oscillator source to main oscillator */
-    *RccReg &= ~MCU_RCC_OSCSRC_MASK;
-    *RccReg |= MCU_RCC_OSCSRC_MOSC;
+    /* Step 3: Select main oscillator as source */
+    SYSCTL_RCC2_R &= ~0x00000070;  /* OSCSRC2 = MOSC */
     
-    /* Enable RCC2 */
-    *Rcc2Reg |= MCU_RCC2_USERCC2_MASK;
+    /* Step 4: Clear PWRDN to activate PLL */
+    SYSCTL_RCC2_R &= ~0x00002000;  /* PWRDN2 = 0 */
     
-    /* Configure PLL parameters */
-    *PllFreq0Reg = ((MFrac << 10) & 0x000FFC00UL) | (MInt & 0x000003FFUL);
-    *PllFreq1Reg = ((Q << 8) & 0x00001F00UL) | (N & 0x0000001FUL);
+    /* Step 5: Set DIV400 to use 400MHz PLL */
+    SYSCTL_RCC2_R |= 0x40000000;  /* DIV400 */
     
-    /* Power up PLL */
-    *RccReg &= ~MCU_RCC_PWRDN_MASK;
-    *Rcc2Reg &= ~MCU_RCC2_PWRDN2_MASK;
+    /* Step 6: Set SYSDIV2 for desired frequency */
+    SYSCTL_RCC2_R = (SYSCTL_RCC2_R & ~0x1FC00000) | (sysdiv2 << 22);
     
-    /* Wait for PLL to lock */
-    Timeout = 0UL;
-    while (((*PllStatReg & MCU_PLLSTAT_LOCK_MASK) == 0UL) && (Timeout < 1000000UL))
-    {
-        Timeout++;
+    /* Step 7: Wait for PLL to lock */
+    while ((SYSCTL_PLLSTAT_R & 0x01) == 0) {
+        /* Busy wait for PLL lock */
     }
+    
+    /* Step 8: Clear BYPASS2 to use PLL (done in DistributePllClock) */
 }
 
 /**

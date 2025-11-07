@@ -21,6 +21,7 @@
 #define MCAL_I2C_I2C_H_
 
 #include "../../CONFIG/Std_Types.h"
+#include "I2C_Cfg.h"
 
 /* ===================[I2C Module Selection]=================== */
 typedef enum {

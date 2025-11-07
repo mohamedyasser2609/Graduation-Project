@@ -1,32 +1,33 @@
 ******************************************************************************
                   TI ARM Linker PC v20.2.7                     
 ******************************************************************************
->> Linked Sun Nov  2 23:44:12 2025
+>> Linked Fri Nov  7 02:07:42 2025
 
 OUTPUT FILE NAME:   <Graduation_Project.out>
-ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 00000c49
+ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 00002a25
 
 
 MEMORY CONFIGURATION
 
          name            origin    length      used     unused   attr    fill
 ----------------------  --------  ---------  --------  --------  ----  --------
-  FLASH                 00000000   00040000  00000cc2  0003f33e  R  X
-  SRAM                  20000000   00008000  00000210  00007df0  RW X
+  FLASH                 00000000   00040000  00002b96  0003d46a  R  X
+  SRAM                  20000000   00008000  0000034c  00007cb4  RW X
 
 
 SEGMENT ALLOCATION MAP
 
 run origin  load origin   length   init length attrs members
 ----------  ----------- ---------- ----------- ----- -------
-00000000    00000000    00000cc8   00000cc8    r-x
+00000000    00000000    00002b98   00002b98    r-x
   00000000    00000000    0000026c   0000026c    r-- .intvecs
-  0000026c    0000026c    00000a32   00000a32    r-x .text
-  00000c9e    00000c9e    00000004   00000004    r-- .const
-  00000ca8    00000ca8    00000020   00000020    r-- .cinit
-20000000    20000000    00000210   00000000    rw-
+  0000026c    0000026c    0000282a   0000282a    r-x .text
+  00002a98    00002a98    000000c8   000000c8    r-- .const
+  00002b60    00002b60    00000038   00000038    r-- .cinit
+20000000    20000000    0000034c   00000000    rw-
   20000000    20000000    00000200   00000000    rw- .stack
-  20000200    20000200    00000010   00000000    rw- .data
+  20000200    20000200    00000120   00000000    rw- .bss
+  20000320    20000320    0000002c   00000000    rw- .data
 
 
 SECTION ALLOCATION MAP
@@ -37,33 +38,51 @@ section   page    origin      length       input sections
 .intvecs   0    00000000    0000026c     
                   00000000    0000026c     tm4c123gh6pm_startup_ccs.obj (.intvecs)
 
-.text      0    0000026c    00000a32     
-                  0000026c    0000045c     main_mcu_test.obj (.text)
-                  000006c8    00000438     MCU.obj (.text)
-                  00000b00    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
-                  00000b9c    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
-                  00000c04    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
-                  00000c48    00000034                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
-                  00000c7c    0000000e                                   : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
-                  00000c8a    0000000c     tm4c123gh6pm_startup_ccs.obj (.text)
-                  00000c96    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
-                  00000c9a    00000004                                   : exit.c.obj (.text:abort:abort)
+.text      0    0000026c    0000282a     
+                  0000026c    00000d04     GPIO.obj (.text)
+                  00000f70    00000c5c     main_mcu_test.obj (.text)
+                  00001bcc    00000648     UART.obj (.text)
+                  00002214    000003d8     MCU.obj (.text)
+                  000025ec    00000274     Det.obj (.text)
+                  00002860    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
+                  000028fc    0000007a                                   : memset_t2.asm.obj (.text)
+                  00002976    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
+                  000029de    00000002     --HOLE-- [fill = 0]
+                  000029e0    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
+                  00002a24    00000034                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
+                  00002a58    0000001c                                   : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset:__TI_zero_init_nomemset)
+                  00002a74    0000000e                                   : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
+                  00002a82    0000000c     tm4c123gh6pm_startup_ccs.obj (.text)
+                  00002a8e    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
+                  00002a92    00000004                                   : exit.c.obj (.text:abort:abort)
 
-.const     0    00000c9e    00000004     
-                  00000c9e    00000004     Mcu_PBcfg.obj (.const:Mcu_Config_80MHz)
+.const     0    00002a98    000000c8     
+                  00002a98    00000084     Gpio_PBCfg.obj (.const:Gpio_PinConfigurations)
+                  00002b1c    00000020     UART.obj (.const:Uart_BaseAddress)
+                  00002b3c    00000018     Uart_PBCfg.obj (.const:Uart0_Config_115200)
+                  00002b54    00000008     Gpio_PBCfg.obj (.const:Gpio_Configuration)
+                  00002b5c    00000004     Mcu_PBcfg.obj (.const:Mcu_Config_80MHz)
 
-.cinit     0    00000ca8    00000020     
-                  00000ca8    00000010     (.cinit..data.load) [load image, compression = lzss]
-                  00000cb8    00000008     (__TI_handler_table)
-                  00000cc0    00000008     (__TI_cinit_table)
+.cinit     0    00002b60    00000038     
+                  00002b60    00000014     (.cinit..data.load) [load image, compression = lzss]
+                  00002b74    0000000c     (__TI_handler_table)
+                  00002b80    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  00002b88    00000010     (__TI_cinit_table)
 
 .init_array 
 *          0    00000000    00000000     UNINITIALIZED
 
-.data      0    20000200    00000010     UNINITIALIZED
-                  20000200    00000009     MCU.obj (.data)
-                  20000209    00000003     --HOLE--
-                  2000020c    00000004     Mcu_PBcfg.obj (.data)
+.bss       0    20000200    00000120     UNINITIALIZED
+                  20000200    000000c0     Det.obj (.bss:Det_ErrorBuffer)
+                  200002c0    00000060     UART.obj (.bss:Uart_RuntimeState)
+
+.data      0    20000320    0000002c     UNINITIALIZED
+                  20000320    0000000d     MCU.obj (.data)
+                  2000032d    00000003     --HOLE--
+                  20000330    0000000c     Det.obj (.data)
+                  2000033c    00000009     GPIO.obj (.data)
+                  20000345    00000003     --HOLE--
+                  20000348    00000004     Mcu_PBcfg.obj (.data)
 
 .stack     0    20000000    00000200     UNINITIALIZED
                   20000000    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : boot_cortex_m.c.obj (.stack)
@@ -74,111 +93,175 @@ __llvm_prf_cnts
 
 MODULE SUMMARY
 
-       Module                         code   ro data   rw data
-       ------                         ----   -------   -------
+       Module                         code    ro data   rw data
+       ------                         ----    -------   -------
     .\
-       main_mcu_test.obj              1116   0         0      
-       tm4c123gh6pm_startup_ccs.obj   12     620       0      
-    +--+------------------------------+------+---------+---------+
-       Total:                         1128   620       0      
-                                                              
+       main_mcu_test.obj              3164    0         0      
+       tm4c123gh6pm_startup_ccs.obj   12      620       0      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         3176    620       0      
+                                                               
+    .\CONFIG\
+       Det.obj                        628     0         204    
+    +--+------------------------------+-------+---------+---------+
+       Total:                         628     0         204    
+                                                               
+    .\MCAL\GPIO\
+       GPIO.obj                       3332    0         9      
+       Gpio_PBCfg.obj                 0       140       0      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         3332    140       9      
+                                                               
     .\MCAL\MCU\
-       MCU.obj                        1080   0         9      
-       Mcu_PBcfg.obj                  0      4         4      
-    +--+------------------------------+------+---------+---------+
-       Total:                         1080   4         13     
-                                                              
+       MCU.obj                        984     0         13     
+       Mcu_PBcfg.obj                  0       4         4      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         984     4         17     
+                                                               
+    .\MCAL\UART\
+       UART.obj                       1608    32        96     
+       Uart_PBCfg.obj                 0       24        0      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         1608    56        96     
+                                                               
     C:\ti\ccs1281\ccs\tools\compiler\ti-cgt-arm_20.2.7.LTS\lib\rtsv7M4_T_le_v4SPD16_eabi.lib
-       memcpy_t2.asm.obj              156    0         0      
-       copy_decompress_lzss.c.obj     104    0         0      
-       autoinit.c.obj                 68     0         0      
-       boot_cortex_m.c.obj            52     0         0      
-       copy_decompress_none.c.obj     14     0         0      
-       exit.c.obj                     4      0         0      
-       pre_init.c.obj                 4      0         0      
-    +--+------------------------------+------+---------+---------+
-       Total:                         402    0         0      
-                                                              
-       Stack:                         0      0         512    
-       Linker Generated:              0      32        0      
-    +--+------------------------------+------+---------+---------+
-       Grand Total:                   2610   656       525    
+       memcpy_t2.asm.obj              156     0         0      
+       memset_t2.asm.obj              122     0         0      
+       copy_decompress_lzss.c.obj     104     0         0      
+       autoinit.c.obj                 68      0         0      
+       boot_cortex_m.c.obj            52      0         0      
+       copy_zero_init.c.obj           28      0         0      
+       copy_decompress_none.c.obj     14      0         0      
+       exit.c.obj                     4       0         0      
+       pre_init.c.obj                 4       0         0      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         552     0         0      
+                                                               
+       Stack:                         0       0         512    
+       Linker Generated:              0       56        0      
+    +--+------------------------------+-------+---------+---------+
+       Grand Total:                   10280   876       838    
 
 
 LINKER GENERATED COPY TABLES
 
-__TI_cinit_table @ 00000cc0 records: 1, size/record: 8, table size: 8
-	.data: load addr=00000ca8, load size=00000010 bytes, run addr=20000200, run size=00000010 bytes, compression=lzss
+__TI_cinit_table @ 00002b88 records: 2, size/record: 8, table size: 16
+	.data: load addr=00002b60, load size=00000014 bytes, run addr=20000320, run size=0000002c bytes, compression=lzss
+	.bss: load addr=00002b80, load size=00000008 bytes, run addr=20000200, run size=00000120 bytes, compression=zero_init
 
 
 LINKER GENERATED HANDLER TABLE
 
-__TI_handler_table @ 00000cb8 records: 2, size/record: 4, table size: 8
+__TI_handler_table @ 00002b74 records: 3, size/record: 4, table size: 12
 	index: 0, handler: __TI_decompress_lzss
 	index: 1, handler: __TI_decompress_none
+	index: 2, handler: __TI_zero_init
 
 
 GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name 
 
 address   name                          
 -------   ----                          
-00000c9b  C$$EXIT                       
-2000020c  Mcu_ConfigPtr                 
-00000c9e  Mcu_Config_80MHz              
-0000086b  Mcu_DisablePeripheralClock    
-00000713  Mcu_DistributePllClock        
-0000082d  Mcu_EnablePeripheralClock     
-00000747  Mcu_GetPllStatus              
-000007b3  Mcu_GetResetRawValue          
-00000761  Mcu_GetResetReason            
-0000081d  Mcu_GetSystemClock            
-000006c9  Mcu_Init                      
-000006eb  Mcu_InitClock                 
-000007c3  Mcu_PerformReset              
-000007cb  Mcu_SetMode                   
-00000293  PrintTestHeader               
-0000029d  PrintTestResult               
-00000c8b  ResetISR                      
-0000026f  SimpleDelay                   
-000002e1  Test_Mcu_ClockInit            
-000002ab  Test_Mcu_Init                 
-0000045d  Test_Mcu_PeripheralClock      
-00000369  Test_Mcu_PllStatus            
-00000493  Test_Mcu_PowerModes           
-000003c1  Test_Mcu_ResetReason          
-000003fb  Test_Mcu_SystemClock          
-0000026d  Timer2A_Handler               
+00002a93  C$$EXIT                       
+000027e7  Det_ClearErrorBuffer          
+00002693  Det_DeInit                    
+00002819  Det_GetErrorCount             
+00002771  Det_GetErrorReport            
+00002733  Det_GetVersionInfo            
+00002657  Det_Init                      
+000026d7  Det_ReportError               
+0000281f  Det_SetCallback               
+00000e89  Gpio_ClearInterrupt           
+00002b54  Gpio_Configuration            
+00000e1f  Gpio_DisableInterrupt         
+00000db9  Gpio_EnableInterrupt          
+00000a93  Gpio_FlipChannel              
+00000ef5  Gpio_GetInterruptStatus       
+00000b3b  Gpio_GetVersionInfo           
+0000086b  Gpio_Init                     
+000008ef  Gpio_ReadChannel              
+00000cc9  Gpio_ReadChannelGroup         
+000009f1  Gpio_ReadPort                 
+00000c05  Gpio_RefreshPortDirection     
+00000b7d  Gpio_SetPinDirection          
+0000096d  Gpio_WriteChannel             
+00000d3b  Gpio_WriteChannelGroup        
+00000a49  Gpio_WritePort                
+20000348  Mcu_ConfigPtr                 
+00002b5c  Mcu_Config_80MHz              
+000023bd  Mcu_DisablePeripheralClock    
+0000225f  Mcu_DistributePllClock        
+0000237f  Mcu_EnablePeripheralClock     
+00002299  Mcu_GetPllStatus              
+00002305  Mcu_GetResetRawValue          
+000022b3  Mcu_GetResetReason            
+0000236f  Mcu_GetSystemClock            
+00002215  Mcu_Init                      
+00002237  Mcu_InitClock                 
+00002315  Mcu_PerformReset              
+0000231d  Mcu_SetMode                   
+00000f97  PrintTestHeader               
+00000fbd  PrintTestResult               
+00002a83  ResetISR                      
+00000f73  SimpleDelay                   
+00001027  Test_Mcu_ClockInit            
+00000ff9  Test_Mcu_Init                 
+000014c1  Test_Mcu_PeripheralClock      
+00001187  Test_Mcu_PllStatus            
+000014f7  Test_Mcu_PowerModes           
+00001255  Test_Mcu_ResetReason          
+00001351  Test_Mcu_SystemClock          
+00000f71  Timer2A_Handler               
+00002b3c  Uart0_Config_115200           
+00001e1f  Uart_DeInit                   
+0000211f  Uart_GetStatus                
+000021d9  Uart_GetVersionInfo           
+00001c83  Uart_Init                     
+000021a1  Uart_IsRxDataAvailable        
+00002169  Uart_IsTxFifoEmpty            
+00001f3d  Uart_ReceiveByte              
+0000207d  Uart_SendBuffer               
+00001ec5  Uart_SendByte                 
+00001fe1  Uart_SendString               
 20000200  __STACK_END                   
 00000200  __STACK_SIZE                  
 20000200  __STACK_TOP                   
-00000cc0  __TI_CINIT_Base               
-00000cc8  __TI_CINIT_Limit              
-00000cb8  __TI_Handler_Table_Base       
-00000cc0  __TI_Handler_Table_Limit      
-00000c05  __TI_auto_init_nobinit_nopinit
-00000b9d  __TI_decompress_lzss          
-00000c7d  __TI_decompress_none          
+00002b88  __TI_CINIT_Base               
+00002b98  __TI_CINIT_Limit              
+00002b74  __TI_Handler_Table_Base       
+00002b80  __TI_Handler_Table_Limit      
+000029e1  __TI_auto_init_nobinit_nopinit
+00002977  __TI_decompress_lzss          
+00002a75  __TI_decompress_none          
 ffffffff  __TI_pprof_out_hndl           
 ffffffff  __TI_prof_data_size           
 ffffffff  __TI_prof_data_start          
 00000000  __TI_static_base__            
-00000b01  __aeabi_memcpy                
-00000b01  __aeabi_memcpy4               
-00000b01  __aeabi_memcpy8               
+00002a59  __TI_zero_init_nomemset       
+000028fd  __aeabi_memclr                
+000028fd  __aeabi_memclr4               
+000028fd  __aeabi_memclr8               
+00002861  __aeabi_memcpy                
+00002861  __aeabi_memcpy4               
+00002861  __aeabi_memcpy8               
+000028ff  __aeabi_memset                
+000028ff  __aeabi_memset4               
+000028ff  __aeabi_memset8               
 ffffffff  __binit__                     
 ffffffff  __c_args__                    
 UNDEFED   __mpu_init                    
 20000000  __stack                       
 20000000  __start___llvm_prf_cnts       
 20000000  __stop___llvm_prf_cnts        
-00000c49  _c_int00_noargs               
+00002a25  _c_int00_noargs               
 UNDEFED   _system_post_cinit            
-00000c97  _system_pre_init              
-00000c9b  abort                         
+00002a8f  _system_pre_init              
+00002a93  abort                         
 ffffffff  binit                         
 00000000  g_pfnVectors                  
-0000050d  main                          
-00000b01  memcpy                        
+000015dd  main                          
+00002861  memcpy                        
+00002905  memset                        
 
 
 GLOBAL SYMBOLS: SORTED BY Symbol Address 
@@ -188,52 +271,95 @@ address   name
 00000000  __TI_static_base__            
 00000000  g_pfnVectors                  
 00000200  __STACK_SIZE                  
-0000026d  Timer2A_Handler               
-0000026f  SimpleDelay                   
-00000293  PrintTestHeader               
-0000029d  PrintTestResult               
-000002ab  Test_Mcu_Init                 
-000002e1  Test_Mcu_ClockInit            
-00000369  Test_Mcu_PllStatus            
-000003c1  Test_Mcu_ResetReason          
-000003fb  Test_Mcu_SystemClock          
-0000045d  Test_Mcu_PeripheralClock      
-00000493  Test_Mcu_PowerModes           
-0000050d  main                          
-000006c9  Mcu_Init                      
-000006eb  Mcu_InitClock                 
-00000713  Mcu_DistributePllClock        
-00000747  Mcu_GetPllStatus              
-00000761  Mcu_GetResetReason            
-000007b3  Mcu_GetResetRawValue          
-000007c3  Mcu_PerformReset              
-000007cb  Mcu_SetMode                   
-0000081d  Mcu_GetSystemClock            
-0000082d  Mcu_EnablePeripheralClock     
-0000086b  Mcu_DisablePeripheralClock    
-00000b01  __aeabi_memcpy                
-00000b01  __aeabi_memcpy4               
-00000b01  __aeabi_memcpy8               
-00000b01  memcpy                        
-00000b9d  __TI_decompress_lzss          
-00000c05  __TI_auto_init_nobinit_nopinit
-00000c49  _c_int00_noargs               
-00000c7d  __TI_decompress_none          
-00000c8b  ResetISR                      
-00000c97  _system_pre_init              
-00000c9b  C$$EXIT                       
-00000c9b  abort                         
-00000c9e  Mcu_Config_80MHz              
-00000cb8  __TI_Handler_Table_Base       
-00000cc0  __TI_CINIT_Base               
-00000cc0  __TI_Handler_Table_Limit      
-00000cc8  __TI_CINIT_Limit              
+0000086b  Gpio_Init                     
+000008ef  Gpio_ReadChannel              
+0000096d  Gpio_WriteChannel             
+000009f1  Gpio_ReadPort                 
+00000a49  Gpio_WritePort                
+00000a93  Gpio_FlipChannel              
+00000b3b  Gpio_GetVersionInfo           
+00000b7d  Gpio_SetPinDirection          
+00000c05  Gpio_RefreshPortDirection     
+00000cc9  Gpio_ReadChannelGroup         
+00000d3b  Gpio_WriteChannelGroup        
+00000db9  Gpio_EnableInterrupt          
+00000e1f  Gpio_DisableInterrupt         
+00000e89  Gpio_ClearInterrupt           
+00000ef5  Gpio_GetInterruptStatus       
+00000f71  Timer2A_Handler               
+00000f73  SimpleDelay                   
+00000f97  PrintTestHeader               
+00000fbd  PrintTestResult               
+00000ff9  Test_Mcu_Init                 
+00001027  Test_Mcu_ClockInit            
+00001187  Test_Mcu_PllStatus            
+00001255  Test_Mcu_ResetReason          
+00001351  Test_Mcu_SystemClock          
+000014c1  Test_Mcu_PeripheralClock      
+000014f7  Test_Mcu_PowerModes           
+000015dd  main                          
+00001c83  Uart_Init                     
+00001e1f  Uart_DeInit                   
+00001ec5  Uart_SendByte                 
+00001f3d  Uart_ReceiveByte              
+00001fe1  Uart_SendString               
+0000207d  Uart_SendBuffer               
+0000211f  Uart_GetStatus                
+00002169  Uart_IsTxFifoEmpty            
+000021a1  Uart_IsRxDataAvailable        
+000021d9  Uart_GetVersionInfo           
+00002215  Mcu_Init                      
+00002237  Mcu_InitClock                 
+0000225f  Mcu_DistributePllClock        
+00002299  Mcu_GetPllStatus              
+000022b3  Mcu_GetResetReason            
+00002305  Mcu_GetResetRawValue          
+00002315  Mcu_PerformReset              
+0000231d  Mcu_SetMode                   
+0000236f  Mcu_GetSystemClock            
+0000237f  Mcu_EnablePeripheralClock     
+000023bd  Mcu_DisablePeripheralClock    
+00002657  Det_Init                      
+00002693  Det_DeInit                    
+000026d7  Det_ReportError               
+00002733  Det_GetVersionInfo            
+00002771  Det_GetErrorReport            
+000027e7  Det_ClearErrorBuffer          
+00002819  Det_GetErrorCount             
+0000281f  Det_SetCallback               
+00002861  __aeabi_memcpy                
+00002861  __aeabi_memcpy4               
+00002861  __aeabi_memcpy8               
+00002861  memcpy                        
+000028fd  __aeabi_memclr                
+000028fd  __aeabi_memclr4               
+000028fd  __aeabi_memclr8               
+000028ff  __aeabi_memset                
+000028ff  __aeabi_memset4               
+000028ff  __aeabi_memset8               
+00002905  memset                        
+00002977  __TI_decompress_lzss          
+000029e1  __TI_auto_init_nobinit_nopinit
+00002a25  _c_int00_noargs               
+00002a59  __TI_zero_init_nomemset       
+00002a75  __TI_decompress_none          
+00002a83  ResetISR                      
+00002a8f  _system_pre_init              
+00002a93  C$$EXIT                       
+00002a93  abort                         
+00002b3c  Uart0_Config_115200           
+00002b54  Gpio_Configuration            
+00002b5c  Mcu_Config_80MHz              
+00002b74  __TI_Handler_Table_Base       
+00002b80  __TI_Handler_Table_Limit      
+00002b88  __TI_CINIT_Base               
+00002b98  __TI_CINIT_Limit              
 20000000  __stack                       
 20000000  __start___llvm_prf_cnts       
 20000000  __stop___llvm_prf_cnts        
 20000200  __STACK_END                   
 20000200  __STACK_TOP                   
-2000020c  Mcu_ConfigPtr                 
+20000348  Mcu_ConfigPtr                 
 ffffffff  __TI_pprof_out_hndl           
 ffffffff  __TI_prof_data_size           
 ffffffff  __TI_prof_data_start          
@@ -243,4 +369,4 @@ ffffffff  binit
 UNDEFED   __mpu_init                    
 UNDEFED   _system_post_cinit            
 
-[57 symbols]
+[100 symbols]

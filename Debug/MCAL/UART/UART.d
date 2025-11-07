@@ -18,6 +18,9 @@ MCAL/UART/UART.obj: ../CONFIG/Det.h
 MCAL/UART/UART.obj: ../MCAL/UART/Uart_Types.h
 MCAL/UART/UART.obj: ../MCAL/UART/Uart_Cfg.h
 MCAL/UART/UART.obj: ../MCAL/UART/Uart_Regs.h
+MCAL/UART/UART.obj: ../MCAL/MCU/Mcu.h
+MCAL/UART/UART.obj: ../MCAL/MCU/Mcu_Types.h
+MCAL/UART/UART.obj: ../MCAL/MCU/Mcu_Cfg.h
 
 ../MCAL/UART/UART.c:
 
@@ -54,4 +57,10 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 ../MCAL/UART/Uart_Cfg.h:
 
 ../MCAL/UART/Uart_Regs.h:
+
+../MCAL/MCU/Mcu.h:
+
+../MCAL/MCU/Mcu_Types.h:
+
+../MCAL/MCU/Mcu_Cfg.h:
 
