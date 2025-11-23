@@ -1,5 +1,5 @@
 "./main.obj"
-"./main_gps.obj"
+"./main_gps_production.obj"
 "./main_mcu_test.obj"
 "./main_nvic_test.obj"
 "./main_qei_test.obj"

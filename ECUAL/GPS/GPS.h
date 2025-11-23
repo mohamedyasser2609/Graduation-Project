@@ -1,19 +1,24 @@
 /**
  * @file GPS.h
- * @brief GPS Driver for NEO-M8M Module
- * @details AUTOSAR-compliant driver for u-blox NEO-M8M GPS with NMEA parsing
+ * @brief Production GPS Driver for NEO-M8N Module
+ * @details AUTOSAR-compliant driver for u-blox NEO-M8N GPS with full feature set
  *
  * Features:
  * - NMEA sentence parsing (GGA, RMC, GSA, GSV, VTG, GLL)
- * - UBX protocol support
- * - Multi-GNSS (GPS + GLONASS)
- * - SBAS/WAAS support
+ * - UBX protocol support with ACK/NAK handling
+ * - Multi-GNSS (GPS + GLONASS + Galileo + BeiDou)
+ * - SBAS/WAAS/EGNOS support
+ * - AssistNow (Online, Offline, Autonomous)
+ * - D-GPS / RTCM support
+ * - PPS / Timepulse configuration
+ * - Geofencing (up to 4 fences)
+ * - Power management modes
  * - Configurable dynamic models
- * - Satellite tracking
+ * - Satellite tracking with constellation info
  *
  * @author Mohamed Yasser
  * @date Nov 7, 2025
- * @version 1.0.0
+ * @version 2.0.0
  * @compliance AUTOSAR 4.4.0
  */
 
@@ -63,10 +68,12 @@ typedef struct {
  */
 typedef struct {
     uint8 prn;                  /**< Satellite PRN number */
+    uint8 gnssId;               /**< GNSS constellation ID */
     uint8 elevation;            /**< Elevation in degrees (0-90) */
     uint16 azimuth;             /**< Azimuth in degrees (0-359) */
     uint8 snr;                  /**< Signal-to-noise ratio in dB */
     boolean inUse;              /**< TRUE if satellite is used in fix */
+    boolean healthy;            /**< TRUE if satellite is healthy */
 } GPS_SatelliteType;
 
 /**
@@ -79,6 +86,17 @@ typedef struct {
 } GPS_DopType;
 
 /**
+ * @brief GNSS constellation usage
+ */
+typedef struct {
+    uint8 gpsUsed;              /**< GPS satellites used */
+    uint8 glonassUsed;          /**< GLONASS satellites used */
+    uint8 galileoUsed;          /**< Galileo satellites used */
+    uint8 beidouUsed;           /**< BeiDou satellites used */
+    boolean sbasUsed;           /**< TRUE if SBAS correction active */
+} GPS_ConstellationInfoType;
+
+/**
  * @brief Complete GPS data structure
  */
 typedef struct {
@@ -86,13 +104,26 @@ typedef struct {
     GPS_VelocityType velocity;  /**< Velocity data */
     GPS_TimeType time;          /**< Time data */
     GPS_DopType dop;            /**< Dilution of precision */
+    GPS_ConstellationInfoType constellations; /**< Constellation usage */
     uint8 fixQuality;           /**< Fix quality (0-8) */
+    uint8 fixType;              /**< Fix type (2D/3D) */
     uint8 satellitesUsed;       /**< Number of satellites used */
     uint8 satellitesInView;     /**< Number of satellites visible */
     GPS_SatelliteType satellites[GPS_MAX_SATELLITES]; /**< Satellite info */
     boolean validFix;           /**< TRUE if fix is valid */
     boolean dataUpdated;        /**< TRUE if new data available */
+    const char* lastNmeaType;   /**< Last NMEA sentence type processed */
 } GPS_DataType;
+
+/**
+ * @brief Geofence configuration
+ */
+typedef struct {
+    float32 latitude;           /**< Center latitude */
+    float32 longitude;          /**< Center longitude */
+    uint32 radius;              /**< Radius in meters */
+    boolean enabled;            /**< Fence enabled */
+} GPS_GeofenceType;
 
 /**
  * @brief GPS configuration structure
@@ -101,9 +132,17 @@ typedef struct GPS_ConfigType {
     Uart_ModuleType UartModule;     /**< UART module for GPS */
     uint32 BaudRate;                /**< GPS baud rate */
     uint8 DynamicModel;             /**< Dynamic platform model */
+    uint8 PowerMode;                /**< Power management mode */
+    uint8 SbasSystem;               /**< SBAS system selection */
     boolean EnableSBAS;             /**< Enable SBAS/WAAS */
     boolean EnableGLONASS;          /**< Enable GLONASS */
+    boolean EnableGalileo;          /**< Enable Galileo */
+    boolean EnableBeiDou;           /**< Enable BeiDou */
+    boolean EnablePPS;              /**< Enable PPS output */
+    boolean EnableGeofencing;       /**< Enable geofencing */
+    boolean EnableRTCM;             /**< Enable RTCM input */
     uint8 UpdateRate;               /**< Update rate in Hz (1-10) */
+    uint8 AssistNowMode;            /**< AssistNow mode */
 } GPS_ConfigType;
 
 /**
@@ -218,5 +257,110 @@ Std_ReturnType GPS_SetDynamicModel(uint8 Model);
  * @return E_OK if successful, E_NOT_OK otherwise
  */
 Std_ReturnType GPS_Reset(void);
+
+/* ===================[Advanced Configuration Functions]=================== */
+
+/**
+ * @brief Configure multi-GNSS constellations
+ * @param enableGPS Enable GPS
+ * @param enableGLONASS Enable GLONASS
+ * @param enableGalileo Enable Galileo
+ * @param enableBeiDou Enable BeiDou
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_ConfigureGNSS(boolean enableGPS, boolean enableGLONASS, 
+                                  boolean enableGalileo, boolean enableBeiDou);
+
+/**
+ * @brief Enable Galileo constellation
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_EnableGalileo(void);
+
+/**
+ * @brief Enable BeiDou constellation
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_EnableBeiDou(void);
+
+/**
+ * @brief Configure SBAS system
+ * @param sbasSystem SBAS system to use (GPS_SBAS_*)
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_ConfigureSBAS(uint8 sbasSystem);
+
+/**
+ * @brief Configure PPS/Timepulse output
+ * @param enable Enable PPS output
+ * @param freqHz Frequency in Hz (default 1Hz)
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_ConfigurePPS(boolean enable, uint32 freqHz);
+
+/**
+ * @brief Set power management mode
+ * @param mode Power mode (GPS_POWER_MODE_*)
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_SetPowerMode(uint8 mode);
+
+/**
+ * @brief Configure geofence
+ * @param fenceId Fence ID (0-3)
+ * @param fence Pointer to geofence configuration
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_ConfigureGeofence(uint8 fenceId, const GPS_GeofenceType* fence);
+
+/**
+ * @brief Enable RTCM input for D-GPS
+ * @param enable Enable RTCM
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_EnableRTCM(boolean enable);
+
+/**
+ * @brief Send AssistNow aiding data
+ * @param mode AssistNow mode (GPS_ASSISTNOW_*)
+ * @param data Pointer to aiding data
+ * @param length Data length in bytes
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_SendAssistNowData(uint8 mode, const uint8* data, uint16 length);
+
+/**
+ * @brief Save current configuration to flash
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_SaveConfiguration(void);
+
+/**
+ * @brief Load configuration from flash
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_LoadConfiguration(void);
+
+/**
+ * @brief Get constellation usage information
+ * @param info Pointer to store constellation info
+ * @return E_OK if successful, E_NOT_OK otherwise
+ */
+Std_ReturnType GPS_GetConstellationInfo(GPS_ConstellationInfoType* info);
+
+/**
+ * @brief Wait for UBX ACK/NAK response
+ * @param msgClass UBX message class
+ * @param msgId UBX message ID
+ * @param timeoutMs Timeout in milliseconds
+ * @return E_OK if ACK received, E_NOT_OK if NAK or timeout
+ */
+Std_ReturnType GPS_WaitForAck(uint8 msgClass, uint8 msgId, uint32 timeoutMs);
+
+/**
+ * @brief Get last NMEA sentence type processed
+ * @return Pointer to NMEA type string (e.g., "GGA", "RMC")
+ */
+const char* GPS_GetLastNmeaType(void);
 
 #endif /* ECUAL_GPS_GPS_H_ */

@@ -17,6 +17,9 @@
  * @version 1.0.0
  */
 
+#if 0  /* <<<< ENTIRE IMU MAIN COMMENTED OUT - REMOVE THIS LINE TO ACTIVATE >>>> */
+
+
 #include "MCAL/MCU/Mcu.h"
 #include "MCAL/MCU/Mcu_Cfg.h"
 #include "MCAL/UART/UART.h"
@@ -566,3 +569,7 @@ int main(void)
     
     /* Never reached due to infinite loops above */
 }
+
+
+#endif  /* <<<< END OF COMMENTED OUT IMU TEST CODE >>>> */
+

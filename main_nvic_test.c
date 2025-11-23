@@ -1,4 +1,4 @@
-/**
+A/**
  * @file main_nvic_test.c
  * @brief NVIC Driver Test Application for TM4C123GH6PM
  * @details Comprehensive test for AUTOSAR-compliant NVIC driver

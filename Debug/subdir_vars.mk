@@ -10,7 +10,7 @@ CMD_SRCS += \
 
 C_SRCS += \
 ../main.c \
-../main_gps.c \
+../main_gps_production.c \
 ../main_mcu_test.c \
 ../main_nvic_test.c \
 ../main_qei_test.c \
@@ -20,7 +20,7 @@ C_SRCS += \
 
 C_DEPS += \
 ./main.d \
-./main_gps.d \
+./main_gps_production.d \
 ./main_mcu_test.d \
 ./main_nvic_test.d \
 ./main_qei_test.d \
@@ -30,7 +30,7 @@ C_DEPS += \
 
 OBJS += \
 ./main.obj \
-./main_gps.obj \
+./main_gps_production.obj \
 ./main_mcu_test.obj \
 ./main_nvic_test.obj \
 ./main_qei_test.obj \
@@ -40,7 +40,7 @@ OBJS += \
 
 OBJS__QUOTED += \
 "main.obj" \
-"main_gps.obj" \
+"main_gps_production.obj" \
 "main_mcu_test.obj" \
 "main_nvic_test.obj" \
 "main_qei_test.obj" \
@@ -50,7 +50,7 @@ OBJS__QUOTED += \
 
 C_DEPS__QUOTED += \
 "main.d" \
-"main_gps.d" \
+"main_gps_production.d" \
 "main_mcu_test.d" \
 "main_nvic_test.d" \
 "main_qei_test.d" \
@@ -60,7 +60,7 @@ C_DEPS__QUOTED += \
 
 C_SRCS__QUOTED += \
 "../main.c" \
-"../main_gps.c" \
+"../main_gps_production.c" \
 "../main_mcu_test.c" \
 "../main_nvic_test.c" \
 "../main_qei_test.c" \
