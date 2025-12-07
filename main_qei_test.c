@@ -13,15 +13,23 @@
  * - Maximum position wrap-around
  *
  * Hardware Requirements:
- * - Quadrature encoder connected to QEI0 pins (PD6/PD7)
- * - Optional: Index signal on PD3
+ * - Quadrature encoder (EMG49 motor encoder) connected to QEI0 pins:
+ *   - PD6: Phase A (PhA)
+ *   - PD7: Phase B (PhB)
+ *   - PD3: Index signal (optional, for position reset)
+ * 
+ * EMG49 Encoder Specifications:
+ * - Typical: 12 PPR (Pulses Per Revolution)
+ * - Quadrature mode: 12 × 4 = 48 counts per revolution
+ * - MaxPosition should be configured accordingly in QEI_PBCfg.c
+ * - Current config uses MaxPosition = 4095 (adjust if needed)
  *
  * @author Mohamed Yasser
  * @date Nov 5, 2025
  * @version 1.0.0
  */
 
-#if 0  /* <<<< ENTIRE IMU MAIN COMMENTED OUT - REMOVE THIS LINE TO ACTIVATE >>>> */
+/* QEI Test Code - Active */
 
 
 #include "MCAL/QEI/QEI.h"
@@ -47,16 +55,14 @@ volatile Qei_DirectionType lastDirection = QEI_DIRECTION_FORWARD;
 
 /**
  * @brief QEI0 interrupt handler
+ * @note This handler is called from the interrupt vector table
  */
 void QEI0_Handler(void)
 {
-    /* Get interrupt status */
-    /* In real implementation, check which interrupt fired */
+    /* Call the driver's interrupt handler */
+    Qei_Qei0Handler();
     
     interruptCount++;
-    
-    /* Clear interrupts */
-    Qei_ClearInterrupt(QEI_INT_INDEX | QEI_INT_DIRECTION | QEI_INT_ERROR);
 }
 
 /**
@@ -110,6 +116,39 @@ void PrintTestResult(const char* testName, boolean passed)
     {
         Uart_SendString(UART_MODULE_0, (const uint8*)"FAILED\r\n");
     }
+}
+
+/**
+ * @brief Convert integer to string and send via UART
+ */
+void Uart_SendInt(Uart_ModuleType Module, uint32 value)
+{
+    uint8 buffer[12];
+    uint8 i = 0;
+    uint8 j = 0;
+    uint8 temp[12];
+    
+    if (value == 0)
+    {
+        Uart_SendByte(Module, '0');
+        return;
+    }
+    
+    /* Convert to string (reverse order) */
+    while (value > 0)
+    {
+        temp[i++] = '0' + (value % 10);
+        value /= 10;
+    }
+    
+    /* Reverse string */
+    while (i > 0)
+    {
+        buffer[j++] = temp[--i];
+    }
+    buffer[j] = '\0';
+    
+    Uart_SendString(Module, buffer);
 }
 
 /**
@@ -289,9 +328,8 @@ boolean Test_Qei_PositionWrap(void)
     /* Initialize QEI */
     Qei_Init(&Qei_Config);
     
-    /* Set position near maximum (assuming MaxPosition = 2399 for 600 PPR) */
-    /* Get max position from config or use known value */
-    uint32 maxPos = 2399;  /* Example: 600 PPR × 4 - 1 */
+    /* Get max position from config */
+    uint32 maxPos = Qei_Config.MaxPosition;
     
     /* Set to max position */
     Qei_SetPosition(maxPos);
@@ -362,7 +400,8 @@ boolean Test_Qei_MultipleReads(void)
     Qei_SetPosition(1000);
     
     /* Read position multiple times */
-    for (uint32 i = 0; i < 10; i++)
+    uint32 i;
+    for (i = 0; i < 10; i++)
     {
         uint32 pos = Qei_GetPosition();
         
@@ -396,7 +435,8 @@ boolean Test_Qei_PositionIncrement(void)
     Qei_SetPosition(0);
     
     /* Simulate incremental position changes */
-    for (uint32 i = 0; i < 10; i++)
+    uint32 i;
+    for (i = 0; i < 10; i++)
     {
         uint32 currentPos = Qei_GetPosition();
         
@@ -433,7 +473,7 @@ boolean Test_Qei_Status(void)
     Qei_StatusType status = Qei_GetStatus();
     
     /* Status should be valid */
-    if (status != QEI_UNINIT && status != QEI_IDLE && status != QEI_BUSY)
+    if (status != QEI_STATUS_UNINIT && status != QEI_STATUS_IDLE && status != QEI_STATUS_RUNNING)
     {
         testPassed = FALSE;
     }
@@ -509,8 +549,9 @@ int main(void)
     Uart_SendString(UART_MODULE_0, (const uint8*)"*******************************************\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n");
     
-    /* Note: GPIO initialization for QEI pins would be done here */
-    /* Gpio_Init(&Gpio_Qei_Config); */
+    /* Note: GPIO initialization for QEI pins (PD6/PD7/PD3) should be done in Gpio_Configuration */
+    /* QEI0 pins: PD6 (PhA), PD7 (PhB), PD3 (Index - optional) */
+    /* These pins need to be configured as alternate function 6 for QEI */
     
     /* Test 1: QEI Initialization */
     testCount++;
@@ -641,28 +682,11 @@ int main(void)
     
     /* Print test count */
     Uart_SendString(UART_MODULE_0, (const uint8*)"Total Tests: ");
-    uint8 buffer[10];
-    if (testCount < 10) {
-        buffer[0] = '0' + testCount;
-        buffer[1] = '\0';
-    } else {
-        buffer[0] = '1';
-        buffer[1] = '0' + (testCount - 10);
-        buffer[2] = '\0';
-    }
-    Uart_SendString(UART_MODULE_0, buffer);
+    Uart_SendInt(UART_MODULE_0, testCount);
     Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n");
     
     Uart_SendString(UART_MODULE_0, (const uint8*)"Passed: ");
-    if (passedCount < 10) {
-        buffer[0] = '0' + passedCount;
-        buffer[1] = '\0';
-    } else {
-        buffer[0] = '1';
-        buffer[1] = '0' + (passedCount - 10);
-        buffer[2] = '\0';
-    }
-    Uart_SendString(UART_MODULE_0, buffer);
+    Uart_SendInt(UART_MODULE_0, passedCount);
     Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n");
     
     if (allTestsPassed == TRUE)
@@ -670,22 +694,44 @@ int main(void)
         Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nRESULT: ALL TESTS PASSED! ✓\r\n");
         Uart_SendString(UART_MODULE_0, (const uint8*)"=========================================\r\n\r\n");
         
-        /* All tests passed - indicate success */
-        /* In real application: Turn on green LED */
+        /* All tests passed - start continuous monitoring */
+        Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nStarting continuous encoder monitoring...\r\n");
+        Uart_SendString(UART_MODULE_0, (const uint8*)"Format: Position | Direction | Velocity | Interrupts\r\n");
+        Uart_SendString(UART_MODULE_0, (const uint8*)"--------------------------------------------------------\r\n");
+        
         while(1)
         {
-            /* Success loop */
-            /* In hardware test: Monitor encoder position continuously */
+            /* Continuous monitoring loop */
             uint32 position = Qei_GetPosition();
             Qei_DirectionType direction = Qei_GetDirection();
             uint32 velocity = Qei_GetVelocity();
             
-            /* Use values to prevent optimization */
-            (void)position;
-            (void)direction;
-            (void)velocity;
+            /* Print position */
+            Uart_SendString(UART_MODULE_0, (const uint8*)"Pos: ");
+            Uart_SendInt(UART_MODULE_0, position);
             
-            SimpleDelay(100000);
+            /* Print direction */
+            Uart_SendString(UART_MODULE_0, (const uint8*)" | Dir: ");
+            if (direction == QEI_DIRECTION_FORWARD)
+            {
+                Uart_SendString(UART_MODULE_0, (const uint8*)"FWD");
+            }
+            else
+            {
+                Uart_SendString(UART_MODULE_0, (const uint8*)"REV");
+            }
+            
+            /* Print velocity */
+            Uart_SendString(UART_MODULE_0, (const uint8*)" | Vel: ");
+            Uart_SendInt(UART_MODULE_0, velocity);
+            
+            /* Print interrupt count */
+            Uart_SendString(UART_MODULE_0, (const uint8*)" | Int: ");
+            Uart_SendInt(UART_MODULE_0, interruptCount);
+            
+            Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n");
+            
+            SimpleDelay(500000);  /* 500ms delay */
         }
     }
     else
@@ -705,5 +751,5 @@ int main(void)
 }
 
 
-#endif  /* <<<< END OF COMMENTED OUT IMU TEST CODE >>>> */
+/* End of QEI Test Code */
 

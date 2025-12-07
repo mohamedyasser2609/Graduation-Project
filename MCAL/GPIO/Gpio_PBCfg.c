@@ -153,13 +153,14 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
     },
     
     /* I2C0 Pins - Port B (PB2=SCL, PB3=SDA) */
+    /* Note: I2C requires open drain mode. Internal pull-ups are enabled via manual configuration. */
     {
         .Port = GPIO_PORT_B,
         .Pin = GPIO_PIN_2,
         .Direction = GPIO_PIN_OUT,
         .InitialLevel = GPIO_LEVEL_HIGH,
         .Mode = GPIO_MODE_ALT_FUNC,
-        .InternalResistor = GPIO_RESISTOR_OPEN_DRAIN,
+        .InternalResistor = GPIO_RESISTOR_OPEN_DRAIN,  /* I2C requires open drain */
         .DriveStrength = GPIO_DRIVE_2MA,
         .SlewRate = GPIO_SLEW_RATE_NORMAL,
         .IntTrigger = GPIO_INT_DISABLED,
@@ -172,11 +173,52 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
         .Direction = GPIO_PIN_OUT,
         .InitialLevel = GPIO_LEVEL_HIGH,
         .Mode = GPIO_MODE_ALT_FUNC,
-        .InternalResistor = GPIO_RESISTOR_OPEN_DRAIN,
+        .InternalResistor = GPIO_RESISTOR_OPEN_DRAIN,  /* I2C requires open drain */
         .DriveStrength = GPIO_DRIVE_2MA,
         .SlewRate = GPIO_SLEW_RATE_NORMAL,
         .IntTrigger = GPIO_INT_DISABLED,
         .AlternateFuncNum = 3u,  /* I2C0 SDA */
+        .DirectionChangeable = FALSE
+    },
+    
+    /* QEI0 Pins - Port D (PD6=PhA, PD7=PhB, PD3=Index) */
+    {
+        .Port = GPIO_PORT_D,
+        .Pin = GPIO_PIN_6,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for encoder signals */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI0 PhA */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_D,
+        .Pin = GPIO_PIN_7,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for encoder signals */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI0 PhB */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_D,
+        .Pin = GPIO_PIN_3,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for index signal */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI0 Index */
         .DirectionChangeable = FALSE
     },
     
