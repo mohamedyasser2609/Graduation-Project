@@ -14,8 +14,8 @@
 /**
  * @brief EMG49 Encoder Configuration
  * @details EMG49 specifications:
- *          - 12 PPR (Pulses Per Revolution)
- *          - Quadrature mode: 48 counts per revolution (12 × 4)
+ *          - ~245 PPR (pre-quadrature) = ~980 counts per revolution in quadrature
+ *          - Quadrature mode: 980 counts per revolution
  *          - Velocity filtering enabled for smooth RPM readings
  * 
  * @note Velocity Timer Period Calculation:
@@ -25,8 +25,8 @@
  *                    = 160000 / 80,000,000 = 0.002 seconds = 2000 microseconds
  */
 const Encoder_ConfigType Encoder_Config = {
-    .PulsesPerRevolution = 12u,              /* EMG49: 12 PPR */
-    .QuadratureCountsPerRev = 48u,            /* 12 × 4 = 48 counts per revolution */
+    .PulsesPerRevolution = 245u,              /* EMG49: ~245 PPR pre-quadrature */
+    .QuadratureCountsPerRev = 980u,           /* ~980 counts per revolution in quadrature */
     .EnableVelocityFilter = TRUE,             /* Enable velocity filtering */
     .VelocityFilterAlpha = 200u,              /* Filter coefficient (200/256 = ~78% new, 22% old) */
     .VelocityTimerPeriodUs = 2000u           /* 2ms velocity measurement period (matches QEI config) */

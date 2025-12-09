@@ -11,14 +11,13 @@
 #include "ENCODER.h"
 #include "../../MCAL/QEI/QEI.h"
 #include "../../MCAL/QEI/QEI_Cfg.h"
+#include <stdint.h>
 
 /* ===================[Private Variables]=================== */
 static const Encoder_ConfigType* Encoder_ConfigPtr = NULL_PTR;
 static Encoder_StatusType Encoder_ModuleStatus = ENCODER_STATUS_UNINIT;
-static uint32 Encoder_LastPosition = 0u;
-static uint32 Encoder_LastVelocityRaw = 0u;
 static uint32 Encoder_FilteredVelocity = 0u;
-static uint32 Encoder_LastUpdateTime = 0u;
+static uint32 Encoder_LastPosition = 0u;  /* optional tracking */
 
 /* ===================[Private Helper Functions]=================== */
 
@@ -106,10 +105,7 @@ void Encoder_Init(const Encoder_ConfigType* ConfigPtr)
     Encoder_ConfigPtr = ConfigPtr;
     
     /* Initialize private variables */
-    Encoder_LastPosition = Qei_GetPosition();
-    Encoder_LastVelocityRaw = 0u;
     Encoder_FilteredVelocity = 0u;
-    Encoder_LastUpdateTime = 0u;
     
     Encoder_ModuleStatus = ENCODER_STATUS_RUNNING;
 }
@@ -255,7 +251,7 @@ uint32 Encoder_GetVelocityCountsPerSec(void)
     {
         /* Calculate: velocity = rawVelocity × (1,000,000 / timer_period_us) */
         /* Use 64-bit intermediate to avoid overflow */
-        uint64 temp = ((uint64)rawVelocity * 1000000u) / ((uint64)Encoder_ConfigPtr->VelocityTimerPeriodUs);
+        uint64_t temp = ((uint64_t)rawVelocity * 1000000u) / ((uint64_t)Encoder_ConfigPtr->VelocityTimerPeriodUs);
         velocityCountsPerSec = (uint32)temp;
     }
     
@@ -368,8 +364,6 @@ void Encoder_Update(void)
     /* Update filtered velocity */
     (void)Encoder_GetVelocityCountsPerSec();
     
-    /* Store current position for next update */
-    Encoder_LastPosition = Qei_GetPosition();
 }
 
 #if (ENCODER_VERSION_INFO_API == STD_ON)

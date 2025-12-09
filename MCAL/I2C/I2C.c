@@ -418,14 +418,14 @@ Std_ReturnType I2C_ReadRegister(I2C_ModuleType Module, uint8 SlaveAddr, uint8 Re
         
         /* Read last byte with NACK and STOP */
         *regs->MCS = I2C_MCS_RUN | I2C_MCS_STOP;
-        
-        if (I2C_WaitBusy(Module) != E_OK) {
-            return E_NOT_OK;
-        }
-        if (I2C_CheckError(Module) != E_OK) {
-            return E_NOT_OK;
-        }
-        
+    
+    if (I2C_WaitBusy(Module) != E_OK) {
+        return E_NOT_OK;
+    }
+    if (I2C_CheckError(Module) != E_OK) {
+        return E_NOT_OK;
+    }
+    
         Data[Length - 1] = (uint8)*regs->MDR;
     }
     

@@ -2,7 +2,7 @@
 
 ## Overview
 
-High-level encoder driver for the EMG49 motor encoder (12 PPR) that wraps the QEI driver and provides convenient functions for position and velocity measurement in various units.
+High-level encoder driver for the EMG49 motor encoder (~980 counts/rev in quadrature) that wraps the QEI driver and provides convenient functions for position and velocity measurement in various units.
 
 ## Features
 
@@ -16,10 +16,10 @@ High-level encoder driver for the EMG49 motor encoder (12 PPR) that wraps the QE
 
 ## EMG49 Encoder Specifications
 
-- **PPR (Pulses Per Revolution):** 12
-- **Quadrature Counts Per Revolution:** 48 (12 × 4)
-- **Resolution:** 7.5 degrees per count (360° / 48)
-- **Maximum Position:** 4095 counts (configurable)
+- **Counts Per Revolution (quadrature):** ~980
+- **Pre-quadrature PPR:** ~245 (980 / 4)
+- **Resolution:** ~0.367 degrees per count (360° / 980)
+- **Maximum Position:** 4095 counts (configurable; adjust as needed)
 
 ## API Functions
 
