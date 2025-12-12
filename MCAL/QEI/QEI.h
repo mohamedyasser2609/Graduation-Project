@@ -55,6 +55,7 @@
  * @param ConfigPtr Pointer to QEI configuration structure
  */
 void Qei_Init(const Qei_ConfigType* ConfigPtr);
+Std_ReturnType Qei_InitModule(const Qei_ConfigType* ConfigPtr);
 
 /**
  * @brief De-initialize the QEI driver.
@@ -66,48 +67,56 @@ void Qei_DeInit(void);
  * @return Position count
  */
 uint32 Qei_GetPosition(void);
+uint32 Qei_GetPositionModule(Qei_ModuleType module);
 
 /**
  * @brief Set the position counter value.
  * @param Position New position count
  */
 void Qei_SetPosition(uint32 Position);
+void Qei_SetPositionModule(Qei_ModuleType module, uint32 Position);
 
 /**
  * @brief Get current velocity (counts per configured interval).
  * @return Velocity value
  */
 uint32 Qei_GetVelocity(void);
+uint32 Qei_GetVelocityModule(Qei_ModuleType module);
 
 /**
  * @brief Enable QEI interrupts specified by mask.
  * @param mask Interrupt mask to enable
  */
 void Qei_EnableInterrupt(Qei_InterruptMaskType mask);
+void Qei_EnableInterruptModule(Qei_ModuleType module, Qei_InterruptMaskType mask);
 
 /**
  * @brief Disable QEI interrupts specified by mask.
  * @param mask Interrupt mask to disable
  */
 void Qei_DisableInterrupt(Qei_InterruptMaskType mask);
+void Qei_DisableInterruptModule(Qei_ModuleType module, Qei_InterruptMaskType mask);
 
 /**
  * @brief Clear pending interrupts specified by mask.
  * @param mask Interrupt mask to clear
  */
 void Qei_ClearInterrupt(Qei_InterruptMaskType mask);
+void Qei_ClearInterruptModule(Qei_ModuleType module, Qei_InterruptMaskType mask);
 
 /**
  * @brief Get current QEI driver status.
  * @return Qei_StatusType status
  */
 Qei_StatusType Qei_GetStatus(void);
+Qei_StatusType Qei_GetStatusModule(Qei_ModuleType module);
 
 /**
  * @brief Get current rotation direction.
  * @return Qei_DirectionType direction
  */
 Qei_DirectionType Qei_GetDirection(void);
+Qei_DirectionType Qei_GetDirectionModule(Qei_ModuleType module);
 
 #if (QEI_VERSION_INFO_API == STD_ON)
 /**

@@ -50,7 +50,7 @@
 
 /**
  * @brief Initialize the encoder driver
- * @param ConfigPtr Pointer to encoder configuration structure
+ * @param ConfigPtr Pointer to encoder configuration structure (channels array)
  */
 void Encoder_Init(const Encoder_ConfigType* ConfigPtr);
 
@@ -61,86 +61,102 @@ void Encoder_DeInit(void);
 
 /**
  * @brief Get current position in specified unit
+ * @param Channel Encoder channel
  * @param Unit Position unit (COUNTS, REVOLUTIONS, or DEGREES)
- * @return Position value (uint32 for COUNTS, float for REVOLUTIONS/DEGREES)
- * @note For COUNTS: returns uint32 cast to float
- * @note For REVOLUTIONS/DEGREES: returns float value
+ * @return Position value as float (counts are promoted to float)
  */
-float Encoder_GetPosition(Encoder_UnitType Unit);
+float Encoder_GetPosition(Encoder_ChannelType Channel, Encoder_UnitType Unit);
 
 /**
- * @brief Get current position in quadrature counts
- * @return Position in counts (0 to MaxPosition)
+ * @brief Get current absolute position in quadrature counts (64-bit)
+ * @param Channel Encoder channel
+ * @return Position in counts
  */
-uint32 Encoder_GetPositionCounts(void);
+int64_t Encoder_GetPositionCounts(const Encoder_ChannelType Channel);
 
 /**
  * @brief Get current position in revolutions
+ * @param Channel Encoder channel
  * @return Position in revolutions (float)
  */
-float Encoder_GetPositionRevolutions(void);
+float Encoder_GetPositionRevolutions(const Encoder_ChannelType Channel);
 
 /**
- * @brief Get current position in degrees
- * @return Position in degrees (0.0 to 360.0)
+ * @brief Get current position in degrees (normalized to 0-360)
+ * @param Channel Encoder channel
+ * @return Position in degrees
  */
-float Encoder_GetPositionDegrees(void);
+float Encoder_GetPositionDegrees(const Encoder_ChannelType Channel);
 
 /**
  * @brief Get current velocity in specified unit
+ * @param Channel Encoder channel
  * @param Unit Velocity unit (COUNTS_PER_SEC or RPM)
- * @return Velocity value (float)
+ * @return Velocity value (signed)
  */
-float Encoder_GetVelocity(Encoder_VelocityUnitType Unit);
+float Encoder_GetVelocity(Encoder_ChannelType Channel, Encoder_VelocityUnitType Unit);
 
 /**
- * @brief Get current velocity in counts per second
+ * @brief Get current velocity in counts per second (signed)
+ * @param Channel Encoder channel
  * @return Velocity in counts/second
  */
-uint32 Encoder_GetVelocityCountsPerSec(void);
+int32_t Encoder_GetVelocityCountsPerSec(const Encoder_ChannelType Channel);
 
 /**
- * @brief Get current velocity in RPM
+ * @brief Get current velocity in RPM (signed)
+ * @param Channel Encoder channel
  * @return Velocity in revolutions per minute
  */
-float Encoder_GetVelocityRPM(void);
+float Encoder_GetVelocityRPM(const Encoder_ChannelType Channel);
 
 /**
  * @brief Get current rotation direction
+ * @param Channel Encoder channel
  * @return Encoder_DirectionType (FORWARD or REVERSE)
  */
-Encoder_DirectionType Encoder_GetDirection(void);
+Encoder_DirectionType Encoder_GetDirection(const Encoder_ChannelType Channel);
 
 /**
  * @brief Get encoder status
+ * @param Channel Encoder channel
  * @return Encoder_StatusType status
  */
-Encoder_StatusType Encoder_GetStatus(void);
+Encoder_StatusType Encoder_GetStatus(const Encoder_ChannelType Channel);
 
 /**
- * @brief Reset encoder position to zero
+ * @brief Reset encoder position and velocity state to zero
+ * @param Channel Encoder channel
  */
-void Encoder_ResetPosition(void);
+void Encoder_ResetPosition(const Encoder_ChannelType Channel);
 
 /**
  * @brief Set encoder position to a specific value
+ * @param Channel Encoder channel
  * @param Position New position value in counts
  */
-void Encoder_SetPosition(uint32 Position);
+void Encoder_SetPosition(const Encoder_ChannelType Channel, uint32 Position);
 
 /**
  * @brief Get all encoder data (position, velocity, direction)
+ * @param Channel Encoder channel
  * @param DataPtr Pointer to Encoder_DataType structure to fill
  * @return Std_ReturnType (E_OK or E_NOT_OK)
  */
-Std_ReturnType Encoder_GetData(Encoder_DataType* DataPtr);
+Std_ReturnType Encoder_GetData(const Encoder_ChannelType Channel, Encoder_DataType* DataPtr);
 
 /**
  * @brief Update encoder data (call periodically for filtered velocity)
- * @note This function should be called periodically (e.g., every 10-100ms)
- *       to update filtered velocity calculations
+ * @param Channel Encoder channel
+ * @note MUST be called at a fixed period (e.g., 1ms FreeRTOS task).
+ *       The filtering assumes a consistent update interval.
  */
-void Encoder_Update(void);
+void Encoder_Update(const Encoder_ChannelType Channel);
+
+/**
+ * @brief Convenience helper to update all configured channels.
+ */
+void Encoder_UpdateAll(void);
 
 #if (ENCODER_VERSION_INFO_API == STD_ON)
 /**

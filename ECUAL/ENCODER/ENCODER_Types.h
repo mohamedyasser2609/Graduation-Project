@@ -28,6 +28,15 @@
 /* ===================[Type Definitions]=================== */
 
 /**
+ * @brief Logical encoder channel identifiers.
+ */
+typedef enum {
+    ENCODER_CHANNEL_LEFT = 0u,
+    ENCODER_CHANNEL_RIGHT,
+    ENCODER_CHANNEL_COUNT
+} Encoder_ChannelType;
+
+/**
  * @brief Encoder direction type
  */
 typedef enum {
@@ -62,26 +71,49 @@ typedef enum {
 } Encoder_VelocityUnitType;
 
 /**
- * @brief Encoder configuration structure
+ * @brief Configuration for the velocity filter.
  */
 typedef struct {
-    uint32 PulsesPerRevolution;      /**< Encoder PPR (e.g., 12 for EMG49) */
-    uint32 QuadratureCountsPerRev;   /**< Quadrature counts per revolution (PPR × 4) */
-    boolean EnableVelocityFilter;     /**< Enable velocity filtering */
-    uint8 VelocityFilterAlpha;        /**< Velocity filter coefficient (0-255, higher = less filtering) */
-    uint32 VelocityTimerPeriodUs;    /**< Velocity timer period in microseconds */
+    uint8 Alpha;                      /**< EMA alpha (1-255). 0 replaced by DefaultAlpha. */
+    uint8 DefaultAlpha;               /**< Fallback alpha if Alpha is 0. */
+    uint32 DeadbandCountsPerSec;      /**< Deadband threshold to zero-out small speeds. */
+    uint32 SpikeThresholdCountsPerSec;/**< Outlier rejection threshold (counts/sec). */
+} Encoder_FilterConfigType;
+
+/**
+ * @brief Per-channel encoder configuration structure.
+ */
+typedef struct {
+    Encoder_ChannelType ChannelId;        /**< Logical channel ID. */
+    Qei_ModuleType QeiModule;             /**< Underlying QEI hardware module. */
+    const Qei_ConfigType* QeiConfigPtr;   /**< MCAL QEI configuration for this channel. */
+    uint32 PulsesPerRevolution;           /**< Encoder PPR (e.g., 12 for EMG49). */
+    uint32 QuadratureCountsPerRev;        /**< Quadrature counts per revolution (PPR × 4). */
+    uint32 VelocityTimerPeriodUs;         /**< Velocity timer period in microseconds. */
+    uint32 MaxPosition;                   /**< Hardware max position counter value. */
+    boolean ReverseDirection;             /**< Invert reported direction/velocity. */
+    boolean EnableVelocityFilter;         /**< Enable velocity filtering. */
+    Encoder_FilterConfigType FilterCfg;   /**< Filter configuration parameters. */
+} Encoder_ChannelConfigType;
+
+/**
+ * @brief Top-level encoder configuration descriptor.
+ */
+typedef struct {
+    uint8 ChannelCount;                         /**< Number of configured channels. */
+    const Encoder_ChannelConfigType* Channels;  /**< Pointer to channel configs. */
 } Encoder_ConfigType;
 
 /**
  * @brief Encoder data structure
  */
 typedef struct {
-    uint32 PositionCounts;           /**< Position in quadrature counts */
-    float PositionRevolutions;       /**< Position in revolutions */
-    float PositionDegrees;           /**< Position in degrees */
-    Encoder_DirectionType Direction; /**< Current rotation direction */
-    uint32 VelocityCountsPerSec;     /**< Velocity in counts per second */
-    float VelocityRPM;               /**< Velocity in RPM */
+    int64_t PositionCounts;          /**< Absolute position in counts (64-bit signed). */
+    float PositionRevolutions;       /**< Position in revolutions. */
+    float PositionDegrees;           /**< Position in degrees. */
+    Encoder_DirectionType Direction; /**< Current rotation direction. */
+    int32_t VelocityCountsPerSec;    /**< Signed velocity in counts per second. */
+    float VelocityRPM;               /**< Signed velocity in RPM. */
 } Encoder_DataType;
 
 #endif /* ECUAL_ENCODER_ENCODER_TYPES_H_ */

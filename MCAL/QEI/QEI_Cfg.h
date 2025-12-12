@@ -16,7 +16,11 @@
 /* Debug stall enable */
 #define QEI_ALLOW_DEBUG_STALL           (STD_ON)
 
+/* ===================[Module Count]=================== */
+#define QEI_MAX_CONFIGURED_MODULES      (2u)
+
 /* ===================[External Configuration]=================== */
 extern const Qei_ConfigType Qei_Config;
+extern const Qei_ConfigType Qei_ChannelConfigs[QEI_MAX_CONFIGURED_MODULES];
 
 #endif /* MCAL_QEI_QEI_CFG_H_ */

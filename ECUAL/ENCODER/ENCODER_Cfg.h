@@ -19,7 +19,14 @@
 #define ENCODER_DEV_ERROR_DETECT            (STD_ON)
 #define ENCODER_VERSION_INFO_API            (STD_ON)
 
+/* ===================[Channel Configuration]=================== */
+/**
+ * @brief Number of logical encoder channels configured.
+ */
+#define ENCODER_MAX_CHANNELS                (ENCODER_CHANNEL_COUNT)
+
 /* ===================[External Configuration]=================== */
+extern const Encoder_ChannelConfigType Encoder_ChannelConfigs[ENCODER_MAX_CHANNELS];
 extern const Encoder_ConfigType Encoder_Config;
 
 #endif /* ECUAL_ENCODER_ENCODER_CFG_H_ */

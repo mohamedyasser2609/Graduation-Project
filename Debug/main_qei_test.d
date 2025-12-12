@@ -1,8 +1,6 @@
 # FIXED
 
 main_qei_test.obj: ../main_qei_test.c
-main_qei_test.obj: ../MCAL/QEI/QEI.h
-main_qei_test.obj: ../CONFIG/Std_Types.h
 main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -13,10 +11,15 @@ main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/includ
 main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_types.h
 main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h
+main_qei_test.obj: ../ECUAL/ENCODER/ENCODER.h
+main_qei_test.obj: ../CONFIG/Std_Types.h
 main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h
 main_qei_test.obj: ../CONFIG/Compiler.h
 main_qei_test.obj: ../CONFIG/Det.h
+main_qei_test.obj: ../ECUAL/ENCODER/ENCODER_Types.h
 main_qei_test.obj: ../MCAL/QEI/QEI_Types.h
+main_qei_test.obj: ../ECUAL/ENCODER/ENCODER_Cfg.h
+main_qei_test.obj: ../MCAL/QEI/QEI.h
 main_qei_test.obj: ../MCAL/QEI/QEI_Cfg.h
 main_qei_test.obj: ../MCAL/MCU/Mcu.h
 main_qei_test.obj: ../MCAL/MCU/Mcu_Types.h
@@ -30,10 +33,6 @@ main_qei_test.obj: ../MCAL/UART/Uart_Types.h
 main_qei_test.obj: ../MCAL/UART/Uart_Cfg.h
 
 ../main_qei_test.c:
-
-../MCAL/QEI/QEI.h:
-
-../CONFIG/Std_Types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 
@@ -55,13 +54,23 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h:
 
+../ECUAL/ENCODER/ENCODER.h:
+
+../CONFIG/Std_Types.h:
+
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 
 ../CONFIG/Compiler.h:
 
 ../CONFIG/Det.h:
 
+../ECUAL/ENCODER/ENCODER_Types.h:
+
 ../MCAL/QEI/QEI_Types.h:
+
+../ECUAL/ENCODER/ENCODER_Cfg.h:
+
+../MCAL/QEI/QEI.h:
 
 ../MCAL/QEI/QEI_Cfg.h:
 
