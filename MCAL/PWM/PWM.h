@@ -18,7 +18,7 @@
 #define MCAL_PWM_PWM_H_
 
 /* ===================[Includes]=================== */
-#include "../../CONFIG/std_types.h"
+#include <Std_types.h>
 #include "PWM_Cfg.h"
 
 /* ===================[Type Definitions]=================== */

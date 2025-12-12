@@ -14,7 +14,7 @@
 #define MCAL_GPIO_GPIO_H_
 
 /* ===================[Includes]=================== */
-#include "../../CONFIG/std_types.h"
+#include <Std_types.h>
 #include "../../CONFIG/Compiler.h"
 #include "../../CONFIG/Det.h"
 #include "GPIO_Types.h"

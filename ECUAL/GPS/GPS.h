@@ -25,7 +25,7 @@
 #ifndef ECUAL_GPS_GPS_H_
 #define ECUAL_GPS_GPS_H_
 
-#include "../../CONFIG/Std_Types.h"
+#include <Std_types.h>
 #include "../../MCAL/UART/Uart.h"
 #include "GPS_Cfg.h"
 

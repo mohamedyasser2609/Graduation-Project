@@ -12,7 +12,7 @@
 #define ECUAL_LED_LED_CFG_H_
 
 /* ===================[Includes]=================== */
-#include "../../CONFIG/std_types.h"
+#include <Std_types.h>
 
 /* ===================[Configuration Switches]=================== */
 

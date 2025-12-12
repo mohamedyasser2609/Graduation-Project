@@ -14,7 +14,7 @@
 #define ECUAL_LED_LED_H_
 
 /* ===================[Includes]=================== */
-#include "../../CONFIG/std_types.h"
+#include <Std_types.h>
 #include "../../MCAL/GPIO/Gpio.h"
 
 /* ===================[Version Information]=================== */

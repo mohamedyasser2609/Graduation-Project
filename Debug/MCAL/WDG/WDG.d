@@ -2,7 +2,7 @@
 
 MCAL/WDG/WDG.obj: ../MCAL/WDG/WDG.c
 MCAL/WDG/WDG.obj: ../MCAL/WDG/WDG.h
-MCAL/WDG/WDG.obj: ../CONFIG/Std_Types.h
+MCAL/WDG/WDG.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 MCAL/WDG/WDG.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 MCAL/WDG/WDG.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 MCAL/WDG/WDG.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -24,7 +24,7 @@ MCAL/WDG/WDG.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ work
 
 ../MCAL/WDG/WDG.h:
 
-../CONFIG/Std_Types.h:
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

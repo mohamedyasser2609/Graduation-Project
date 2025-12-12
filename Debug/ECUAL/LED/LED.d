@@ -2,7 +2,7 @@
 
 ECUAL/LED/LED.obj: ../ECUAL/LED/LED.c
 ECUAL/LED/LED.obj: ../ECUAL/LED/Led.h
-ECUAL/LED/LED.obj: ../CONFIG/std_types.h
+ECUAL/LED/LED.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 ECUAL/LED/LED.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 ECUAL/LED/LED.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 ECUAL/LED/LED.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -26,7 +26,7 @@ ECUAL/LED/LED.obj: ../ECUAL/LED/Led_Cfg.h
 
 ../ECUAL/LED/Led.h:
 
-../CONFIG/std_types.h:
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

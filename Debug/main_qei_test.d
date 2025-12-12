@@ -12,22 +12,27 @@ main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/includ
 main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h
 main_qei_test.obj: ../ECUAL/ENCODER/ENCODER.h
-main_qei_test.obj: ../CONFIG/Std_Types.h
+main_qei_test.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 main_qei_test.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h
 main_qei_test.obj: ../CONFIG/Compiler.h
 main_qei_test.obj: ../CONFIG/Det.h
 main_qei_test.obj: ../ECUAL/ENCODER/ENCODER_Types.h
 main_qei_test.obj: ../MCAL/QEI/QEI_Types.h
 main_qei_test.obj: ../ECUAL/ENCODER/ENCODER_Cfg.h
+main_qei_test.obj: ../ECUAL/MOTOR/MOTOR.h
+main_qei_test.obj: ../ECUAL/MOTOR/MOTOR_Types.h
+main_qei_test.obj: ../MCAL/GPIO/GPIO.h
+main_qei_test.obj: ../MCAL/GPIO/GPIO_Types.h
+main_qei_test.obj: ../CONFIG/Platform_Types.h
+main_qei_test.obj: ../MCAL/GPIO/Gpio_Cfg.h
+main_qei_test.obj: ../MCAL/PWM/PWM.h
+main_qei_test.obj: ../MCAL/PWM/PWM_Cfg.h
+main_qei_test.obj: ../ECUAL/MOTOR/MOTOR_Cfg.h
 main_qei_test.obj: ../MCAL/QEI/QEI.h
 main_qei_test.obj: ../MCAL/QEI/QEI_Cfg.h
 main_qei_test.obj: ../MCAL/MCU/Mcu.h
 main_qei_test.obj: ../MCAL/MCU/Mcu_Types.h
 main_qei_test.obj: ../MCAL/MCU/Mcu_Cfg.h
-main_qei_test.obj: ../MCAL/GPIO/Gpio.h
-main_qei_test.obj: ../MCAL/GPIO/GPIO_Types.h
-main_qei_test.obj: ../CONFIG/Platform_Types.h
-main_qei_test.obj: ../MCAL/GPIO/Gpio_Cfg.h
 main_qei_test.obj: ../MCAL/UART/UART.h
 main_qei_test.obj: ../MCAL/UART/Uart_Types.h
 main_qei_test.obj: ../MCAL/UART/Uart_Cfg.h
@@ -56,7 +61,7 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h:
 
 ../ECUAL/ENCODER/ENCODER.h:
 
-../CONFIG/Std_Types.h:
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 
@@ -70,6 +75,24 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 
 ../ECUAL/ENCODER/ENCODER_Cfg.h:
 
+../ECUAL/MOTOR/MOTOR.h:
+
+../ECUAL/MOTOR/MOTOR_Types.h:
+
+../MCAL/GPIO/GPIO.h:
+
+../MCAL/GPIO/GPIO_Types.h:
+
+../CONFIG/Platform_Types.h:
+
+../MCAL/GPIO/Gpio_Cfg.h:
+
+../MCAL/PWM/PWM.h:
+
+../MCAL/PWM/PWM_Cfg.h:
+
+../ECUAL/MOTOR/MOTOR_Cfg.h:
+
 ../MCAL/QEI/QEI.h:
 
 ../MCAL/QEI/QEI_Cfg.h:
@@ -79,14 +102,6 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 ../MCAL/MCU/Mcu_Types.h:
 
 ../MCAL/MCU/Mcu_Cfg.h:
-
-../MCAL/GPIO/Gpio.h:
-
-../MCAL/GPIO/GPIO_Types.h:
-
-../CONFIG/Platform_Types.h:
-
-../MCAL/GPIO/Gpio_Cfg.h:
 
 ../MCAL/UART/UART.h:
 

@@ -1,7 +1,7 @@
 /**
  * @file main_qei_test.c
- * @brief Encoder Driver Test Application for TM4C123GH6PM
- * @details Exercises the ECUAL encoder driver (dual channel, filtered velocity)
+ * @brief Encoder and Motor Driver Test Application for TM4C123GH6PM
+ * @details Exercises the ECUAL encoder and motor drivers (dual channel)
  *
  * Test Features:
  * - Encoder init/deinit (both channels)
@@ -10,11 +10,17 @@
  * - Direction detection (supports inversion)
  * - Position reset functionality
  * - Overflow/wrap handling
+ * - Motor initialization and control
+ * - Motor speed and direction control
+ * - Motor status monitoring
  *
  * Hardware Requirements:
  * - Quadrature encoders (EMG49) connected to:
  *   - Left:  QEI0 (PD6 PhA, PD7 PhB, PD3 Index optional)
  *   - Right: QEI1 (PC5 PhA, PC6 PhB, PC4 Index optional) — adjust as wired
+ * - Motor drivers (Cytron MDD10A Rev2.0) connected to:
+ *   - Left Motor:  PA6 (PWM), PE1 (Direction)
+ *   - Right Motor: PA7 (PWM), PE2 (Direction)
  * 
  * EMG49 Encoder Specifications:
  * - Typical: 12 PPR (Pulses Per Revolution)
@@ -23,7 +29,7 @@
  *
  * @author Mohamed Yasser
  * @date Nov 5, 2025
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 /* Encoder Test Code - Active */
@@ -31,13 +37,17 @@
 
 #include <stdint.h>
 #include "ECUAL/ENCODER/ENCODER.h"
+#include "ECUAL/MOTOR/MOTOR.h"
 #include "MCAL/QEI/QEI.h"
+#include "MCAL/PWM/PWM.h"
 #include "MCAL/MCU/Mcu.h"
 #include "MCAL/GPIO/Gpio.h"
 #include "MCAL/UART/UART.h"
 
 /* ===================[External Configuration]=================== */
 extern const Encoder_ConfigType Encoder_Config;     /* From ENCODER_PBCfg.c */
+extern const Motor_ConfigType Motor_Config;          /* From MOTOR_PBCfg.c */
+extern const Pwm_ConfigType Pwm_Configuration;     /* From PWM_PBCfg.c */
 extern const Mcu_ConfigType* Mcu_ConfigPtr;         /* From Mcu_PBCfg.c */
 extern const Gpio_ConfigType Gpio_Configuration;    /* From Gpio_PBCfg.c */
 extern const Uart_ConfigType Uart0_Config_115200;  /* From Uart_PBCfg.c */
@@ -430,6 +440,244 @@ boolean Test_Encoder_DeInit(void)
     return testPassed;
 }
 
+/* ===================[Motor Test Functions]=================== */
+
+/**
+ * @brief Test motor initialization
+ * @return TRUE if test passed, FALSE otherwise
+ */
+boolean Test_Motor_Init(void)
+{
+    PrintTestHeader("Motor Initialization Test");
+    boolean testPassed = TRUE;
+    
+    Motor_Init(&Motor_Config);
+    
+    Motor_StatusType statusL = Motor_GetStatus(MOTOR_CHANNEL_LEFT);
+    Motor_StatusType statusR = Motor_GetStatus(MOTOR_CHANNEL_RIGHT);
+    
+    if (statusL != MOTOR_STATUS_IDLE || statusR != MOTOR_STATUS_IDLE)
+    {
+        testPassed = FALSE;
+    }
+    
+    PrintTestResult("Motor Init", testPassed);
+    return testPassed;
+}
+
+/**
+ * @brief Test motor speed control
+ * @return TRUE if test passed, FALSE otherwise
+ */
+boolean Test_Motor_Speed(void)
+{
+    PrintTestHeader("Motor Speed Control Test");
+    boolean testPassed = TRUE;
+    
+    Motor_Init(&Motor_Config);
+    
+    /* Test setting different speeds */
+    if (Motor_SetSpeed(MOTOR_CHANNEL_LEFT, 0u) != E_OK) { testPassed = FALSE; }
+    if (Motor_SetSpeed(MOTOR_CHANNEL_LEFT, 50u) != E_OK) { testPassed = FALSE; }
+    if (Motor_SetSpeed(MOTOR_CHANNEL_LEFT, 100u) != E_OK) { testPassed = FALSE; }
+    
+    /* Test invalid speed (should fail with DET enabled) */
+    if (Motor_SetSpeed(MOTOR_CHANNEL_LEFT, 101u) == E_OK) { /* May pass if DET disabled */ }
+    
+    /* Test right motor */
+    if (Motor_SetSpeed(MOTOR_CHANNEL_RIGHT, 25u) != E_OK) { testPassed = FALSE; }
+    if (Motor_SetSpeed(MOTOR_CHANNEL_RIGHT, 75u) != E_OK) { testPassed = FALSE; }
+    
+    /* Stop motors */
+    Motor_StopAll();
+    
+    PrintTestResult("Motor Speed", testPassed);
+    return testPassed;
+}
+
+/**
+ * @brief Test motor direction control
+ * @return TRUE if test passed, FALSE otherwise
+ */
+boolean Test_Motor_Direction(void)
+{
+    PrintTestHeader("Motor Direction Control Test");
+    boolean testPassed = TRUE;
+    
+    Motor_Init(&Motor_Config);
+    
+    /* Test forward direction */
+    if (Motor_SetDirection(MOTOR_CHANNEL_LEFT, MOTOR_DIRECTION_FORWARD) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(500000);  /* 500ms delay for motor to spin up */
+    
+    /* Test reverse direction */
+    if (Motor_SetDirection(MOTOR_CHANNEL_LEFT, MOTOR_DIRECTION_REVERSE) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(500000);  /* 500ms delay for motor to spin up */
+    
+    /* Test brake mode */
+    if (Motor_SetDirection(MOTOR_CHANNEL_LEFT, MOTOR_DIRECTION_BRAKE) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(200000);  /* 200ms delay */
+    
+    /* Test coast mode */
+    if (Motor_SetDirection(MOTOR_CHANNEL_LEFT, MOTOR_DIRECTION_COAST) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(200000);  /* 200ms delay */
+    
+    /* Test right motor */
+    if (Motor_SetDirection(MOTOR_CHANNEL_RIGHT, MOTOR_DIRECTION_FORWARD) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(500000);  /* 500ms delay for motor to spin up */
+    if (Motor_SetDirection(MOTOR_CHANNEL_RIGHT, MOTOR_DIRECTION_REVERSE) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(500000);  /* 500ms delay for motor to spin up */
+    
+    Motor_StopAll();
+    
+    PrintTestResult("Motor Direction", testPassed);
+    return testPassed;
+}
+
+/**
+ * @brief Test motor speed and direction combined
+ * @return TRUE if test passed, FALSE otherwise
+ */
+boolean Test_Motor_SpeedAndDirection(void)
+{
+    PrintTestHeader("Motor Speed and Direction Test");
+    boolean testPassed = TRUE;
+    
+    Motor_Init(&Motor_Config);
+    
+    /* Test forward with speed */
+    if (Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 50u, MOTOR_DIRECTION_FORWARD) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(1000000);  /* 1 second delay for motor to spin up and stabilize */
+    
+    /* Test reverse with speed */
+    if (Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 50u, MOTOR_DIRECTION_REVERSE) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(1000000);  /* 1 second delay for motor to spin up and stabilize */
+    
+    /* Test brake (speed should be ignored) */
+    if (Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 50u, MOTOR_DIRECTION_BRAKE) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(500000);  /* 500ms delay */
+    
+    /* Test right motor */
+    if (Motor_SetSpeedAndDirection(MOTOR_CHANNEL_RIGHT, 75u, MOTOR_DIRECTION_FORWARD) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(1000000);  /* 1 second delay for motor to spin up and stabilize */
+    
+    Motor_StopAll();
+    
+    PrintTestResult("Motor Speed+Direction", testPassed);
+    return testPassed;
+}
+
+/**
+ * @brief Test motor stop functionality
+ * @return TRUE if test passed, FALSE otherwise
+ */
+boolean Test_Motor_Stop(void)
+{
+    PrintTestHeader("Motor Stop Test");
+    boolean testPassed = TRUE;
+    
+    Motor_Init(&Motor_Config);
+    
+    /* Start motors */
+    Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 50u, MOTOR_DIRECTION_FORWARD);
+    Motor_SetSpeedAndDirection(MOTOR_CHANNEL_RIGHT, 50u, MOTOR_DIRECTION_FORWARD);
+    SimpleDelay(1000000);  /* 1 second delay for motors to spin up */
+    
+    /* Stop individual motor */
+    if (Motor_Stop(MOTOR_CHANNEL_LEFT) != E_OK) { testPassed = FALSE; }
+    SimpleDelay(500000);  /* 500ms delay */
+    
+    /* Stop all motors */
+    Motor_StopAll();
+    
+    /* Verify status */
+    Motor_StatusType statusL = Motor_GetStatus(MOTOR_CHANNEL_LEFT);
+    Motor_StatusType statusR = Motor_GetStatus(MOTOR_CHANNEL_RIGHT);
+    
+    if (statusL != MOTOR_STATUS_IDLE || statusR != MOTOR_STATUS_IDLE)
+    {
+        testPassed = FALSE;
+    }
+    
+    PrintTestResult("Motor Stop", testPassed);
+    return testPassed;
+}
+
+/**
+ * @brief Test motor status and data retrieval
+ * @return TRUE if test passed, FALSE otherwise
+ */
+boolean Test_Motor_Status(void)
+{
+    PrintTestHeader("Motor Status Test");
+    boolean testPassed = TRUE;
+    
+    Motor_Init(&Motor_Config);
+    
+    /* Get initial status */
+    Motor_StatusType statusL = Motor_GetStatus(MOTOR_CHANNEL_LEFT);
+    Motor_StatusType statusR = Motor_GetStatus(MOTOR_CHANNEL_RIGHT);
+    
+    if (statusL != MOTOR_STATUS_IDLE || statusR != MOTOR_STATUS_IDLE)
+    {
+        testPassed = FALSE;
+    }
+    
+    /* Start motor and check status */
+    Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 50u, MOTOR_DIRECTION_FORWARD);
+    SimpleDelay(1000000);  /* 1 second delay for motor to spin up */
+    
+    statusL = Motor_GetStatus(MOTOR_CHANNEL_LEFT);
+    if (statusL != MOTOR_STATUS_RUNNING)
+    {
+        testPassed = FALSE;
+    }
+    
+    /* Get motor data */
+    Motor_DataType motorData;
+    if (Motor_GetData(MOTOR_CHANNEL_LEFT, &motorData) != E_OK) { testPassed = FALSE; }
+    
+    if (motorData.Status != MOTOR_STATUS_RUNNING || 
+        motorData.Direction != MOTOR_DIRECTION_FORWARD ||
+        motorData.SpeedPercent != 50u)
+    {
+        testPassed = FALSE;
+    }
+    
+    Motor_StopAll();
+    
+    PrintTestResult("Motor Status", testPassed);
+    return testPassed;
+}
+
+#if (MOTOR_DE_INIT_API == STD_ON)
+/**
+ * @brief Test motor de-initialization
+ * @return TRUE if test passed, FALSE otherwise
+ */
+boolean Test_Motor_DeInit(void)
+{
+    PrintTestHeader("Motor De-Init Test");
+    boolean testPassed = TRUE;
+    
+    Motor_Init(&Motor_Config);
+    Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 50u, MOTOR_DIRECTION_FORWARD);
+    SimpleDelay(500000);  /* 500ms delay for motor to spin up */
+    
+    Motor_DeInit();
+    Motor_Init(&Motor_Config);
+    
+    Motor_StatusType status = Motor_GetStatus(MOTOR_CHANNEL_LEFT);
+    if (status != MOTOR_STATUS_IDLE)
+    {
+        testPassed = FALSE;
+    }
+    
+    PrintTestResult("Motor De-Init", testPassed);
+    return testPassed;
+}
+#endif
+
 /* ===================[Main Function]=================== */
 
 /**
@@ -449,8 +697,11 @@ int main(void)
     while (Mcu_GetPllStatus() != MCU_PLL_LOCKED);
     Mcu_DistributePllClock();
     
-    /* Initialize GPIO for all pins (includes UART0) */
+    /* Initialize GPIO for all pins (includes UART0, PWM, Motor DIR) */
     Gpio_Init(&Gpio_Configuration);
+    
+    /* Initialize PWM for motors (must be before motor init) */
+    Pwm_Init(&Pwm_Configuration);
     
     /* Initialize UART for test output */
     Uart_Init(&Uart0_Config_115200);
@@ -458,7 +709,7 @@ int main(void)
     /* Print test banner */
     Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"*******************************************\r\n");
-    Uart_SendString(UART_MODULE_0, (const uint8*)"*   QEI Driver Test Suite                 *\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"*   Encoder & Motor Driver Test Suite    *\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"*   TM4C123GH6PM LaunchPad                *\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"*   AUTOSAR 4.4.0 Compliant               *\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"*******************************************\r\n");
@@ -589,6 +840,85 @@ int main(void)
         allTestsPassed = FALSE;
     }
     
+    /* Test 12: Motor Initialization */
+    testCount++;
+    if (Test_Motor_Init() == TRUE)
+    {
+        passedCount++;
+    }
+    else
+    {
+        allTestsPassed = FALSE;
+    }
+    
+    /* Test 13: Motor Speed Control */
+    testCount++;
+    if (Test_Motor_Speed() == TRUE)
+    {
+        passedCount++;
+    }
+    else
+    {
+        allTestsPassed = FALSE;
+    }
+    
+    /* Test 14: Motor Direction Control */
+    testCount++;
+    if (Test_Motor_Direction() == TRUE)
+    {
+        passedCount++;
+    }
+    else
+    {
+        allTestsPassed = FALSE;
+    }
+    
+    /* Test 15: Motor Speed and Direction Combined */
+    testCount++;
+    if (Test_Motor_SpeedAndDirection() == TRUE)
+    {
+        passedCount++;
+    }
+    else
+    {
+        allTestsPassed = FALSE;
+    }
+    
+    /* Test 16: Motor Stop */
+    testCount++;
+    if (Test_Motor_Stop() == TRUE)
+    {
+        passedCount++;
+    }
+    else
+    {
+        allTestsPassed = FALSE;
+    }
+    
+    /* Test 17: Motor Status */
+    testCount++;
+    if (Test_Motor_Status() == TRUE)
+    {
+        passedCount++;
+    }
+    else
+    {
+        allTestsPassed = FALSE;
+    }
+    
+#if (MOTOR_DE_INIT_API == STD_ON)
+    /* Test 18: Motor De-Init */
+    testCount++;
+    if (Test_Motor_DeInit() == TRUE)
+    {
+        passedCount++;
+    }
+    else
+    {
+        allTestsPassed = FALSE;
+    }
+#endif
+    
     /* Final Result Summary */
     Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"=========================================\r\n");
@@ -609,17 +939,89 @@ int main(void)
         Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nRESULT: ALL TESTS PASSED! ✓\r\n");
         Uart_SendString(UART_MODULE_0, (const uint8*)"=========================================\r\n\r\n");
         
-        /* All tests passed - start continuous monitoring */
-        Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nStarting continuous encoder monitoring...\r\n");
-        Uart_SendString(UART_MODULE_0, (const uint8*)"Format: L Pos | L Dir | L Vel || R Pos | R Dir | R Vel\r\n");
-        Uart_SendString(UART_MODULE_0, (const uint8*)"--------------------------------------------------------\r\n");
+        /* All tests passed - start continuous monitoring with motor control */
+        Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nStarting continuous encoder and motor monitoring...\r\n");
+        Uart_SendString(UART_MODULE_0, (const uint8*)"Motors will be driven in test pattern to verify encoder tracking\r\n");
+        Uart_SendString(UART_MODULE_0, (const uint8*)"Format: L Pos | L Dir | L Vel | L Motor || R Pos | R Dir | R Vel | R Motor\r\n");
+        Uart_SendString(UART_MODULE_0, (const uint8*)"----------------------------------------------------------------------------\r\n");
+        
+        /* Initialize encoders and motors for monitoring */
+        Encoder_Init(&Encoder_Config);
+        Motor_Init(&Motor_Config);
+        
+        /* Reset encoder positions */
+        Encoder_ResetPosition(ENCODER_CHANNEL_LEFT);
+        Encoder_ResetPosition(ENCODER_CHANNEL_RIGHT);
+        Encoder_UpdateAll();
+        
+        /* Motor control state machine */
+        uint32 cycleCount = 0u;
+        uint32 state = 0u;  /* State: 0=Forward 30%, 1=Forward 60%, 2=Forward 90%, 3=Stop, 4=Reverse 30%, 5=Reverse 60%, 6=Reverse 90%, 7=Stop */
         
         while(1)
         {
-            /* Continuous monitoring loop */
+            /* Update encoders */
             Encoder_UpdateAll();
+            
+            /* Motor control pattern - change every 20 cycles (10 seconds at 500ms per cycle) */
+            if ((cycleCount % 20u) == 0u)
+            {
+                switch(state)
+                {
+                    case 0u:  /* Forward 30% */
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 30u, MOTOR_DIRECTION_FORWARD);
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_RIGHT, 30u, MOTOR_DIRECTION_FORWARD);
+                        Uart_SendString(UART_MODULE_0, (const uint8*)"[State: Forward 30%]\r\n");
+                        break;
+                    case 1u:  /* Forward 60% */
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 60u, MOTOR_DIRECTION_FORWARD);
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_RIGHT, 60u, MOTOR_DIRECTION_FORWARD);
+                        Uart_SendString(UART_MODULE_0, (const uint8*)"[State: Forward 60%]\r\n");
+                        break;
+                    case 2u:  /* Forward 90% */
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 90u, MOTOR_DIRECTION_FORWARD);
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_RIGHT, 90u, MOTOR_DIRECTION_FORWARD);
+                        Uart_SendString(UART_MODULE_0, (const uint8*)"[State: Forward 90%]\r\n");
+                        break;
+                    case 3u:  /* Stop */
+                        Motor_StopAll();
+                        Uart_SendString(UART_MODULE_0, (const uint8*)"[State: Stop/Brake]\r\n");
+                        break;
+                    case 4u:  /* Reverse 30% */
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 30u, MOTOR_DIRECTION_REVERSE);
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_RIGHT, 30u, MOTOR_DIRECTION_REVERSE);
+                        Uart_SendString(UART_MODULE_0, (const uint8*)"[State: Reverse 30%]\r\n");
+                        break;
+                    case 5u:  /* Reverse 60% */
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 60u, MOTOR_DIRECTION_REVERSE);
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_RIGHT, 60u, MOTOR_DIRECTION_REVERSE);
+                        Uart_SendString(UART_MODULE_0, (const uint8*)"[State: Reverse 60%]\r\n");
+                        break;
+                    case 6u:  /* Reverse 90% */
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, 90u, MOTOR_DIRECTION_REVERSE);
+                        Motor_SetSpeedAndDirection(MOTOR_CHANNEL_RIGHT, 90u, MOTOR_DIRECTION_REVERSE);
+                        Uart_SendString(UART_MODULE_0, (const uint8*)"[State: Reverse 90%]\r\n");
+                        break;
+                    case 7u:  /* Stop */
+                        Motor_StopAll();
+                        Uart_SendString(UART_MODULE_0, (const uint8*)"[State: Stop/Brake]\r\n");
+                        break;
+                    default:
+                        state = 0u;
+                        break;
+                }
+                
+                state++;
+                if (state > 7u)
+                {
+                    state = 0u;
+                }
+                
+                /* Give motors time to spin up after state change */
+                SimpleDelay(1000000);  /* 1 second delay for motors to spin up */
+            }
 
-            /* Left channel */
+            /* Left channel - Encoder */
             Uart_SendString(UART_MODULE_0, (const uint8*)"L Pos: ");
             Uart_SendIntSigned(UART_MODULE_0, (int32_t)Encoder_GetPositionCounts(ENCODER_CHANNEL_LEFT));
             Uart_SendString(UART_MODULE_0, (const uint8*)" | Dir: ");
@@ -633,8 +1035,37 @@ int main(void)
             }
             Uart_SendString(UART_MODULE_0, (const uint8*)" | Vel: ");
             Uart_SendIntSigned(UART_MODULE_0, Encoder_GetVelocityCountsPerSec(ENCODER_CHANNEL_LEFT));
+            
+            /* Left channel - Motor */
+            Uart_SendString(UART_MODULE_0, (const uint8*)" | Motor: ");
+            Motor_DataType motorDataL;
+            if (Motor_GetData(MOTOR_CHANNEL_LEFT, &motorDataL) == E_OK)
+            {
+                Uart_SendInt(UART_MODULE_0, motorDataL.SpeedPercent);
+                Uart_SendString(UART_MODULE_0, (const uint8*)"% ");
+                if (motorDataL.Direction == MOTOR_DIRECTION_FORWARD)
+                {
+                    Uart_SendString(UART_MODULE_0, (const uint8*)"FWD");
+                }
+                else if (motorDataL.Direction == MOTOR_DIRECTION_REVERSE)
+                {
+                    Uart_SendString(UART_MODULE_0, (const uint8*)"REV");
+                }
+                else if (motorDataL.Direction == MOTOR_DIRECTION_BRAKE)
+                {
+                    Uart_SendString(UART_MODULE_0, (const uint8*)"BRK");
+                }
+                else
+                {
+                    Uart_SendString(UART_MODULE_0, (const uint8*)"CST");
+                }
+            }
+            else
+            {
+                Uart_SendString(UART_MODULE_0, (const uint8*)"N/A");
+            }
 
-            /* Right channel */
+            /* Right channel - Encoder */
             Uart_SendString(UART_MODULE_0, (const uint8*)" || R Pos: ");
             Uart_SendIntSigned(UART_MODULE_0, (int32_t)Encoder_GetPositionCounts(ENCODER_CHANNEL_RIGHT));
             Uart_SendString(UART_MODULE_0, (const uint8*)" | Dir: ");
@@ -649,9 +1080,39 @@ int main(void)
             Uart_SendString(UART_MODULE_0, (const uint8*)" | Vel: ");
             Uart_SendIntSigned(UART_MODULE_0, Encoder_GetVelocityCountsPerSec(ENCODER_CHANNEL_RIGHT));
             
+            /* Right channel - Motor */
+            Uart_SendString(UART_MODULE_0, (const uint8*)" | Motor: ");
+            Motor_DataType motorDataR;
+            if (Motor_GetData(MOTOR_CHANNEL_RIGHT, &motorDataR) == E_OK)
+            {
+                Uart_SendInt(UART_MODULE_0, motorDataR.SpeedPercent);
+                Uart_SendString(UART_MODULE_0, (const uint8*)"% ");
+                if (motorDataR.Direction == MOTOR_DIRECTION_FORWARD)
+                {
+                    Uart_SendString(UART_MODULE_0, (const uint8*)"FWD");
+                }
+                else if (motorDataR.Direction == MOTOR_DIRECTION_REVERSE)
+                {
+                    Uart_SendString(UART_MODULE_0, (const uint8*)"REV");
+                }
+                else if (motorDataR.Direction == MOTOR_DIRECTION_BRAKE)
+                {
+                    Uart_SendString(UART_MODULE_0, (const uint8*)"BRK");
+                }
+                else
+                {
+                    Uart_SendString(UART_MODULE_0, (const uint8*)"CST");
+                }
+            }
+            else
+            {
+                Uart_SendString(UART_MODULE_0, (const uint8*)"N/A");
+            }
+            
             Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n");
             
-            SimpleDelay(500000);  /* 500ms delay */
+            cycleCount++;
+            SimpleDelay(500000);  /* 500ms delay between readings */
         }
     }
     else

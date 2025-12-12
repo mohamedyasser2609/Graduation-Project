@@ -20,7 +20,7 @@
 #ifndef ECUAL_IMU_IMU_H_
 #define ECUAL_IMU_IMU_H_
 
-#include "../../CONFIG/Std_Types.h"
+#include <Std_types.h>
 #include "../../MCAL/I2C/I2C.h"
 #include "IMU_Cfg.h"
 

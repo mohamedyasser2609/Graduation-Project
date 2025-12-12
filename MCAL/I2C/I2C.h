@@ -21,52 +21,8 @@
 #define MCAL_I2C_I2C_H_
 
 #include "../../CONFIG/Std_Types.h"
+#include "I2C_Types.h"
 #include "I2C_Cfg.h"
-
-/* ===================[I2C Module Selection]=================== */
-typedef enum {
-    I2C_MODULE_0 = 0,
-    I2C_MODULE_1 = 1,
-    I2C_MODULE_2 = 2,
-    I2C_MODULE_3 = 3
-} I2C_ModuleType;
-
-/* ===================[I2C Mode]=================== */
-typedef enum {
-    I2C_MODE_MASTER = 0,
-    I2C_MODE_SLAVE = 1
-} I2C_ModeType;
-
-/* ===================[I2C Speed]=================== */
-typedef enum {
-    I2C_SPEED_STANDARD = 0,    /* 100 kHz */
-    I2C_SPEED_FAST = 1          /* 400 kHz */
-} I2C_SpeedType;
-
-/* ===================[I2C Slave Configuration]=================== */
-typedef struct {
-    uint8 OwnAddress;              /* Slave's own 7-bit address */
-    boolean DualAddressEnable;     /* Enable secondary address */
-    uint8 SecondaryAddress;        /* Secondary 7-bit address (if enabled) */
-} I2C_SlaveConfigType;
-
-/* ===================[I2C Configuration]=================== */
-typedef struct {
-    I2C_ModuleType Module;
-    I2C_ModeType Mode;
-    I2C_SpeedType Speed;
-    I2C_SlaveConfigType* SlaveConfig;  /* NULL for master mode */
-} I2C_ConfigType;
-
-/* ===================[I2C Status]=================== */
-typedef enum {
-    I2C_STATUS_IDLE = 0,
-    I2C_STATUS_BUSY,
-    I2C_STATUS_ERROR,
-    I2C_STATUS_ARBITRATION_LOST,
-    I2C_STATUS_DATA_NACK,
-    I2C_STATUS_ADDR_NACK
-} I2C_StatusType;
 
 /* ===================[Function Prototypes]=================== */
 
