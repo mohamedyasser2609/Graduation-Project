@@ -221,6 +221,47 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
         .AlternateFuncNum = 6u,  /* QEI0 Index */
         .DirectionChangeable = FALSE
     },
+
+    /* QEI1 Pins - Port C (PC5=PhA1, PC6=PhB1, PC4=Index1) */
+    {
+        .Port = GPIO_PORT_C,
+        .Pin = GPIO_PIN_5,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for encoder signals */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI1 PhA */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_C,
+        .Pin = GPIO_PIN_6,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for encoder signals */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI1 PhB */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_C,
+        .Pin = GPIO_PIN_4,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for index signal */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI1 Index */
+        .DirectionChangeable = FALSE
+    },
     
     /* General Purpose Digital I/O - Port E */
     {
