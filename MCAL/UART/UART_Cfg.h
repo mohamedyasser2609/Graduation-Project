@@ -81,10 +81,14 @@
 
 /* ===================[System Clock Configuration]=================== */
 /**
- * @brief System clock frequency (used for baud rate calculations)
- * @details Default: 16 MHz (without PLL), can be 80 MHz with PLL enabled
+ * @brief System clock frequency (DEPRECATED - No longer used)
+ * @details The UART driver now dynamically queries the system clock from
+ *          Mcu_GetSystemClock() at initialization time. This ensures the
+ *          baud rate is always correct regardless of clock frequency.
+ * @note This define is kept for backward compatibility but is NOT used.
+ *       The driver automatically adapts to any system clock frequency!
  */
-#define UART_SYSTEM_CLOCK_HZ                (16000000UL)  /* 16 MHz */
+#define UART_SYSTEM_CLOCK_HZ                (80000000UL)  /* DEPRECATED - Not used */
 
 /* ===================[Buffer Sizes]=================== */
 /**

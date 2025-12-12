@@ -14,7 +14,7 @@
 #define MCAL_TIMER_TIMER_H_
 
 /* ===================[Includes]=================== */
-#include "../../CONFIG/Std_Types.h"
+#include <Std_types.h>
 #include "../../CONFIG/Det.h"
 #include "Timer_Types.h"
 #include "Timer_Cfg.h"

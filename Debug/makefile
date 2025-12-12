@@ -11,9 +11,9 @@ GEN_CMDS__FLAG :=
 
 ORDERED_OBJS += \
 "./main.obj" \
-"./main_gps.obj" \
-"./main_imu.obj" \
-"./main_mcu_test.obj" \
+"./main_gps_production.obj" \
+"./main_imu_test.obj" \
+"./main_qei_test.obj" \
 "./main_ros2.obj" \
 "./tm4c123gh6pm_startup_ccs.obj" \
 "./APP/App_ControlTask.obj" \
@@ -21,15 +21,20 @@ ORDERED_OBJS += \
 "./APP/App_SafteyTask.obj" \
 "./APP/App_SensorTask.obj" \
 "./APP/App_commTask.obj" \
+"./APP/Robot_Control.obj" \
 "./CONFIG/Det.obj" \
 "./ECUAL/Button/Button.obj" \
 "./ECUAL/Button/Button_PBCfg.obj" \
 "./ECUAL/ENCODER/ENCODER.obj" \
+"./ECUAL/ENCODER/ENCODER_PBCfg.obj" \
 "./ECUAL/GPS/GPS.obj" \
+"./ECUAL/GPS/GPS_PBCfg.obj" \
 "./ECUAL/IMU/IMU.obj" \
+"./ECUAL/IMU/IMU_PBCfg.obj" \
 "./ECUAL/LED/LED.obj" \
 "./ECUAL/LED/Led_PBCfg.obj" \
 "./ECUAL/MOTOR/MOTOR.obj" \
+"./ECUAL/MOTOR/MOTOR_PBCfg.obj" \
 "./FreeRTOS/Source/croutine.obj" \
 "./FreeRTOS/Source/event_groups.obj" \
 "./FreeRTOS/Source/list.obj" \
@@ -42,6 +47,7 @@ ORDERED_OBJS += \
 "./MCAL/GPIO/GPIO.obj" \
 "./MCAL/GPIO/Gpio_PBCfg.obj" \
 "./MCAL/I2C/I2C.obj" \
+"./MCAL/I2C/I2C_PBCfg.obj" \
 "./MCAL/MCU/MCU.obj" \
 "./MCAL/MCU/Mcu_PBcfg.obj" \
 "./MCAL/NVIC/NVIC.obj" \
@@ -59,6 +65,8 @@ ORDERED_OBJS += \
 "./SERVICES/COMM/ComStack.obj" \
 "./SERVICES/COMM/UART_ComBridge.obj" \
 "./SERVICES/DIAG/Diagnostics.obj" \
+"./SERVICES/PID/PID.obj" \
+"./SERVICES/PID/PID_PBCfg.obj" \
 "./SERVICES/RTOS/Tasks_Init.obj" \
 "./SERVICES/SYSTEM/System_Init.obj" \
 "./SERVICES/SYSTEM/System_Tasks.obj" \
@@ -96,6 +104,7 @@ RMDIR := RMDIR /S/Q
 -include MCAL/WDG/subdir_vars.mk
 -include SERVICES/COMM/subdir_vars.mk
 -include SERVICES/DIAG/subdir_vars.mk
+-include SERVICES/PID/subdir_vars.mk
 -include SERVICES/RTOS/subdir_vars.mk
 -include SERVICES/SYSTEM/subdir_vars.mk
 -include subdir_rules.mk
@@ -121,6 +130,7 @@ RMDIR := RMDIR /S/Q
 -include MCAL/WDG/subdir_rules.mk
 -include SERVICES/COMM/subdir_rules.mk
 -include SERVICES/DIAG/subdir_rules.mk
+-include SERVICES/PID/subdir_rules.mk
 -include SERVICES/RTOS/subdir_rules.mk
 -include SERVICES/SYSTEM/subdir_rules.mk
 -include objects.mk
@@ -240,10 +250,10 @@ Graduation_Project.out: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(EXE_OUTPUTS__QUOTED)
-	-$(RM) "main.obj" "main_gps.obj" "main_imu.obj" "main_mcu_test.obj" "main_ros2.obj" "tm4c123gh6pm_startup_ccs.obj" "APP\App_ControlTask.obj" "APP\App_Main.obj" "APP\App_SafteyTask.obj" "APP\App_SensorTask.obj" "APP\App_commTask.obj" "CONFIG\Det.obj" "ECUAL\Button\Button.obj" "ECUAL\Button\Button_PBCfg.obj" "ECUAL\ENCODER\ENCODER.obj" "ECUAL\GPS\GPS.obj" "ECUAL\IMU\IMU.obj" "ECUAL\LED\LED.obj" "ECUAL\LED\Led_PBCfg.obj" "ECUAL\MOTOR\MOTOR.obj" "FreeRTOS\Source\croutine.obj" "FreeRTOS\Source\event_groups.obj" "FreeRTOS\Source\list.obj" "FreeRTOS\Source\queue.obj" "FreeRTOS\Source\tasks.obj" "FreeRTOS\Source\timers.obj" "FreeRTOS\Source\portable\CCS\ARM_CM3\port.obj" "FreeRTOS\Source\portable\CCS\ARM_CM3\portasm.obj" "FreeRTOS\Source\portable\MemMang\heap_4.obj" "MCAL\GPIO\GPIO.obj" "MCAL\GPIO\Gpio_PBCfg.obj" "MCAL\I2C\I2C.obj" "MCAL\MCU\MCU.obj" "MCAL\MCU\Mcu_PBcfg.obj" "MCAL\NVIC\NVIC.obj" "MCAL\NVIC\NVIC_PBCfg.obj" "MCAL\PWM\PWM.obj" "MCAL\PWM\PWM_PBCfg.obj" "MCAL\QEI\QEI.obj" "MCAL\QEI\QEI_PBCfg.obj" 
-	-$(RM) "MCAL\TIMER\TIMER.obj" "MCAL\TIMER\Timer_PBCfg.obj" "MCAL\UART\UART.obj" "MCAL\UART\Uart_PBCfg.obj" "MCAL\WDG\WDG.obj" "MCAL\WDG\WDG_PBCfg.obj" "SERVICES\COMM\ComStack.obj" "SERVICES\COMM\UART_ComBridge.obj" "SERVICES\DIAG\Diagnostics.obj" "SERVICES\RTOS\Tasks_Init.obj" "SERVICES\SYSTEM\System_Init.obj" "SERVICES\SYSTEM\System_Tasks.obj" 
-	-$(RM) "main.d" "main_gps.d" "main_imu.d" "main_mcu_test.d" "main_ros2.d" "tm4c123gh6pm_startup_ccs.d" "APP\App_ControlTask.d" "APP\App_Main.d" "APP\App_SafteyTask.d" "APP\App_SensorTask.d" "APP\App_commTask.d" "CONFIG\Det.d" "ECUAL\Button\Button.d" "ECUAL\Button\Button_PBCfg.d" "ECUAL\ENCODER\ENCODER.d" "ECUAL\GPS\GPS.d" "ECUAL\IMU\IMU.d" "ECUAL\LED\LED.d" "ECUAL\LED\Led_PBCfg.d" "ECUAL\MOTOR\MOTOR.d" "FreeRTOS\Source\croutine.d" "FreeRTOS\Source\event_groups.d" "FreeRTOS\Source\list.d" "FreeRTOS\Source\queue.d" "FreeRTOS\Source\tasks.d" "FreeRTOS\Source\timers.d" "FreeRTOS\Source\portable\CCS\ARM_CM3\port.d" "FreeRTOS\Source\portable\MemMang\heap_4.d" "MCAL\GPIO\GPIO.d" "MCAL\GPIO\Gpio_PBCfg.d" "MCAL\I2C\I2C.d" "MCAL\MCU\MCU.d" "MCAL\MCU\Mcu_PBcfg.d" "MCAL\NVIC\NVIC.d" "MCAL\NVIC\NVIC_PBCfg.d" "MCAL\PWM\PWM.d" "MCAL\PWM\PWM_PBCfg.d" "MCAL\QEI\QEI.d" "MCAL\QEI\QEI_PBCfg.d" "MCAL\TIMER\TIMER.d" "MCAL\TIMER\Timer_PBCfg.d" "MCAL\UART\UART.d" "MCAL\UART\Uart_PBCfg.d" "MCAL\WDG\WDG.d" "MCAL\WDG\WDG_PBCfg.d" 
-	-$(RM) "SERVICES\COMM\ComStack.d" "SERVICES\COMM\UART_ComBridge.d" "SERVICES\DIAG\Diagnostics.d" "SERVICES\RTOS\Tasks_Init.d" "SERVICES\SYSTEM\System_Init.d" "SERVICES\SYSTEM\System_Tasks.d" 
+	-$(RM) "main.obj" "main_gps_production.obj" "main_imu_test.obj" "main_qei_test.obj" "main_ros2.obj" "tm4c123gh6pm_startup_ccs.obj" "APP\App_ControlTask.obj" "APP\App_Main.obj" "APP\App_SafteyTask.obj" "APP\App_SensorTask.obj" "APP\App_commTask.obj" "APP\Robot_Control.obj" "CONFIG\Det.obj" "ECUAL\Button\Button.obj" "ECUAL\Button\Button_PBCfg.obj" "ECUAL\ENCODER\ENCODER.obj" "ECUAL\ENCODER\ENCODER_PBCfg.obj" "ECUAL\GPS\GPS.obj" "ECUAL\GPS\GPS_PBCfg.obj" "ECUAL\IMU\IMU.obj" "ECUAL\IMU\IMU_PBCfg.obj" "ECUAL\LED\LED.obj" "ECUAL\LED\Led_PBCfg.obj" "ECUAL\MOTOR\MOTOR.obj" "ECUAL\MOTOR\MOTOR_PBCfg.obj" "FreeRTOS\Source\croutine.obj" "FreeRTOS\Source\event_groups.obj" "FreeRTOS\Source\list.obj" "FreeRTOS\Source\queue.obj" "FreeRTOS\Source\tasks.obj" "FreeRTOS\Source\timers.obj" "FreeRTOS\Source\portable\CCS\ARM_CM3\port.obj" "FreeRTOS\Source\portable\CCS\ARM_CM3\portasm.obj" "FreeRTOS\Source\portable\MemMang\heap_4.obj" "MCAL\GPIO\GPIO.obj" "MCAL\GPIO\Gpio_PBCfg.obj" "MCAL\I2C\I2C.obj" "MCAL\I2C\I2C_PBCfg.obj" 
+	-$(RM) "MCAL\MCU\MCU.obj" "MCAL\MCU\Mcu_PBcfg.obj" "MCAL\NVIC\NVIC.obj" "MCAL\NVIC\NVIC_PBCfg.obj" "MCAL\PWM\PWM.obj" "MCAL\PWM\PWM_PBCfg.obj" "MCAL\QEI\QEI.obj" "MCAL\QEI\QEI_PBCfg.obj" "MCAL\TIMER\TIMER.obj" "MCAL\TIMER\Timer_PBCfg.obj" "MCAL\UART\UART.obj" "MCAL\UART\Uart_PBCfg.obj" "MCAL\WDG\WDG.obj" "MCAL\WDG\WDG_PBCfg.obj" "SERVICES\COMM\ComStack.obj" "SERVICES\COMM\UART_ComBridge.obj" "SERVICES\DIAG\Diagnostics.obj" "SERVICES\PID\PID.obj" "SERVICES\PID\PID_PBCfg.obj" "SERVICES\RTOS\Tasks_Init.obj" "SERVICES\SYSTEM\System_Init.obj" "SERVICES\SYSTEM\System_Tasks.obj" 
+	-$(RM) "main.d" "main_gps_production.d" "main_imu_test.d" "main_qei_test.d" "main_ros2.d" "tm4c123gh6pm_startup_ccs.d" "APP\App_ControlTask.d" "APP\App_Main.d" "APP\App_SafteyTask.d" "APP\App_SensorTask.d" "APP\App_commTask.d" "APP\Robot_Control.d" "CONFIG\Det.d" "ECUAL\Button\Button.d" "ECUAL\Button\Button_PBCfg.d" "ECUAL\ENCODER\ENCODER.d" "ECUAL\ENCODER\ENCODER_PBCfg.d" "ECUAL\GPS\GPS.d" "ECUAL\GPS\GPS_PBCfg.d" "ECUAL\IMU\IMU.d" "ECUAL\IMU\IMU_PBCfg.d" "ECUAL\LED\LED.d" "ECUAL\LED\Led_PBCfg.d" "ECUAL\MOTOR\MOTOR.d" "ECUAL\MOTOR\MOTOR_PBCfg.d" "FreeRTOS\Source\croutine.d" "FreeRTOS\Source\event_groups.d" "FreeRTOS\Source\list.d" "FreeRTOS\Source\queue.d" "FreeRTOS\Source\tasks.d" "FreeRTOS\Source\timers.d" "FreeRTOS\Source\portable\CCS\ARM_CM3\port.d" "FreeRTOS\Source\portable\MemMang\heap_4.d" "MCAL\GPIO\GPIO.d" "MCAL\GPIO\Gpio_PBCfg.d" "MCAL\I2C\I2C.d" "MCAL\I2C\I2C_PBCfg.d" "MCAL\MCU\MCU.d" "MCAL\MCU\Mcu_PBcfg.d" "MCAL\NVIC\NVIC.d" "MCAL\NVIC\NVIC_PBCfg.d" "MCAL\PWM\PWM.d" "MCAL\PWM\PWM_PBCfg.d" 
+	-$(RM) "MCAL\QEI\QEI.d" "MCAL\QEI\QEI_PBCfg.d" "MCAL\TIMER\TIMER.d" "MCAL\TIMER\Timer_PBCfg.d" "MCAL\UART\UART.d" "MCAL\UART\Uart_PBCfg.d" "MCAL\WDG\WDG.d" "MCAL\WDG\WDG_PBCfg.d" "SERVICES\COMM\ComStack.d" "SERVICES\COMM\UART_ComBridge.d" "SERVICES\DIAG\Diagnostics.d" "SERVICES\PID\PID.d" "SERVICES\PID\PID_PBCfg.d" "SERVICES\RTOS\Tasks_Init.d" "SERVICES\SYSTEM\System_Init.d" "SERVICES\SYSTEM\System_Tasks.d" 
 	-$(RM) "FreeRTOS\Source\portable\CCS\ARM_CM3\portasm.d" 
 	-@echo 'Finished clean'
 	-@echo ' '

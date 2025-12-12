@@ -9,7 +9,7 @@
 #define MCAL_NVIC_NVIC_H_
 
 /* ===================[Includes]=================== */
-#include "../../CONFIG/Std_Types.h"
+#include <Std_types.h>
 #include "../../CONFIG/Compiler.h"
 #include "../../CONFIG/Det.h"
 #include "NVIC_Types.h"

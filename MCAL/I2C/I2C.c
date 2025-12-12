@@ -10,6 +10,7 @@
 
 #include "I2C.h"
 #include "tm4c123gh6pm.h"
+#include "../MCU/Mcu.h"  /* For Mcu_GetSystemClock() */
 
 /* ===================[I2C Register Structure]=================== */
 typedef struct {
@@ -116,13 +117,23 @@ void I2C_Init(const I2C_ConfigType* ConfigPtr) {
     
     /* Configure I2C clock speed */
     /* TPR = (System Clock / (2 * (SCL_LP + SCL_HP) * SCL_CLK)) - 1 */
-    /* For 100kHz: TPR = (16MHz / (2 * 10 * 100kHz)) - 1 = 7 */
-    /* For 400kHz: TPR = (16MHz / (2 * 10 * 400kHz)) - 1 = 1 */
+    /* SCL_LP + SCL_HP = 10 (default) */
+    /* For 100kHz @ 80MHz: TPR = (80MHz / (2 * 10 * 100kHz)) - 1 = 39 */
+    /* For 400kHz @ 80MHz: TPR = (80MHz / (2 * 10 * 400kHz)) - 1 = 9 */
+    /* For 100kHz @ 16MHz: TPR = (16MHz / (2 * 10 * 100kHz)) - 1 = 7 */
+    /* For 400kHz @ 16MHz: TPR = (16MHz / (2 * 10 * 400kHz)) - 1 = 1 */
+    
+    /* Get actual system clock from MCU driver */
+    uint32 sysClock = Mcu_GetSystemClock();
     
     if (ConfigPtr->Speed == I2C_SPEED_STANDARD) {
-        tpr = 7;  /* 100 kHz */
+        /* 100 kHz */
+        tpr = (sysClock / (2 * 10 * 100000)) - 1;
+        if (tpr < 1) tpr = 1;  /* Minimum value */
     } else {
-        tpr = 1;  /* 400 kHz */
+        /* 400 kHz */
+        tpr = (sysClock / (2 * 10 * 400000)) - 1;
+        if (tpr < 1) tpr = 1;  /* Minimum value */
     }
     
     *regs->MTPR = tpr;
@@ -332,8 +343,10 @@ Std_ReturnType I2C_WriteRegister(I2C_ModuleType Module, uint8 SlaveAddr, uint8 R
 
 /**
  * @brief Read from a specific register of an I2C slave device
+ * @details Implements proper I2C register read with repeated start
  */
 Std_ReturnType I2C_ReadRegister(I2C_ModuleType Module, uint8 SlaveAddr, uint8 RegAddr, uint8* Data, uint8 Length) {
+    uint8 i;
     const I2C_RegistersType* regs;
     
     if (Data == NULL_PTR || Length == 0 || Module > I2C_MODULE_3) {
@@ -347,12 +360,64 @@ Std_ReturnType I2C_ReadRegister(I2C_ModuleType Module, uint8 SlaveAddr, uint8 Re
         return E_NOT_OK;
     }
     
-    /* Set slave address for write (to send register address) */
-    *regs->MSA = (SlaveAddr << 1) | 0x00;
-    
-    /* Send register address */
+    /* Step 1: Write register address (no STOP for repeated start) */
+    *regs->MSA = (SlaveAddr << 1) | 0x00;  /* Write mode */
     *regs->MDR = RegAddr;
-    *regs->MCS = I2C_MCS_START | I2C_MCS_RUN;
+    *regs->MCS = I2C_MCS_START | I2C_MCS_RUN;  /* No STOP - will do repeated start */
+    
+    /* Wait for register address to be sent */
+    if (I2C_WaitBusy(Module) != E_OK) {
+        return E_NOT_OK;
+    }
+    if (I2C_CheckError(Module) != E_OK) {
+        return E_NOT_OK;
+    }
+    
+    /* Step 2: Repeated start for read (bus should still be in transaction) */
+    *regs->MSA = (SlaveAddr << 1) | 0x01;  /* Read mode */
+    
+    if (Length == 1) {
+        /* Single byte read */
+        *regs->MCS = I2C_MCS_START | I2C_MCS_RUN | I2C_MCS_STOP;
+        
+        if (I2C_WaitBusy(Module) != E_OK) {
+            return E_NOT_OK;
+        }
+        if (I2C_CheckError(Module) != E_OK) {
+            return E_NOT_OK;
+        }
+        
+        Data[0] = (uint8)*regs->MDR;
+    } else {
+        /* Multi-byte read */
+        *regs->MCS = I2C_MCS_START | I2C_MCS_RUN | I2C_MCS_ACK;
+        
+        if (I2C_WaitBusy(Module) != E_OK) {
+            return E_NOT_OK;
+        }
+        if (I2C_CheckError(Module) != E_OK) {
+            return E_NOT_OK;
+        }
+        
+        /* Read first byte */
+        Data[0] = (uint8)*regs->MDR;
+        
+        /* Read middle bytes */
+        for (i = 1; i < (Length - 1); i++) {
+            *regs->MCS = I2C_MCS_RUN | I2C_MCS_ACK;
+            
+            if (I2C_WaitBusy(Module) != E_OK) {
+                return E_NOT_OK;
+            }
+            if (I2C_CheckError(Module) != E_OK) {
+                return E_NOT_OK;
+            }
+            
+            Data[i] = (uint8)*regs->MDR;
+        }
+        
+        /* Read last byte with NACK and STOP */
+        *regs->MCS = I2C_MCS_RUN | I2C_MCS_STOP;
     
     if (I2C_WaitBusy(Module) != E_OK) {
         return E_NOT_OK;
@@ -361,8 +426,10 @@ Std_ReturnType I2C_ReadRegister(I2C_ModuleType Module, uint8 SlaveAddr, uint8 Re
         return E_NOT_OK;
     }
     
-    /* Now read the data using repeated start */
-    return I2C_MasterReceive(Module, SlaveAddr, Data, Length);
+        Data[Length - 1] = (uint8)*regs->MDR;
+    }
+    
+    return E_OK;
 }
 
 /**
@@ -438,21 +505,55 @@ void I2C_Reset(I2C_ModuleType Module) {
 
 /**
  * @brief Scan I2C bus for devices
+ * @details Improved scan that properly checks for address acknowledgment
  */
 uint8 I2C_ScanBus(I2C_ModuleType Module, uint8* FoundAddresses, uint8 MaxDevices) {
     uint8 addr;
-    uint8 dummy;
     uint8 count = 0;
+    const I2C_RegistersType* regs;
+    uint32 status;
     
     if (FoundAddresses == NULL_PTR || MaxDevices == 0 || Module > I2C_MODULE_3) {
         return 0;
     }
     
+    regs = &I2C_Registers[Module];
+    
     /* Scan addresses 0x08 to 0x77 (valid 7-bit addresses) */
     for (addr = 0x08; addr < 0x78 && count < MaxDevices; addr++) {
-        /* Try to read from this address */
-        if (I2C_MasterReceive(Module, addr, &dummy, 1) == E_OK) {
+        /* Wait for bus to be ready */
+        if (I2C_WaitBusy(Module) != E_OK) {
+            continue;  /* Skip this address if bus is stuck */
+        }
+        
+        /* Set slave address for read */
+        *regs->MSA = (addr << 1) | 0x01;  /* R/S = 1 for read */
+        
+        /* Try to read one byte */
+        *regs->MCS = I2C_MCS_START | I2C_MCS_RUN | I2C_MCS_STOP;
+        
+        /* Wait for transaction to complete */
+        if (I2C_WaitBusy(Module) != E_OK) {
+            /* Clear any error */
+            *regs->MCS = I2C_MCS_STOP;
+            continue;
+        }
+        
+        /* Check status - device exists if ADRACK is set and ERROR is not set */
+        status = *regs->MCS;
+        if ((status & I2C_MCS_ERROR) == 0 && (status & I2C_MCS_ADRACK)) {
+            /* Address was acknowledged - device exists */
+            (void)*regs->MDR;  /* Read data to clear (value not used) */
             FoundAddresses[count++] = addr;
+        } else {
+            /* Address not acknowledged or error - no device */
+            *regs->MCS = I2C_MCS_STOP;  /* Clear error */
+        }
+        
+        /* Small delay between scans */
+        {
+            volatile uint32 delay = 1000;
+            while (delay > 0) delay--;
         }
     }
     

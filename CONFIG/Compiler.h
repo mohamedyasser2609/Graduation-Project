@@ -14,7 +14,7 @@
 #define CONFIG_COMPILER_H_
 
 /* Include standard types */
-#include "std_types.h"
+#include <Std_types.h>
 
 /* Include offsetof for TI ARM compiler */
 #ifdef COMPILER_TI_CCS

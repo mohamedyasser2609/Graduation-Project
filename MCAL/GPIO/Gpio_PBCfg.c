@@ -152,14 +152,43 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
         .DirectionChangeable = FALSE
     },
     
+    /* Motor PWM Pins - Port A (PA6=M0PWM0 Left Motor, PA7=M0PWM1 Right Motor) */
+    {
+        .Port = GPIO_PORT_A,
+        .Pin = GPIO_PIN_6,
+        .Direction = GPIO_PIN_OUT,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_OFF,
+        .DriveStrength = GPIO_DRIVE_4MA,  /* Higher drive for motor control */
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 4u,  /* M0PWM0 - Left Motor PWM */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_A,
+        .Pin = GPIO_PIN_7,
+        .Direction = GPIO_PIN_OUT,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_OFF,
+        .DriveStrength = GPIO_DRIVE_4MA,  /* Higher drive for motor control */
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 4u,  /* M0PWM1 - Right Motor PWM */
+        .DirectionChangeable = FALSE
+    },
+    
     /* I2C0 Pins - Port B (PB2=SCL, PB3=SDA) */
+    /* Note: I2C requires open drain mode. Internal pull-ups are enabled via manual configuration. */
     {
         .Port = GPIO_PORT_B,
         .Pin = GPIO_PIN_2,
         .Direction = GPIO_PIN_OUT,
         .InitialLevel = GPIO_LEVEL_HIGH,
         .Mode = GPIO_MODE_ALT_FUNC,
-        .InternalResistor = GPIO_RESISTOR_OPEN_DRAIN,
+        .InternalResistor = GPIO_RESISTOR_OPEN_DRAIN,  /* I2C requires open drain */
         .DriveStrength = GPIO_DRIVE_2MA,
         .SlewRate = GPIO_SLEW_RATE_NORMAL,
         .IntTrigger = GPIO_INT_DISABLED,
@@ -172,11 +201,93 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
         .Direction = GPIO_PIN_OUT,
         .InitialLevel = GPIO_LEVEL_HIGH,
         .Mode = GPIO_MODE_ALT_FUNC,
-        .InternalResistor = GPIO_RESISTOR_OPEN_DRAIN,
+        .InternalResistor = GPIO_RESISTOR_OPEN_DRAIN,  /* I2C requires open drain */
         .DriveStrength = GPIO_DRIVE_2MA,
         .SlewRate = GPIO_SLEW_RATE_NORMAL,
         .IntTrigger = GPIO_INT_DISABLED,
         .AlternateFuncNum = 3u,  /* I2C0 SDA */
+        .DirectionChangeable = FALSE
+    },
+    
+    /* QEI0 Pins - Port D (PD6=PhA, PD7=PhB, PD3=Index) */
+    {
+        .Port = GPIO_PORT_D,
+        .Pin = GPIO_PIN_6,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for encoder signals */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI0 PhA */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_D,
+        .Pin = GPIO_PIN_7,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for encoder signals */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI0 PhB */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_D,
+        .Pin = GPIO_PIN_3,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for index signal */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI0 Index */
+        .DirectionChangeable = FALSE
+    },
+
+    /* QEI1 Pins - Port C (PC5=PhA1, PC6=PhB1, PC4=Index1) */
+    {
+        .Port = GPIO_PORT_C,
+        .Pin = GPIO_PIN_5,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for encoder signals */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI1 PhA */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_C,
+        .Pin = GPIO_PIN_6,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for encoder signals */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI1 PhB */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_C,
+        .Pin = GPIO_PIN_4,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,  /* Pull-up for index signal */
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI1 Index */
         .DirectionChangeable = FALSE
     },
     
@@ -193,7 +304,62 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
         .IntTrigger = GPIO_INT_DISABLED,
         .AlternateFuncNum = 0u,
         .DirectionChangeable = TRUE  /* Direction can be changed at runtime */
-    }
+    },
+    
+    /* Motor PWM Pins - PB6 (Left) & PB7 (Right) -> PWM Module 0 */
+        {
+            .Port = GPIO_PORT_B,
+            .Pin = GPIO_PIN_6,
+            .Direction = GPIO_PIN_OUT,
+            .InitialLevel = GPIO_LEVEL_LOW,
+            .Mode = GPIO_MODE_ALT_FUNC,
+            .InternalResistor = GPIO_RESISTOR_OFF,
+            .DriveStrength = GPIO_DRIVE_8MA,
+            .SlewRate = GPIO_SLEW_RATE_NORMAL,
+            .IntTrigger = GPIO_INT_DISABLED,
+            .AlternateFuncNum = 4u, /* CRITICAL: AF 4 connects PB6 to M0PWM0 */
+            .DirectionChangeable = FALSE
+        },
+        {
+            .Port = GPIO_PORT_B,
+            .Pin = GPIO_PIN_7,
+            .Direction = GPIO_PIN_OUT,
+            .InitialLevel = GPIO_LEVEL_LOW,
+            .Mode = GPIO_MODE_ALT_FUNC,
+            .InternalResistor = GPIO_RESISTOR_OFF,
+            .DriveStrength = GPIO_DRIVE_8MA,
+            .SlewRate = GPIO_SLEW_RATE_NORMAL,
+            .IntTrigger = GPIO_INT_DISABLED,
+            .AlternateFuncNum = 4u, /* CRITICAL: AF 4 connects PB7 to M0PWM1 */
+            .DirectionChangeable = FALSE
+        },
+
+        {
+                .Port = GPIO_PORT_E,
+                .Pin = GPIO_PIN_1,  /* Left Motor Direction */
+                .Direction = GPIO_PIN_OUT,
+                .InitialLevel = GPIO_LEVEL_LOW,
+                .Mode = GPIO_MODE_DIO,
+                .InternalResistor = GPIO_RESISTOR_OFF,
+                .DriveStrength = GPIO_DRIVE_4MA,
+                .SlewRate = GPIO_SLEW_RATE_NORMAL,
+                .IntTrigger = GPIO_INT_DISABLED,
+                .AlternateFuncNum = 0u,
+                .DirectionChangeable = FALSE
+            },
+            {
+                .Port = GPIO_PORT_E,
+                .Pin = GPIO_PIN_2,  /* Right Motor Direction */
+                .Direction = GPIO_PIN_OUT,
+                .InitialLevel = GPIO_LEVEL_LOW,
+                .Mode = GPIO_MODE_DIO,
+                .InternalResistor = GPIO_RESISTOR_OFF,
+                .DriveStrength = GPIO_DRIVE_4MA,
+                .SlewRate = GPIO_SLEW_RATE_NORMAL,
+                .IntTrigger = GPIO_INT_DISABLED,
+                .AlternateFuncNum = 0u,
+                .DirectionChangeable = FALSE
+            },
 };
 
 /* ===================[GPIO Configuration Structure]=================== */

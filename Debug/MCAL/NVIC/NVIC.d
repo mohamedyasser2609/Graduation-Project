@@ -2,7 +2,7 @@
 
 MCAL/NVIC/NVIC.obj: ../MCAL/NVIC/NVIC.c
 MCAL/NVIC/NVIC.obj: ../MCAL/NVIC/NVIC.h
-MCAL/NVIC/NVIC.obj: ../CONFIG/Std_Types.h
+MCAL/NVIC/NVIC.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 MCAL/NVIC/NVIC.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 MCAL/NVIC/NVIC.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 MCAL/NVIC/NVIC.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -24,7 +24,7 @@ MCAL/NVIC/NVIC.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ wo
 
 ../MCAL/NVIC/NVIC.h:
 
-../CONFIG/Std_Types.h:
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

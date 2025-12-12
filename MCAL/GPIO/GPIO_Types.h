@@ -14,7 +14,7 @@
 #define MCAL_GPIO_GPIO_TYPES_H_
 
 /* ===================[Includes]=================== */
-#include "../../CONFIG/std_types.h"
+#include <Std_types.h>
 #include "../../CONFIG/Platform_Types.h"
 
 /* ===================[Version Information]=================== */

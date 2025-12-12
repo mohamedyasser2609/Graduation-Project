@@ -14,7 +14,7 @@
 #define CONFIG_DET_H_
 
 /* Include standard types */
-#include "std_types.h"
+#include <Std_types.h>
 
 /* ===================[DET Configuration]=================== */
 #define DET_SW_MAJOR_VERSION         (1u)

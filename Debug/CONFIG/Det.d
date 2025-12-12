@@ -2,7 +2,7 @@
 
 CONFIG/Det.obj: ../CONFIG/Det.c
 CONFIG/Det.obj: ../CONFIG/Det.h
-CONFIG/Det.obj: ../CONFIG/std_types.h
+CONFIG/Det.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 CONFIG/Det.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 CONFIG/Det.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 CONFIG/Det.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -24,7 +24,7 @@ CONFIG/Det.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/x
 
 ../CONFIG/Det.h:
 
-../CONFIG/std_types.h:
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

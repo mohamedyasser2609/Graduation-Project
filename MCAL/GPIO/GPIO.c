@@ -250,30 +250,42 @@ static void Gpio_ConfigurePin(const Gpio_PinConfigType* PinConfig)
     }
     
     /* Configure internal resistor */
-    switch(PinConfig->InternalResistor) {
-        case GPIO_RESISTOR_PULL_UP:
-            portReg->PUR |= pinMask;
-            portReg->PDR &= ~pinMask;
-            portReg->ODR &= ~pinMask;
-            break;
-            
-        case GPIO_RESISTOR_PULL_DOWN:
-            portReg->PDR |= pinMask;
-            portReg->PUR &= ~pinMask;
-            portReg->ODR &= ~pinMask;
-            break;
-            
-        case GPIO_RESISTOR_OPEN_DRAIN:
-            portReg->ODR |= pinMask;
-            portReg->PUR &= ~pinMask;
-            portReg->PDR &= ~pinMask;
-            break;
-            
-        default: /* GPIO_RESISTOR_OFF */
-            portReg->PUR &= ~pinMask;
-            portReg->PDR &= ~pinMask;
-            portReg->ODR &= ~pinMask;
-            break;
+    /* Special case: I2C pins need both open drain AND pull-up */
+    if (PinConfig->Mode == GPIO_MODE_ALT_FUNC && 
+        (PinConfig->AlternateFuncNum == 3u) &&  /* I2C alternate function */
+        (PinConfig->Port == GPIO_PORT_B) && 
+        ((PinConfig->Pin == GPIO_PIN_2) || (PinConfig->Pin == GPIO_PIN_3))) {
+        /* I2C pins: Enable both open drain and pull-up */
+        portReg->ODR |= pinMask;  /* Open drain required for I2C */
+        portReg->PUR |= pinMask;  /* Pull-up for I2C bus */
+        portReg->PDR &= ~pinMask;
+    } else {
+        /* Normal configuration */
+        switch(PinConfig->InternalResistor) {
+            case GPIO_RESISTOR_PULL_UP:
+                portReg->PUR |= pinMask;
+                portReg->PDR &= ~pinMask;
+                portReg->ODR &= ~pinMask;
+                break;
+                
+            case GPIO_RESISTOR_PULL_DOWN:
+                portReg->PDR |= pinMask;
+                portReg->PUR &= ~pinMask;
+                portReg->ODR &= ~pinMask;
+                break;
+                
+            case GPIO_RESISTOR_OPEN_DRAIN:
+                portReg->ODR |= pinMask;
+                portReg->PUR &= ~pinMask;
+                portReg->PDR &= ~pinMask;
+                break;
+                
+            default: /* GPIO_RESISTOR_OFF */
+                portReg->PUR &= ~pinMask;
+                portReg->PDR &= ~pinMask;
+                portReg->ODR &= ~pinMask;
+                break;
+        }
     }
     
     /* Configure drive strength */

@@ -13,7 +13,7 @@
 #define CONFIG_PLATFORM_TYPES_H_
 
 /* Include standard types */
-#include "std_types.h"
+#include <Std_types.h>
 
 /* ===================[Version Information]=================== */
 #define PLATFORM_VENDOR_ID                    (0x1234u)  /**< @brief Platform vendor ID */

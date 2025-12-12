@@ -14,6 +14,7 @@
 #include "Uart_Regs.h"
 #include "Uart_Cfg.h"
 #include "../../CONFIG/Std_Types.h"
+#include "../MCU/Mcu.h"  /* For Mcu_GetSystemClock() */
 
 /* ===================[Local Defines]=================== */
 #define UART_INITIALIZED_FLAG     (0xA5u)
@@ -95,11 +96,15 @@ static uint32 Uart_GetBaseAddress(Uart_ModuleType Module) {
  * @brief Configure baud rate
  * @details Uses formula: BRD = BRDI + BRDF = UARTSysClk / (ClkDiv * Baud Rate)
  *          Where ClkDiv = 16 for standard, 8 for high-speed
+ *          Dynamically queries system clock from MCU driver for accuracy
  */
 static void Uart_ConfigureBaudRate(uint32 baseAddr, Uart_BaudRateType baudRate) {
+    /* Get current system clock frequency from MCU driver */
+    uint32 systemClock = Mcu_GetSystemClock();
+    
     /* Calculate baud rate divisor */
-    /* BRD = UART_SYSTEM_CLOCK_HZ / (16 * baudRate) */
-    uint32 brd = (UART_SYSTEM_CLOCK_HZ * 8) / baudRate;  /* Multiply by 8 for 0.5 precision */
+    /* BRD = SystemClock / (16 * baudRate) */
+    uint32 brd = (systemClock * 8) / baudRate;  /* Multiply by 8 for 0.5 precision */
     uint32 ibrd = brd / 128;  /* Integer part */
     uint32 fbrd = ((brd % 128) + 1) / 2;  /* Fractional part (round to nearest) */
     

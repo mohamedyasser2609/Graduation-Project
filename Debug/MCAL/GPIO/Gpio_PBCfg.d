@@ -2,7 +2,7 @@
 
 MCAL/GPIO/Gpio_PBCfg.obj: ../MCAL/GPIO/Gpio_PBCfg.c
 MCAL/GPIO/Gpio_PBCfg.obj: ../MCAL/GPIO/Gpio.h
-MCAL/GPIO/Gpio_PBCfg.obj: ../CONFIG/std_types.h
+MCAL/GPIO/Gpio_PBCfg.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 MCAL/GPIO/Gpio_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 MCAL/GPIO/Gpio_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 MCAL/GPIO/Gpio_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -24,7 +24,7 @@ MCAL/GPIO/Gpio_PBCfg.obj: ../MCAL/GPIO/Gpio_Cfg.h
 
 ../MCAL/GPIO/Gpio.h:
 
-../CONFIG/std_types.h:
+C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 
