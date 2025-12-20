@@ -1,33 +1,33 @@
 ******************************************************************************
                   TI ARM Linker PC v20.2.7                     
 ******************************************************************************
->> Linked Fri Dec 12 20:54:02 2025
+>> Linked Sat Dec 20 21:52:04 2025
 
 OUTPUT FILE NAME:   <Graduation_Project.out>
-ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 00005135
+ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 00006329
 
 
 MEMORY CONFIGURATION
 
          name            origin    length      used     unused   attr    fill
 ----------------------  --------  ---------  --------  --------  ----  --------
-  FLASH                 00000000   00040000  00005458  0003aba8  R  X
-  SRAM                  20000000   00008000  000003bc  00007c44  RW X
+  FLASH                 00000000   00040000  0000664c  000399b4  R  X
+  SRAM                  20000000   00008000  000003e4  00007c1c  RW X
 
 
 SEGMENT ALLOCATION MAP
 
 run origin  load origin   length   init length attrs members
 ----------  ----------- ---------- ----------- ----- -------
-00000000    00000000    00005458   00005458    r-x
+00000000    00000000    00006650   00006650    r-x
   00000000    00000000    0000026c   0000026c    r-- .intvecs
-  0000026c    0000026c    00004f54   00004f54    r-x .text
-  000051c0    000051c0    00000258   00000258    r-- .const
-  00005418    00005418    00000040   00000040    r-- .cinit
-20000000    20000000    000003bc   00000000    rw-
+  0000026c    0000026c    00006148   00006148    r-x .text
+  000063b4    000063b4    00000258   00000258    r-- .const
+  00006610    00006610    00000040   00000040    r-- .cinit
+20000000    20000000    000003e4   00000000    rw-
   20000000    20000000    00000200   00000000    rw- .stack
-  20000200    20000200    00000178   00000000    rw- .bss
-  20000378    20000378    00000044   00000000    rw- .data
+  20000200    20000200    00000198   00000000    rw- .bss
+  20000398    20000398    0000004c   00000000    rw- .data
 
 
 SECTION ALLOCATION MAP
@@ -38,75 +38,79 @@ section   page    origin      length       input sections
 .intvecs   0    00000000    0000026c     
                   00000000    0000026c     tm4c123gh6pm_startup_ccs.obj (.intvecs)
 
-.text      0    0000026c    00004f54     
+.text      0    0000026c    00006148     
                   0000026c    000016d4     main_qei_test.obj (.text)
                   00001940    00000d60     GPIO.obj (.text)
-                  000026a0    00000948     ENCODER.obj (.text)
-                  00002fe8    000006a4     QEI.obj (.text)
-                  0000368c    00000648     UART.obj (.text)
-                  00003cd4    00000600     PWM.obj (.text)
-                  000042d4    00000574     MOTOR.obj (.text)
-                  00004848    000003d8     MCU.obj (.text)
-                  00004c20    00000274     Det.obj (.text)
-                  00004e94    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
-                  00004f30    00000096                                   : ull_div_t2.asm.obj (.text)
-                  00004fc6    0000007a                                   : memset_t2.asm.obj (.text)
-                  00005040    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
-                  000050a8    00000048                                   : ll_tofs_t2.asm.obj (.text)
-                  000050f0    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
-                  00005134    00000034                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
-                  00005168    0000001c                                   : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset:__TI_zero_init_nomemset)
-                  00005184    00000018                                   : ll_mul_t2.asm.obj (.text)
-                  0000519c    0000000e                                   : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
-                  000051aa    0000000c     tm4c123gh6pm_startup_ccs.obj (.text)
-                  000051b6    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
-                  000051ba    00000004                                   : exit.c.obj (.text:abort:abort)
-                  000051be    00000002                                   : div0.asm.obj (.text)
+                  000026a0    00000cf0     ADC.obj (.text)
+                  00003390    00000948     ENCODER.obj (.text)
+                  00003cd8    000006a4     QEI.obj (.text)
+                  0000437c    00000648     UART.obj (.text)
+                  000049c4    00000600     PWM.obj (.text)
+                  00004fc4    00000574     MOTOR.obj (.text)
+                  00005538    00000504     NVIC.obj (.text)
+                  00005a3c    000003d8     MCU.obj (.text)
+                  00005e14    00000274     Det.obj (.text)
+                  00006088    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
+                  00006124    00000096                                   : ull_div_t2.asm.obj (.text)
+                  000061ba    0000007a                                   : memset_t2.asm.obj (.text)
+                  00006234    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
+                  0000629c    00000048                                   : ll_tofs_t2.asm.obj (.text)
+                  000062e4    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
+                  00006328    00000034                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
+                  0000635c    0000001c                                   : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset:__TI_zero_init_nomemset)
+                  00006378    00000018                                   : ll_mul_t2.asm.obj (.text)
+                  00006390    0000000e                                   : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
+                  0000639e    0000000c     tm4c123gh6pm_startup_ccs.obj (.text)
+                  000063aa    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
+                  000063ae    00000004                                   : exit.c.obj (.text:abort:abort)
+                  000063b2    00000002                                   : div0.asm.obj (.text)
 
-.const     0    000051c0    00000258     
-                  000051c0    00000108     Gpio_PBCfg.obj (.const:Gpio_PinConfigurations)
-                  000052c8    00000050     ENCODER_PBCfg.obj (.const:Encoder_ChannelConfigs)
-                  00005318    00000050     PWM_PBCfg.obj (.const:Pwm_Channels)
-                  00005368    00000048     QEI_PBCfg.obj (.const:Qei_ChannelConfigs)
-                  000053b0    00000020     UART.obj (.const:Uart_BaseAddress)
-                  000053d0    00000018     Uart_PBCfg.obj (.const:Uart0_Config_115200)
-                  000053e8    0000000c     MOTOR_PBCfg.obj (.const:Motor_ChannelConfigs)
-                  000053f4    00000008     ENCODER_PBCfg.obj (.const:Encoder_Config)
-                  000053fc    00000008     Gpio_PBCfg.obj (.const:Gpio_Configuration)
-                  00005404    00000008     MOTOR_PBCfg.obj (.const:Motor_Config)
-                  0000540c    00000008     PWM_PBCfg.obj (.const:Pwm_Configuration)
-                  00005414    00000004     Mcu_PBcfg.obj (.const:Mcu_Config_80MHz)
+.const     0    000063b4    00000258     
+                  000063b4    00000108     Gpio_PBCfg.obj (.const:Gpio_PinConfigurations)
+                  000064bc    00000050     ENCODER_PBCfg.obj (.const:Encoder_ChannelConfigs)
+                  0000650c    00000050     PWM_PBCfg.obj (.const:Pwm_Channels)
+                  0000655c    00000048     QEI_PBCfg.obj (.const:Qei_ChannelConfigs)
+                  000065a4    00000020     UART.obj (.const:Uart_BaseAddress)
+                  000065c4    00000018     Uart_PBCfg.obj (.const:Uart0_Config_115200)
+                  000065dc    0000000c     MOTOR_PBCfg.obj (.const:Motor_ChannelConfigs)
+                  000065e8    00000008     ENCODER_PBCfg.obj (.const:Encoder_Config)
+                  000065f0    00000008     Gpio_PBCfg.obj (.const:Gpio_Configuration)
+                  000065f8    00000008     MOTOR_PBCfg.obj (.const:Motor_Config)
+                  00006600    00000008     PWM_PBCfg.obj (.const:Pwm_Configuration)
+                  00006608    00000004     Mcu_PBcfg.obj (.const:Mcu_Config_80MHz)
 
-.cinit     0    00005418    00000040     
-                  00005418    00000017     (.cinit..data.load) [load image, compression = lzss]
-                  0000542f    00000001     --HOLE-- [fill = 0]
-                  00005430    0000000c     (__TI_handler_table)
-                  0000543c    00000004     --HOLE-- [fill = 0]
-                  00005440    00000008     (.cinit..bss.load) [load image, compression = zero_init]
-                  00005448    00000010     (__TI_cinit_table)
+.cinit     0    00006610    00000040     
+                  00006610    00000018     (.cinit..data.load) [load image, compression = lzss]
+                  00006628    0000000c     (__TI_handler_table)
+                  00006634    00000004     --HOLE-- [fill = 0]
+                  00006638    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  00006640    00000010     (__TI_cinit_table)
 
 .init_array 
 *          0    00000000    00000000     UNINITIALIZED
 
-.bss       0    20000200    00000178     UNINITIALIZED
+.bss       0    20000200    00000198     UNINITIALIZED
                   20000200    000000c0     Det.obj (.bss:Det_ErrorBuffer)
                   200002c0    00000060     UART.obj (.bss:Uart_RuntimeState)
                   20000320    00000040     ENCODER.obj (.bss:Encoder_ChannelStates)
-                  20000360    00000018     MOTOR.obj (.bss:Motor_ChannelStates)
+                  20000360    00000020     ADC.obj (.bss:Adc_GroupRuntime)
+                  20000380    00000018     MOTOR.obj (.bss:Motor_ChannelStates)
 
-.data      0    20000378    00000044     UNINITIALIZED
-                  20000378    0000000d     MCU.obj (.data)
-                  20000385    00000002     QEI.obj (.data:Qei_ModuleStatus)
-                  20000387    00000001     --HOLE--
-                  20000388    0000000c     Det.obj (.data)
-                  20000394    00000009     GPIO.obj (.data)
-                  2000039d    00000003     --HOLE--
-                  200003a0    00000008     QEI.obj (.data:Qei_ConfigPtrs)
-                  200003a8    00000005     PWM.obj (.data)
-                  200003ad    00000003     --HOLE--
-                  200003b0    00000004     ENCODER.obj (.data)
-                  200003b4    00000004     MOTOR.obj (.data)
-                  200003b8    00000004     Mcu_PBcfg.obj (.data)
+.data      0    20000398    0000004c     UNINITIALIZED
+                  20000398    0000000d     MCU.obj (.data)
+                  200003a5    00000002     QEI.obj (.data:Qei_ModuleStatus)
+                  200003a7    00000001     NVIC.obj (.data)
+                  200003a8    0000000c     Det.obj (.data)
+                  200003b4    00000009     GPIO.obj (.data)
+                  200003bd    00000003     --HOLE--
+                  200003c0    00000008     QEI.obj (.data:Qei_ConfigPtrs)
+                  200003c8    00000005     ADC.obj (.data)
+                  200003cd    00000003     --HOLE--
+                  200003d0    00000005     PWM.obj (.data)
+                  200003d5    00000003     --HOLE--
+                  200003d8    00000004     ENCODER.obj (.data)
+                  200003dc    00000004     MOTOR.obj (.data)
+                  200003e0    00000004     Mcu_PBcfg.obj (.data)
 
 .stack     0    20000000    00000200     UNINITIALIZED
                   20000000    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : boot_cortex_m.c.obj (.stack)
@@ -142,6 +146,11 @@ MODULE SUMMARY
     +--+------------------------------+-------+---------+---------+
        Total:                         1396    20        28     
                                                                
+    .\MCAL\ADC\
+       ADC.obj                        3312    0         37     
+    +--+------------------------------+-------+---------+---------+
+       Total:                         3312    0         37     
+                                                               
     .\MCAL\GPIO\
        GPIO.obj                       3424    0         9      
        Gpio_PBCfg.obj                 0       272       0      
@@ -153,6 +162,11 @@ MODULE SUMMARY
        Mcu_PBcfg.obj                  0       4         4      
     +--+------------------------------+-------+---------+---------+
        Total:                         984     4         17     
+                                                               
+    .\MCAL\NVIC\
+       NVIC.obj                       1284    0         1      
+    +--+------------------------------+-------+---------+---------+
+       Total:                         1284    0         1      
                                                                
     .\MCAL\PWM\
        PWM.obj                        1536    0         5      
@@ -190,21 +204,21 @@ MODULE SUMMARY
        Total:                         800     0         0      
                                                                
        Stack:                         0       0         512    
-       Linker Generated:              0       59        0      
+       Linker Generated:              0       60        0      
     +--+------------------------------+-------+---------+---------+
-       Grand Total:                   20308   1279      949    
+       Grand Total:                   24904   1280      987    
 
 
 LINKER GENERATED COPY TABLES
 
-__TI_cinit_table @ 00005448 records: 2, size/record: 8, table size: 16
-	.data: load addr=00005418, load size=00000017 bytes, run addr=20000378, run size=00000044 bytes, compression=lzss
-	.bss: load addr=00005440, load size=00000008 bytes, run addr=20000200, run size=00000178 bytes, compression=zero_init
+__TI_cinit_table @ 00006640 records: 2, size/record: 8, table size: 16
+	.data: load addr=00006610, load size=00000018 bytes, run addr=20000398, run size=0000004c bytes, compression=lzss
+	.bss: load addr=00006638, load size=00000008 bytes, run addr=20000200, run size=00000198 bytes, compression=zero_init
 
 
 LINKER GENERATED HANDLER TABLE
 
-__TI_handler_table @ 00005430 records: 3, size/record: 4, table size: 12
+__TI_handler_table @ 00006628 records: 3, size/record: 4, table size: 12
 	index: 0, handler: __TI_decompress_lzss
 	index: 1, handler: __TI_decompress_none
 	index: 2, handler: __TI_zero_init
@@ -214,36 +228,57 @@ GLOBAL SYMBOLS: SORTED ALPHABETICALLY BY Name
 
 address   name                           
 -------   ----                           
-000051bb  C$$EXIT                        
-00004e1b  Det_ClearErrorBuffer           
-00004cc7  Det_DeInit                     
-00004e4d  Det_GetErrorCount              
-00004da5  Det_GetErrorReport             
-00004d67  Det_GetVersionInfo             
-00004c8b  Det_Init                       
-00004d0b  Det_ReportError                
-00004e53  Det_SetCallback                
-000052c8  Encoder_ChannelConfigs         
-000053f4  Encoder_Config                 
-00002b8f  Encoder_DeInit                 
-00002ec9  Encoder_GetData                
-00002dd1  Encoder_GetDirection           
-00002bc9  Encoder_GetPosition            
-00002c49  Encoder_GetPositionCounts      
-00002c95  Encoder_GetPositionDegrees     
-00002c7f  Encoder_GetPositionRevolutions 
-00002e1f  Encoder_GetStatus              
-00002d17  Encoder_GetVelocity            
-00002d61  Encoder_GetVelocityCountsPerSec
-00002dbf  Encoder_GetVelocityRPM         
-00002fad  Encoder_GetVersionInfo         
-00002b09  Encoder_Init                   
-00002e45  Encoder_ResetPosition          
-00002e7d  Encoder_SetPosition            
-00002f49  Encoder_Update                 
-00002f75  Encoder_UpdateAll              
+000032e9  Adc_ADC0SS0_ISR                
+000032f5  Adc_ADC0SS1_ISR                
+00003301  Adc_ADC0SS2_ISR                
+0000330d  Adc_ADC0SS3_ISR                
+00003319  Adc_ADC1SS0_ISR                
+00003325  Adc_ADC1SS1_ISR                
+00003331  Adc_ADC1SS2_ISR                
+0000333d  Adc_ADC1SS3_ISR                
+00002c7d  Adc_DeInit                     
+000031ab  Adc_DisableGroupNotification   
+000030e7  Adc_DisableHardwareTrigger     
+0000313b  Adc_EnableGroupNotification    
+0000307d  Adc_EnableHardwareTrigger      
+0000303b  Adc_GetGroupStatus             
+0000334d  Adc_GetVersionInfo             
+00002b4f  Adc_Init                       
+0000321f  Adc_MainFunction_Handling      
+00002f7f  Adc_ReadGroup                  
+00002d5d  Adc_SetupResultBuffer          
+00002e2d  Adc_StartGroupConversion       
+00002eff  Adc_StopGroupConversion        
+000063af  C$$EXIT                        
+0000600f  Det_ClearErrorBuffer           
+00005ebb  Det_DeInit                     
+00006041  Det_GetErrorCount              
+00005f99  Det_GetErrorReport             
+00005f5b  Det_GetVersionInfo             
+00005e7f  Det_Init                       
+00005eff  Det_ReportError                
+00006047  Det_SetCallback                
+000064bc  Encoder_ChannelConfigs         
+000065e8  Encoder_Config                 
+0000387f  Encoder_DeInit                 
+00003bb9  Encoder_GetData                
+00003ac1  Encoder_GetDirection           
+000038b9  Encoder_GetPosition            
+00003939  Encoder_GetPositionCounts      
+00003985  Encoder_GetPositionDegrees     
+0000396f  Encoder_GetPositionRevolutions 
+00003b0f  Encoder_GetStatus              
+00003a07  Encoder_GetVelocity            
+00003a51  Encoder_GetVelocityCountsPerSec
+00003aaf  Encoder_GetVelocityRPM         
+00003c9d  Encoder_GetVersionInfo         
+000037f9  Encoder_Init                   
+00003b35  Encoder_ResetPosition          
+00003b6d  Encoder_SetPosition            
+00003c39  Encoder_Update                 
+00003c65  Encoder_UpdateAll              
 000025b9  Gpio_ClearInterrupt            
-000053fc  Gpio_Configuration             
+000065f0  Gpio_Configuration             
 0000254f  Gpio_DisableInterrupt          
 000024e9  Gpio_EnableInterrupt           
 000021c5  Gpio_FlipChannel               
@@ -258,67 +293,77 @@ address   name
 0000209f  Gpio_WriteChannel              
 0000246b  Gpio_WriteChannelGroup         
 0000217b  Gpio_WritePort                 
-200003b8  Mcu_ConfigPtr                  
-00005414  Mcu_Config_80MHz               
-000049f1  Mcu_DisablePeripheralClock     
-00004893  Mcu_DistributePllClock         
-000049b3  Mcu_EnablePeripheralClock      
-000048cd  Mcu_GetPllStatus               
-00004939  Mcu_GetResetRawValue           
-000048e7  Mcu_GetResetReason             
-000049a3  Mcu_GetSystemClock             
-00004849  Mcu_Init                       
-0000486b  Mcu_InitClock                  
-00004949  Mcu_PerformReset               
-00004951  Mcu_SetMode                    
-00005404  Motor_Config                   
-00004513  Motor_DeInit                   
-0000479d  Motor_GetData                  
-00004779  Motor_GetStatus                
-00004801  Motor_GetVersionInfo           
-0000444f  Motor_Init                     
-00004649  Motor_SetDirection             
-00004591  Motor_SetSpeed                 
-000046df  Motor_SetSpeedAndDirection     
-00004735  Motor_Stop                     
-00004747  Motor_StopAll                  
+200003e0  Mcu_ConfigPtr                  
+00006608  Mcu_Config_80MHz               
+00005be5  Mcu_DisablePeripheralClock     
+00005a87  Mcu_DistributePllClock         
+00005ba7  Mcu_EnablePeripheralClock      
+00005ac1  Mcu_GetPllStatus               
+00005b2d  Mcu_GetResetRawValue           
+00005adb  Mcu_GetResetReason             
+00005b97  Mcu_GetSystemClock             
+00005a3d  Mcu_Init                       
+00005a5f  Mcu_InitClock                  
+00005b3d  Mcu_PerformReset               
+00005b45  Mcu_SetMode                    
+000065f8  Motor_Config                   
+00005203  Motor_DeInit                   
+0000548d  Motor_GetData                  
+00005469  Motor_GetStatus                
+000054f1  Motor_GetVersionInfo           
+0000513f  Motor_Init                     
+00005339  Motor_SetDirection             
+00005281  Motor_SetSpeed                 
+000053cf  Motor_SetSpeedAndDirection     
+00005425  Motor_Stop                     
+00005437  Motor_StopAll                  
+0000590b  NVIC_ClearPendingIRQ           
+000057df  NVIC_DisableIRQ                
+0000579f  NVIC_EnableIRQ                 
+000059a9  NVIC_GenerateSoftwareInterrupt 
+0000587f  NVIC_GetPriority               
+000059e9  NVIC_GetVersionInfo            
+0000568f  NVIC_Init                      
+00005957  NVIC_IsActiveIRQ               
+000058bf  NVIC_SetPendingIRQ             
+00005825  NVIC_SetPriority               
 0000029b  PrintTestHeader                
 000002c1  PrintTestResult                
-0000540c  Pwm_Configuration              
-00003f33  Pwm_DeInit                     
-00004141  Pwm_GetOutputState             
-000041a3  Pwm_GetVersionInfo             
-00003e93  Pwm_Init                       
-00003fdd  Pwm_SetDutyCycle               
-000041d5  Pwm_SetDutyCyclePercent        
-0000420b  Pwm_SetFrequency               
-000040f5  Pwm_SetOutputToIdle            
-0000406b  Pwm_SetPeriodAndDuty           
+00006600  Pwm_Configuration              
+00004c23  Pwm_DeInit                     
+00004e31  Pwm_GetOutputState             
+00004e93  Pwm_GetVersionInfo             
+00004b83  Pwm_Init                       
+00004ccd  Pwm_SetDutyCycle               
+00004ec5  Pwm_SetDutyCyclePercent        
+00004efb  Pwm_SetFrequency               
+00004de5  Pwm_SetOutputToIdle            
+00004d5b  Pwm_SetPeriodAndDuty           
 0000026d  QEI0_Handler                   
-00005368  Qei_ChannelConfigs             
-000035b3  Qei_ClearInterrupt             
-00003579  Qei_ClearInterruptModule       
-00003393  Qei_DeInit                     
-00003565  Qei_DisableInterrupt           
-00003525  Qei_DisableInterruptModule     
-00003517  Qei_EnableInterrupt            
-000034d7  Qei_EnableInterruptModule      
-0000362d  Qei_GetDirection               
-000035e7  Qei_GetDirectionModule         
-000033f5  Qei_GetPosition                
-000033bd  Qei_GetPositionModule          
-000035e1  Qei_GetStatus                  
-000035c1  Qei_GetStatusModule            
-000034cd  Qei_GetVelocity                
-00003467  Qei_GetVelocityModule          
-0000363d  Qei_GetVersionInfo             
-0000332d  Qei_Init                       
-00003339  Qei_InitModule                 
-00003675  Qei_Qei0Handler                
-0000367f  Qei_Qei1Handler                
-00003459  Qei_SetPosition                
-000033ff  Qei_SetPositionModule          
-000051ab  ResetISR                       
+0000655c  Qei_ChannelConfigs             
+000042a3  Qei_ClearInterrupt             
+00004269  Qei_ClearInterruptModule       
+00004083  Qei_DeInit                     
+00004255  Qei_DisableInterrupt           
+00004215  Qei_DisableInterruptModule     
+00004207  Qei_EnableInterrupt            
+000041c7  Qei_EnableInterruptModule      
+0000431d  Qei_GetDirection               
+000042d7  Qei_GetDirectionModule         
+000040e5  Qei_GetPosition                
+000040ad  Qei_GetPositionModule          
+000042d1  Qei_GetStatus                  
+000042b1  Qei_GetStatusModule            
+000041bd  Qei_GetVelocity                
+00004157  Qei_GetVelocityModule          
+0000432d  Qei_GetVersionInfo             
+0000401d  Qei_Init                       
+00004029  Qei_InitModule                 
+00004365  Qei_Qei0Handler                
+0000436f  Qei_Qei1Handler                
+00004149  Qei_SetPosition                
+000040ef  Qei_SetPositionModule          
+0000639f  ResetISR                       
 00000277  SimpleDelay                    
 000008db  Test_Encoder_DeInit            
 00000575  Test_Encoder_Direction         
@@ -339,63 +384,63 @@ address   name
 00000d49  Test_Motor_Status              
 00000ca9  Test_Motor_Stop                
 00000275  Timer2A_Handler                
-000053d0  Uart0_Config_115200            
-000038df  Uart_DeInit                    
-00003bdf  Uart_GetStatus                 
-00003c99  Uart_GetVersionInfo            
-00003743  Uart_Init                      
-00003c61  Uart_IsRxDataAvailable         
-00003c29  Uart_IsTxFifoEmpty             
-000039fd  Uart_ReceiveByte               
-00003b3d  Uart_SendBuffer                
-00003985  Uart_SendByte                  
+000065c4  Uart0_Config_115200            
+000045cf  Uart_DeInit                    
+000048cf  Uart_GetStatus                 
+00004989  Uart_GetVersionInfo            
+00004433  Uart_Init                      
+00004951  Uart_IsRxDataAvailable         
+00004919  Uart_IsTxFifoEmpty             
+000046ed  Uart_ReceiveByte               
+0000482d  Uart_SendBuffer                
+00004675  Uart_SendByte                  
 000002fd  Uart_SendInt                   
 000003a1  Uart_SendIntSigned             
-00003aa1  Uart_SendString                
+00004791  Uart_SendString                
 20000200  __STACK_END                    
 00000200  __STACK_SIZE                   
 20000200  __STACK_TOP                    
-00005448  __TI_CINIT_Base                
-00005458  __TI_CINIT_Limit               
-00005430  __TI_Handler_Table_Base        
-0000543c  __TI_Handler_Table_Limit       
-000050f1  __TI_auto_init_nobinit_nopinit 
-00005041  __TI_decompress_lzss           
-0000519d  __TI_decompress_none           
+00006640  __TI_CINIT_Base                
+00006650  __TI_CINIT_Limit               
+00006628  __TI_Handler_Table_Base        
+00006634  __TI_Handler_Table_Limit       
+000062e5  __TI_auto_init_nobinit_nopinit 
+00006235  __TI_decompress_lzss           
+00006391  __TI_decompress_none           
 ffffffff  __TI_pprof_out_hndl            
 ffffffff  __TI_prof_data_size            
 ffffffff  __TI_prof_data_start           
 00000000  __TI_static_base__             
-00005169  __TI_zero_init_nomemset        
-000051bf  __aeabi_idiv0                  
-000050a9  __aeabi_l2f                    
-000051bf  __aeabi_ldiv0                  
-00005185  __aeabi_lmul                   
-00004fc7  __aeabi_memclr                 
-00004fc7  __aeabi_memclr4                
-00004fc7  __aeabi_memclr8                
-00004e95  __aeabi_memcpy                 
-00004e95  __aeabi_memcpy4                
-00004e95  __aeabi_memcpy8                
-00004fc9  __aeabi_memset                 
-00004fc9  __aeabi_memset4                
-00004fc9  __aeabi_memset8                
-00004f31  __aeabi_uldivmod               
+0000635d  __TI_zero_init_nomemset        
+000063b3  __aeabi_idiv0                  
+0000629d  __aeabi_l2f                    
+000063b3  __aeabi_ldiv0                  
+00006379  __aeabi_lmul                   
+000061bb  __aeabi_memclr                 
+000061bb  __aeabi_memclr4                
+000061bb  __aeabi_memclr8                
+00006089  __aeabi_memcpy                 
+00006089  __aeabi_memcpy4                
+00006089  __aeabi_memcpy8                
+000061bd  __aeabi_memset                 
+000061bd  __aeabi_memset4                
+000061bd  __aeabi_memset8                
+00006125  __aeabi_uldivmod               
 ffffffff  __binit__                      
 ffffffff  __c_args__                     
 UNDEFED   __mpu_init                     
 20000000  __stack                        
 20000000  __start___llvm_prf_cnts        
 20000000  __stop___llvm_prf_cnts         
-00005135  _c_int00_noargs                
+00006329  _c_int00_noargs                
 UNDEFED   _system_post_cinit             
-000051b7  _system_pre_init               
-000051bb  abort                          
+000063ab  _system_pre_init               
+000063af  abort                          
 ffffffff  binit                          
 00000000  g_pfnVectors                   
 00000f31  main                           
-00004e95  memcpy                         
-00004fcf  memset                         
+00006089  memcpy                         
+000061c3  memset                         
 
 
 GLOBAL SYMBOLS: SORTED BY Symbol Address 
@@ -446,136 +491,167 @@ address   name
 0000254f  Gpio_DisableInterrupt          
 000025b9  Gpio_ClearInterrupt            
 00002625  Gpio_GetInterruptStatus        
-00002b09  Encoder_Init                   
-00002b8f  Encoder_DeInit                 
-00002bc9  Encoder_GetPosition            
-00002c49  Encoder_GetPositionCounts      
-00002c7f  Encoder_GetPositionRevolutions 
-00002c95  Encoder_GetPositionDegrees     
-00002d17  Encoder_GetVelocity            
-00002d61  Encoder_GetVelocityCountsPerSec
-00002dbf  Encoder_GetVelocityRPM         
-00002dd1  Encoder_GetDirection           
-00002e1f  Encoder_GetStatus              
-00002e45  Encoder_ResetPosition          
-00002e7d  Encoder_SetPosition            
-00002ec9  Encoder_GetData                
-00002f49  Encoder_Update                 
-00002f75  Encoder_UpdateAll              
-00002fad  Encoder_GetVersionInfo         
-0000332d  Qei_Init                       
-00003339  Qei_InitModule                 
-00003393  Qei_DeInit                     
-000033bd  Qei_GetPositionModule          
-000033f5  Qei_GetPosition                
-000033ff  Qei_SetPositionModule          
-00003459  Qei_SetPosition                
-00003467  Qei_GetVelocityModule          
-000034cd  Qei_GetVelocity                
-000034d7  Qei_EnableInterruptModule      
-00003517  Qei_EnableInterrupt            
-00003525  Qei_DisableInterruptModule     
-00003565  Qei_DisableInterrupt           
-00003579  Qei_ClearInterruptModule       
-000035b3  Qei_ClearInterrupt             
-000035c1  Qei_GetStatusModule            
-000035e1  Qei_GetStatus                  
-000035e7  Qei_GetDirectionModule         
-0000362d  Qei_GetDirection               
-0000363d  Qei_GetVersionInfo             
-00003675  Qei_Qei0Handler                
-0000367f  Qei_Qei1Handler                
-00003743  Uart_Init                      
-000038df  Uart_DeInit                    
-00003985  Uart_SendByte                  
-000039fd  Uart_ReceiveByte               
-00003aa1  Uart_SendString                
-00003b3d  Uart_SendBuffer                
-00003bdf  Uart_GetStatus                 
-00003c29  Uart_IsTxFifoEmpty             
-00003c61  Uart_IsRxDataAvailable         
-00003c99  Uart_GetVersionInfo            
-00003e93  Pwm_Init                       
-00003f33  Pwm_DeInit                     
-00003fdd  Pwm_SetDutyCycle               
-0000406b  Pwm_SetPeriodAndDuty           
-000040f5  Pwm_SetOutputToIdle            
-00004141  Pwm_GetOutputState             
-000041a3  Pwm_GetVersionInfo             
-000041d5  Pwm_SetDutyCyclePercent        
-0000420b  Pwm_SetFrequency               
-0000444f  Motor_Init                     
-00004513  Motor_DeInit                   
-00004591  Motor_SetSpeed                 
-00004649  Motor_SetDirection             
-000046df  Motor_SetSpeedAndDirection     
-00004735  Motor_Stop                     
-00004747  Motor_StopAll                  
-00004779  Motor_GetStatus                
-0000479d  Motor_GetData                  
-00004801  Motor_GetVersionInfo           
-00004849  Mcu_Init                       
-0000486b  Mcu_InitClock                  
-00004893  Mcu_DistributePllClock         
-000048cd  Mcu_GetPllStatus               
-000048e7  Mcu_GetResetReason             
-00004939  Mcu_GetResetRawValue           
-00004949  Mcu_PerformReset               
-00004951  Mcu_SetMode                    
-000049a3  Mcu_GetSystemClock             
-000049b3  Mcu_EnablePeripheralClock      
-000049f1  Mcu_DisablePeripheralClock     
-00004c8b  Det_Init                       
-00004cc7  Det_DeInit                     
-00004d0b  Det_ReportError                
-00004d67  Det_GetVersionInfo             
-00004da5  Det_GetErrorReport             
-00004e1b  Det_ClearErrorBuffer           
-00004e4d  Det_GetErrorCount              
-00004e53  Det_SetCallback                
-00004e95  __aeabi_memcpy                 
-00004e95  __aeabi_memcpy4                
-00004e95  __aeabi_memcpy8                
-00004e95  memcpy                         
-00004f31  __aeabi_uldivmod               
-00004fc7  __aeabi_memclr                 
-00004fc7  __aeabi_memclr4                
-00004fc7  __aeabi_memclr8                
-00004fc9  __aeabi_memset                 
-00004fc9  __aeabi_memset4                
-00004fc9  __aeabi_memset8                
-00004fcf  memset                         
-00005041  __TI_decompress_lzss           
-000050a9  __aeabi_l2f                    
-000050f1  __TI_auto_init_nobinit_nopinit 
-00005135  _c_int00_noargs                
-00005169  __TI_zero_init_nomemset        
-00005185  __aeabi_lmul                   
-0000519d  __TI_decompress_none           
-000051ab  ResetISR                       
-000051b7  _system_pre_init               
-000051bb  C$$EXIT                        
-000051bb  abort                          
-000051bf  __aeabi_idiv0                  
-000051bf  __aeabi_ldiv0                  
-000052c8  Encoder_ChannelConfigs         
-00005368  Qei_ChannelConfigs             
-000053d0  Uart0_Config_115200            
-000053f4  Encoder_Config                 
-000053fc  Gpio_Configuration             
-00005404  Motor_Config                   
-0000540c  Pwm_Configuration              
-00005414  Mcu_Config_80MHz               
-00005430  __TI_Handler_Table_Base        
-0000543c  __TI_Handler_Table_Limit       
-00005448  __TI_CINIT_Base                
-00005458  __TI_CINIT_Limit               
+00002b4f  Adc_Init                       
+00002c7d  Adc_DeInit                     
+00002d5d  Adc_SetupResultBuffer          
+00002e2d  Adc_StartGroupConversion       
+00002eff  Adc_StopGroupConversion        
+00002f7f  Adc_ReadGroup                  
+0000303b  Adc_GetGroupStatus             
+0000307d  Adc_EnableHardwareTrigger      
+000030e7  Adc_DisableHardwareTrigger     
+0000313b  Adc_EnableGroupNotification    
+000031ab  Adc_DisableGroupNotification   
+0000321f  Adc_MainFunction_Handling      
+000032e9  Adc_ADC0SS0_ISR                
+000032f5  Adc_ADC0SS1_ISR                
+00003301  Adc_ADC0SS2_ISR                
+0000330d  Adc_ADC0SS3_ISR                
+00003319  Adc_ADC1SS0_ISR                
+00003325  Adc_ADC1SS1_ISR                
+00003331  Adc_ADC1SS2_ISR                
+0000333d  Adc_ADC1SS3_ISR                
+0000334d  Adc_GetVersionInfo             
+000037f9  Encoder_Init                   
+0000387f  Encoder_DeInit                 
+000038b9  Encoder_GetPosition            
+00003939  Encoder_GetPositionCounts      
+0000396f  Encoder_GetPositionRevolutions 
+00003985  Encoder_GetPositionDegrees     
+00003a07  Encoder_GetVelocity            
+00003a51  Encoder_GetVelocityCountsPerSec
+00003aaf  Encoder_GetVelocityRPM         
+00003ac1  Encoder_GetDirection           
+00003b0f  Encoder_GetStatus              
+00003b35  Encoder_ResetPosition          
+00003b6d  Encoder_SetPosition            
+00003bb9  Encoder_GetData                
+00003c39  Encoder_Update                 
+00003c65  Encoder_UpdateAll              
+00003c9d  Encoder_GetVersionInfo         
+0000401d  Qei_Init                       
+00004029  Qei_InitModule                 
+00004083  Qei_DeInit                     
+000040ad  Qei_GetPositionModule          
+000040e5  Qei_GetPosition                
+000040ef  Qei_SetPositionModule          
+00004149  Qei_SetPosition                
+00004157  Qei_GetVelocityModule          
+000041bd  Qei_GetVelocity                
+000041c7  Qei_EnableInterruptModule      
+00004207  Qei_EnableInterrupt            
+00004215  Qei_DisableInterruptModule     
+00004255  Qei_DisableInterrupt           
+00004269  Qei_ClearInterruptModule       
+000042a3  Qei_ClearInterrupt             
+000042b1  Qei_GetStatusModule            
+000042d1  Qei_GetStatus                  
+000042d7  Qei_GetDirectionModule         
+0000431d  Qei_GetDirection               
+0000432d  Qei_GetVersionInfo             
+00004365  Qei_Qei0Handler                
+0000436f  Qei_Qei1Handler                
+00004433  Uart_Init                      
+000045cf  Uart_DeInit                    
+00004675  Uart_SendByte                  
+000046ed  Uart_ReceiveByte               
+00004791  Uart_SendString                
+0000482d  Uart_SendBuffer                
+000048cf  Uart_GetStatus                 
+00004919  Uart_IsTxFifoEmpty             
+00004951  Uart_IsRxDataAvailable         
+00004989  Uart_GetVersionInfo            
+00004b83  Pwm_Init                       
+00004c23  Pwm_DeInit                     
+00004ccd  Pwm_SetDutyCycle               
+00004d5b  Pwm_SetPeriodAndDuty           
+00004de5  Pwm_SetOutputToIdle            
+00004e31  Pwm_GetOutputState             
+00004e93  Pwm_GetVersionInfo             
+00004ec5  Pwm_SetDutyCyclePercent        
+00004efb  Pwm_SetFrequency               
+0000513f  Motor_Init                     
+00005203  Motor_DeInit                   
+00005281  Motor_SetSpeed                 
+00005339  Motor_SetDirection             
+000053cf  Motor_SetSpeedAndDirection     
+00005425  Motor_Stop                     
+00005437  Motor_StopAll                  
+00005469  Motor_GetStatus                
+0000548d  Motor_GetData                  
+000054f1  Motor_GetVersionInfo           
+0000568f  NVIC_Init                      
+0000579f  NVIC_EnableIRQ                 
+000057df  NVIC_DisableIRQ                
+00005825  NVIC_SetPriority               
+0000587f  NVIC_GetPriority               
+000058bf  NVIC_SetPendingIRQ             
+0000590b  NVIC_ClearPendingIRQ           
+00005957  NVIC_IsActiveIRQ               
+000059a9  NVIC_GenerateSoftwareInterrupt 
+000059e9  NVIC_GetVersionInfo            
+00005a3d  Mcu_Init                       
+00005a5f  Mcu_InitClock                  
+00005a87  Mcu_DistributePllClock         
+00005ac1  Mcu_GetPllStatus               
+00005adb  Mcu_GetResetReason             
+00005b2d  Mcu_GetResetRawValue           
+00005b3d  Mcu_PerformReset               
+00005b45  Mcu_SetMode                    
+00005b97  Mcu_GetSystemClock             
+00005ba7  Mcu_EnablePeripheralClock      
+00005be5  Mcu_DisablePeripheralClock     
+00005e7f  Det_Init                       
+00005ebb  Det_DeInit                     
+00005eff  Det_ReportError                
+00005f5b  Det_GetVersionInfo             
+00005f99  Det_GetErrorReport             
+0000600f  Det_ClearErrorBuffer           
+00006041  Det_GetErrorCount              
+00006047  Det_SetCallback                
+00006089  __aeabi_memcpy                 
+00006089  __aeabi_memcpy4                
+00006089  __aeabi_memcpy8                
+00006089  memcpy                         
+00006125  __aeabi_uldivmod               
+000061bb  __aeabi_memclr                 
+000061bb  __aeabi_memclr4                
+000061bb  __aeabi_memclr8                
+000061bd  __aeabi_memset                 
+000061bd  __aeabi_memset4                
+000061bd  __aeabi_memset8                
+000061c3  memset                         
+00006235  __TI_decompress_lzss           
+0000629d  __aeabi_l2f                    
+000062e5  __TI_auto_init_nobinit_nopinit 
+00006329  _c_int00_noargs                
+0000635d  __TI_zero_init_nomemset        
+00006379  __aeabi_lmul                   
+00006391  __TI_decompress_none           
+0000639f  ResetISR                       
+000063ab  _system_pre_init               
+000063af  C$$EXIT                        
+000063af  abort                          
+000063b3  __aeabi_idiv0                  
+000063b3  __aeabi_ldiv0                  
+000064bc  Encoder_ChannelConfigs         
+0000655c  Qei_ChannelConfigs             
+000065c4  Uart0_Config_115200            
+000065e8  Encoder_Config                 
+000065f0  Gpio_Configuration             
+000065f8  Motor_Config                   
+00006600  Pwm_Configuration              
+00006608  Mcu_Config_80MHz               
+00006628  __TI_Handler_Table_Base        
+00006634  __TI_Handler_Table_Limit       
+00006640  __TI_CINIT_Base                
+00006650  __TI_CINIT_Limit               
 20000000  __stack                        
 20000000  __start___llvm_prf_cnts        
 20000000  __stop___llvm_prf_cnts         
 20000200  __STACK_END                    
 20000200  __STACK_TOP                    
-200003b8  Mcu_ConfigPtr                  
+200003e0  Mcu_ConfigPtr                  
 ffffffff  __TI_pprof_out_hndl            
 ffffffff  __TI_prof_data_size            
 ffffffff  __TI_prof_data_start           
@@ -585,4 +661,4 @@ ffffffff  binit
 UNDEFED   __mpu_init                     
 UNDEFED   _system_post_cinit             
 
-[182 symbols]
+[213 symbols]

@@ -123,6 +123,7 @@ ECUAL/MOTOR \
 FreeRTOS/Source \
 FreeRTOS/Source/portable/CCS/ARM_CM3 \
 FreeRTOS/Source/portable/MemMang \
+MCAL/ADC \
 MCAL/GPIO \
 MCAL/I2C \
 MCAL/MCU \
