@@ -25,17 +25,13 @@ typedef struct
     float32 Kp;                    /**< Proportional gain */
     float32 Ki;                    /**< Integral gain (per second) */
     float32 Kd;                    /**< Derivative gain (per second) */
-
     float32 SampleTimeSec;         /**< Sample time in seconds (dt) */
-
     float32 OutMin;                /**< Output minimum clamp */
     float32 OutMax;                /**< Output maximum clamp */
-
     float32 IntegratorMin;         /**< Integrator minimum clamp */
     float32 IntegratorMax;         /**< Integrator maximum clamp */
-
-    boolean DerivativeOnMeasurement;  /**< TRUE: use -d(meas)/dt, FALSE: d(error)/dt */
-    float32 DerivativeFilterAlpha;    /**< Derivative low-pass filter alpha (0-1, higher = less filtering) */
+    float32 DerivativeFilterAlpha; /**< Derivative low-pass filter alpha (0-1, higher = less filtering) */
+    boolean DerivativeOnMeasurement; /**< TRUE: use -d(meas)/dt, FALSE: d(error)/dt */
 } PID_ConfigType;
 
 /**

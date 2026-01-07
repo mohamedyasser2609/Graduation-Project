@@ -2,7 +2,7 @@
 
 MCAL/PWM/PWM.obj: ../MCAL/PWM/PWM.c
 MCAL/PWM/PWM.obj: ../MCAL/PWM/PWM.h
-MCAL/PWM/PWM.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
+MCAL/PWM/PWM.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 MCAL/PWM/PWM.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 MCAL/PWM/PWM.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 MCAL/PWM/PWM.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -26,7 +26,7 @@ MCAL/PWM/PWM.obj: ../MCAL/GPIO/Gpio_Cfg.h
 
 ../MCAL/PWM/PWM.h:
 
-C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

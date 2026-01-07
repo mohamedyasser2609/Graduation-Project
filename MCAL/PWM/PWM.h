@@ -122,16 +122,16 @@ typedef enum {
  * @details Configuration structure for a single PWM channel
  */
 typedef struct {
-    Pwm_ChannelType Channel;              /* Channel ID */
+    void (*NotificationPtr)(void);        /* Notification callback (NULL if not used) */
+    Pwm_PeriodType DefaultPeriod;         /* Default period in ticks */
+    Pwm_DutyCycleType DefaultDutyCycle;   /* Default duty cycle (0x0000-0x8000) */
     Pwm_ModuleType Module;                /* PWM module (0 or 1) */
     Pwm_GeneratorType Generator;          /* Generator number (0-3) */
     Pwm_OutputType Output;                /* Output pin (A or B) */
     Pwm_ChannelClassType ChannelClass;    /* Channel class */
     Pwm_PolarityType Polarity;            /* Output polarity */
     Pwm_IdleStateType IdleState;          /* Idle state */
-    Pwm_PeriodType DefaultPeriod;         /* Default period in ticks */
-    Pwm_DutyCycleType DefaultDutyCycle;   /* Default duty cycle (0x0000-0x8000) */
-    void (*NotificationPtr)(void);        /* Notification callback (NULL if not used) */
+    Pwm_ChannelType Channel;              /* Channel ID */
 } Pwm_ConfigChannelType;
 
 /**

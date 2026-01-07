@@ -25,13 +25,17 @@
  * @version 2.0.0 (Transparent Bridge Mode)
  */
 
-#if 0  /* <<<< ENTIRE IMU MAIN COMMENTED OUT - REMOVE THIS LINE TO ACTIVATE >>>> */
 
 
 /* ===================[Includes]=================== */
 #include "MCAL/GPIO/Gpio.h"
 #include "MCAL/UART/Uart.h"
+#include "MCAL/MCU/Mcu.h"
 #include "CONFIG/Std_Types.h"
+
+/* ===================[External Configurations]=================== */
+extern const Mcu_ConfigType Mcu_Config_80MHz;
+extern const Gpio_ConfigType Gpio_Configuration;
 
 /* ===================[Definitions]=================== */
 #define ROS2_UART_MODULE        UART_MODULE_1   /* ROS 2 on UART1 (PB0/PB1) */
@@ -142,11 +146,25 @@ void ForwardRPiToPC(void) {
 /* ===================[Main Function]=================== */
 int main(void) {
     uint32 loopCounter = 0;
+    volatile uint32 delay;
     
-    /* Step 1: Initialize GPIO */
+    /* Step 1: Initialize MCU at 80MHz */
+    Mcu_Init(&Mcu_Config_80MHz);
+    Mcu_InitClock(MCU_CLOCK_80MHZ);
+    
+    /* Wait for PLL to lock */
+    while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) {
+        /* Wait */
+    }
+    Mcu_DistributePllClock();
+    
+    /* Small delay for clock stabilization */
+    for (delay = 0; delay < 50000; delay++);
+    
+    /* Step 2: Initialize GPIO */
     Gpio_Init(&Gpio_Configuration);
     
-    /* Step 2: Configure PC UART (UART0 - USB to PC) */
+    /* Step 3: Configure PC UART (UART0 - USB to PC) */
     const Uart_ConfigType PcUart_Config = {
         .Module = PC_UART_MODULE,
         .BaudRate = PC_BAUD_RATE,
@@ -162,7 +180,7 @@ int main(void) {
     };
     Uart_Init(&PcUart_Config);
     
-    /* Step 3: Configure ROS 2 UART (UART1 - to Raspberry Pi) */
+    /* Step 4: Configure ROS 2 UART (UART1 - to Raspberry Pi) */
     const Uart_ConfigType ROS2Uart_Config = {
         .Module = ROS2_UART_MODULE,
         .BaudRate = ROS2_BAUD_RATE,
@@ -222,4 +240,3 @@ int main(void) {
 
 
 
-#endif  /* <<<< END OF COMMENTED OUT IMU TEST CODE >>>> */

@@ -31,10 +31,10 @@ const Encoder_ChannelConfigType Encoder_ChannelConfigs[ENCODER_MAX_CHANNELS] = {
         .ReverseDirection = FALSE,
         .EnableVelocityFilter = TRUE,
         .FilterCfg = {
-            .Alpha = 200u,                /* ~78% new, 22% old */
-            .DefaultAlpha = 128u,
             .DeadbandCountsPerSec = 30u,
-            .SpikeThresholdCountsPerSec = 800u
+            .SpikeThresholdCountsPerSec = 800u,
+            .Alpha = 200u,                /* ~78% new, 22% old */
+            .DefaultAlpha = 128u
         }
     },
     /* Right encoder on QEI1 */
@@ -49,10 +49,10 @@ const Encoder_ChannelConfigType Encoder_ChannelConfigs[ENCODER_MAX_CHANNELS] = {
         .ReverseDirection = TRUE,         /* Mirror mounting inversion */
         .EnableVelocityFilter = TRUE,
         .FilterCfg = {
-            .Alpha = 200u,
-            .DefaultAlpha = 128u,
             .DeadbandCountsPerSec = 30u,
-            .SpikeThresholdCountsPerSec = 800u
+            .SpikeThresholdCountsPerSec = 800u,
+            .Alpha = 200u,
+            .DefaultAlpha = 128u
         }
     }
 };

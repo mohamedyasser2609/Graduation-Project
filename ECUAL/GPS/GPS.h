@@ -54,23 +54,23 @@ typedef struct {
  * @brief GPS time data structure
  */
 typedef struct {
+    uint16 year;                /**< Year (e.g., 2025) */
+    uint16 millisecond;         /**< Milliseconds (0-999) */
     uint8 hour;                 /**< UTC hour (0-23) */
     uint8 minute;               /**< UTC minute (0-59) */
     uint8 second;               /**< UTC second (0-59) */
-    uint16 millisecond;         /**< Milliseconds (0-999) */
     uint8 day;                  /**< Day of month (1-31) */
     uint8 month;                /**< Month (1-12) */
-    uint16 year;                /**< Year (e.g., 2025) */
 } GPS_TimeType;
 
 /**
  * @brief GPS satellite information
  */
 typedef struct {
+    uint16 azimuth;             /**< Azimuth in degrees (0-359) */
     uint8 prn;                  /**< Satellite PRN number */
     uint8 gnssId;               /**< GNSS constellation ID */
     uint8 elevation;            /**< Elevation in degrees (0-90) */
-    uint16 azimuth;             /**< Azimuth in degrees (0-359) */
     uint8 snr;                  /**< Signal-to-noise ratio in dB */
     boolean inUse;              /**< TRUE if satellite is used in fix */
     boolean healthy;            /**< TRUE if satellite is healthy */
@@ -129,11 +129,13 @@ typedef struct {
  * @brief GPS configuration structure
  */
 typedef struct GPS_ConfigType {
-    Uart_ModuleType UartModule;     /**< UART module for GPS */
     uint32 BaudRate;                /**< GPS baud rate */
+    Uart_ModuleType UartModule;     /**< UART module for GPS */
     uint8 DynamicModel;             /**< Dynamic platform model */
     uint8 PowerMode;                /**< Power management mode */
     uint8 SbasSystem;               /**< SBAS system selection */
+    uint8 UpdateRate;               /**< Update rate in Hz (1-10) */
+    uint8 AssistNowMode;            /**< AssistNow mode */
     boolean EnableSBAS;             /**< Enable SBAS/WAAS */
     boolean EnableGLONASS;          /**< Enable GLONASS */
     boolean EnableGalileo;          /**< Enable Galileo */
@@ -141,8 +143,6 @@ typedef struct GPS_ConfigType {
     boolean EnablePPS;              /**< Enable PPS output */
     boolean EnableGeofencing;       /**< Enable geofencing */
     boolean EnableRTCM;             /**< Enable RTCM input */
-    uint8 UpdateRate;               /**< Update rate in Hz (1-10) */
-    uint8 AssistNowMode;            /**< AssistNow mode */
 } GPS_ConfigType;
 
 /**

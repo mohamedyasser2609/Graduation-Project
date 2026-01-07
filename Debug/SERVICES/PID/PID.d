@@ -2,7 +2,7 @@
 
 SERVICES/PID/PID.obj: ../SERVICES/PID/PID.c
 SERVICES/PID/PID.obj: ../SERVICES/PID/PID.h
-SERVICES/PID/PID.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
+SERVICES/PID/PID.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 SERVICES/PID/PID.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 SERVICES/PID/PID.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 SERVICES/PID/PID.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -26,7 +26,7 @@ SERVICES/PID/PID.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/inc
 
 ../SERVICES/PID/PID.h:
 
-C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

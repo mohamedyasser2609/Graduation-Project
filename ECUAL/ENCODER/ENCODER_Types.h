@@ -74,10 +74,10 @@ typedef enum {
  * @brief Configuration for the velocity filter.
  */
 typedef struct {
-    uint8 Alpha;                      /**< EMA alpha (1-255). 0 replaced by DefaultAlpha. */
-    uint8 DefaultAlpha;               /**< Fallback alpha if Alpha is 0. */
     uint32 DeadbandCountsPerSec;      /**< Deadband threshold to zero-out small speeds. */
     uint32 SpikeThresholdCountsPerSec;/**< Outlier rejection threshold (counts/sec). */
+    uint8 Alpha;                      /**< EMA alpha (1-255). 0 replaced by DefaultAlpha. */
+    uint8 DefaultAlpha;               /**< Fallback alpha if Alpha is 0. */
 } Encoder_FilterConfigType;
 
 /**
@@ -109,11 +109,11 @@ typedef struct {
  */
 typedef struct {
     int64_t PositionCounts;          /**< Absolute position in counts (64-bit signed). */
+    int32_t VelocityCountsPerSec;    /**< Signed velocity in counts per second. */
     float PositionRevolutions;       /**< Position in revolutions. */
     float PositionDegrees;           /**< Position in degrees. */
-    Encoder_DirectionType Direction; /**< Current rotation direction. */
-    int32_t VelocityCountsPerSec;    /**< Signed velocity in counts per second. */
     float VelocityRPM;               /**< Signed velocity in RPM. */
+    Encoder_DirectionType Direction; /**< Current rotation direction. */
 } Encoder_DataType;
 
 #endif /* ECUAL_ENCODER_ENCODER_TYPES_H_ */

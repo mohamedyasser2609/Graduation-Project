@@ -16,7 +16,7 @@ MCAL/I2C/I2C.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include
 MCAL/I2C/I2C.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h
 MCAL/I2C/I2C.obj: ../MCAL/I2C/I2C_Types.h
 MCAL/I2C/I2C.obj: ../MCAL/I2C/I2C_Cfg.h
-MCAL/I2C/I2C.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/tm4c123gh6pm.h
+MCAL/I2C/I2C.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/tm4c123gh6pm.h
 MCAL/I2C/I2C.obj: ../MCAL/MCU/Mcu.h
 MCAL/I2C/I2C.obj: ../MCAL/MCU/Mcu_Types.h
 MCAL/I2C/I2C.obj: ../MCAL/MCU/Mcu_Cfg.h
@@ -53,7 +53,7 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 
 ../MCAL/I2C/I2C_Cfg.h:
 
-C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/tm4c123gh6pm.h:
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/tm4c123gh6pm.h:
 
 ../MCAL/MCU/Mcu.h:
 

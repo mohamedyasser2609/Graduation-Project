@@ -116,19 +116,19 @@ typedef void (*Timer_NotificationFuncPtr)(void);
  * @details Contains all configuration parameters for a timer block
  */
 typedef struct {
+    Timer_ValueType             LoadValue;          /**< Timer load value */
+    Timer_ValueType             MatchValue;         /**< Timer match value (for PWM/match interrupts) */
+    Timer_NotificationFuncPtr   TimeoutCallback;    /**< Callback for timeout events */
+    Timer_NotificationFuncPtr   MatchCallback;      /**< Callback for match events */
     Timer_ModuleType            Module;             /**< Timer module (0-5) */
     Timer_BlockType             Block;              /**< Timer block (A or B) */
     Timer_ConfigModeType        ConfigMode;         /**< 32-bit or 16-bit configuration */
     Timer_OperationModeType     OperationMode;      /**< One-shot, periodic, capture */
     Timer_CountDirectionType    CountDirection;     /**< Count up or down */
     Timer_PwmModeType           PwmMode;            /**< PWM enabled or disabled */
-    Timer_ValueType             LoadValue;          /**< Timer load value */
-    Timer_ValueType             MatchValue;         /**< Timer match value (for PWM/match interrupts) */
     uint8                       Prescaler;          /**< Prescaler value (extends timer range) */
     boolean                     InterruptEnable;    /**< Enable timeout interrupt */
     boolean                     MatchInterruptEnable; /**< Enable match interrupt */
-    Timer_NotificationFuncPtr   TimeoutCallback;    /**< Callback for timeout events */
-    Timer_NotificationFuncPtr   MatchCallback;      /**< Callback for match events */
 } Timer_ConfigType;
 
 #endif /* MCAL_TIMER_TIMER_TYPES_H_ */

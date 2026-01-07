@@ -2,7 +2,7 @@
 
 ECUAL/ENCODER/ENCODER_PBCfg.obj: ../ECUAL/ENCODER/ENCODER_PBCfg.c
 ECUAL/ENCODER/ENCODER_PBCfg.obj: ../ECUAL/ENCODER/ENCODER.h
-ECUAL/ENCODER/ENCODER_PBCfg.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
+ECUAL/ENCODER/ENCODER_PBCfg.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 ECUAL/ENCODER/ENCODER_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 ECUAL/ENCODER/ENCODER_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 ECUAL/ENCODER/ENCODER_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -25,7 +25,7 @@ ECUAL/ENCODER/ENCODER_PBCfg.obj: ../MCAL/QEI/QEI_Cfg.h
 
 ../ECUAL/ENCODER/ENCODER.h:
 
-C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

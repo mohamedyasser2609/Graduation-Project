@@ -2,7 +2,7 @@
 
 ECUAL/GPS/GPS.obj: ../ECUAL/GPS/GPS.c
 ECUAL/GPS/GPS.obj: ../ECUAL/GPS/GPS.h
-ECUAL/GPS/GPS.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
+ECUAL/GPS/GPS.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 ECUAL/GPS/GPS.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 ECUAL/GPS/GPS.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 ECUAL/GPS/GPS.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -30,7 +30,7 @@ ECUAL/GPS/GPS.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/includ
 
 ../ECUAL/GPS/GPS.h:
 
-C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

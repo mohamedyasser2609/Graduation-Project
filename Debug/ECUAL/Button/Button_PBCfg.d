@@ -2,7 +2,7 @@
 
 ECUAL/Button/Button_PBCfg.obj: ../ECUAL/Button/Button_PBCfg.c
 ECUAL/Button/Button_PBCfg.obj: ../ECUAL/Button/Button.h
-ECUAL/Button/Button_PBCfg.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
+ECUAL/Button/Button_PBCfg.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 ECUAL/Button/Button_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 ECUAL/Button/Button_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 ECUAL/Button/Button_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -25,7 +25,7 @@ ECUAL/Button/Button_PBCfg.obj: ../MCAL/GPIO/Gpio_Cfg.h
 
 ../ECUAL/Button/Button.h:
 
-C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

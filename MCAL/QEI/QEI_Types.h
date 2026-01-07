@@ -84,23 +84,23 @@ typedef void (*Qei_NotificationType)(Qei_InterruptMaskType interruptFlags);
  * @brief QEI configuration structure
  */
 typedef struct {
+    uint32 VelocityTimerLoad;                /**< Velocity timer load value */
+    uint32 MaxPosition;                      /**< Maximum position count */
+    uint32 InitialPosition;                  /**< Initial position value */
+    Qei_InterruptMaskType InterruptMask;     /**< Interrupt mask */
+    Qei_NotificationType NotificationCallback; /**< Optional callback */
     Qei_ModuleType Module;                   /**< QEI hardware module */
     Qei_SignalModeType SignalMode;           /**< Signal mode selection */
     Qei_ResetModeType ResetMode;             /**< Reset behavior */
+    Qei_VelocityPredivType VelocityPreDiv;   /**< Velocity pre-divider */
+    uint8 FilterCount;                       /**< Filter count (0-15) */
     boolean SwapChannels;                    /**< Swap PhA/PhB inputs */
     boolean InvertChannelA;                  /**< Invert PhA input */
     boolean InvertChannelB;                  /**< Invert PhB input */
     boolean InvertIndex;                     /**< Invert index input */
     boolean EnableVelocityCapture;           /**< Enable velocity capture */
-    Qei_VelocityPredivType VelocityPreDiv;   /**< Velocity pre-divider */
-    uint32 VelocityTimerLoad;                /**< Velocity timer load value */
     boolean EnableFilter;                    /**< Enable digital filter */
-    uint8 FilterCount;                       /**< Filter count (0-15) */
     boolean DebugStallEnable;                /**< Stall counter during debug */
-    uint32 MaxPosition;                      /**< Maximum position count */
-    uint32 InitialPosition;                  /**< Initial position value */
-    Qei_InterruptMaskType InterruptMask;     /**< Interrupt mask */
-    Qei_NotificationType NotificationCallback; /**< Optional callback */
 } Qei_ConfigType;
 
 #endif /* MCAL_QEI_QEI_TYPES_H_ */

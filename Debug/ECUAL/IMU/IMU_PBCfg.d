@@ -2,7 +2,7 @@
 
 ECUAL/IMU/IMU_PBCfg.obj: ../ECUAL/IMU/IMU_PBCfg.c
 ECUAL/IMU/IMU_PBCfg.obj: ../ECUAL/IMU/IMU.h
-ECUAL/IMU/IMU_PBCfg.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
+ECUAL/IMU/IMU_PBCfg.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 ECUAL/IMU/IMU_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 ECUAL/IMU/IMU_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 ECUAL/IMU/IMU_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -23,7 +23,7 @@ ECUAL/IMU/IMU_PBCfg.obj: ../ECUAL/IMU/IMU_Cfg.h
 
 ../ECUAL/IMU/IMU.h:
 
-C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

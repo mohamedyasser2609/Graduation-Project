@@ -83,8 +83,8 @@ typedef struct {
 typedef struct {
     Motor_StatusType Status;           /**< Current motor status */
     Motor_DirectionType Direction;      /**< Current direction */
-    Motor_SpeedType SpeedPercent;      /**< Current speed (0-100) */
     Pwm_DutyCycleType PwmDutyCycle;    /**< Current PWM duty cycle */
+    Motor_SpeedType SpeedPercent;      /**< Current speed (0-100) */
 } Motor_DataType;
 
 #endif /* ECUAL_MOTOR_MOTOR_TYPES_H_ */

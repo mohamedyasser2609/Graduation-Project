@@ -18,7 +18,7 @@ MCAL/QEI/QEI.obj: ../CONFIG/Compiler.h
 MCAL/QEI/QEI.obj: ../CONFIG/Det.h
 MCAL/QEI/QEI.obj: ../MCAL/QEI/QEI_Types.h
 MCAL/QEI/QEI.obj: ../MCAL/QEI/QEI_Cfg.h
-MCAL/QEI/QEI.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/tm4c123gh6pm.h
+MCAL/QEI/QEI.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/tm4c123gh6pm.h
 
 ../MCAL/QEI/QEI.c:
 
@@ -56,5 +56,5 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 
 ../MCAL/QEI/QEI_Cfg.h:
 
-C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/tm4c123gh6pm.h:
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/tm4c123gh6pm.h:
 

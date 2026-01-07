@@ -56,8 +56,8 @@ extern uint32_t __STACK_TOP;
 //*****************************************************************************
 // Timer interrupt handler for auto-cycling
 extern void Timer2A_Handler(void);
-// QEI interrupt handler
-extern void QEI0_Handler(void);
+// QEI interrupt handler (disabled - see main_qei_test.c)
+// extern void QEI0_Handler(void);
 // ADC interrupt handlers
 extern void Adc_ADC0SS0_ISR(void);
 extern void Adc_ADC0SS1_ISR(void);
@@ -108,7 +108,7 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // PWM Generator 0
     IntDefaultHandler,                      // PWM Generator 1
     IntDefaultHandler,                      // PWM Generator 2
-    QEI0_Handler,                          // Quadrature Encoder 0
+    IntDefaultHandler,                      // Quadrature Encoder 0 (QEI0_Handler - disabled)
     Adc_ADC0SS0_ISR,                        // ADC Sequence 0
     Adc_ADC0SS1_ISR,                        // ADC Sequence 1
     Adc_ADC0SS2_ISR,                        // ADC Sequence 2

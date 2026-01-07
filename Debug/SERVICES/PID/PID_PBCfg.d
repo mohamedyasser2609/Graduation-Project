@@ -2,7 +2,7 @@
 
 SERVICES/PID/PID_PBCfg.obj: ../SERVICES/PID/PID_PBCfg.c
 SERVICES/PID/PID_PBCfg.obj: ../SERVICES/PID/PID.h
-SERVICES/PID/PID_PBCfg.obj: C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
+SERVICES/PID/PID_PBCfg.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h
 SERVICES/PID/PID_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h
 SERVICES/PID/PID_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/_ti_config.h
 SERVICES/PID/PID_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/linkage.h
@@ -23,7 +23,7 @@ SERVICES/PID/PID_PBCfg.obj: ../SERVICES/PID/PID_Cfg.h
 
 ../SERVICES/PID/PID.h:
 
-C:/Users/Lenovo/Desktop/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/CONFIG/Std_types.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stdint.h:
 

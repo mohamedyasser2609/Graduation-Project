@@ -34,6 +34,8 @@
 
 /* Encoder Test Code - Active */
 
+#if 0  /* <<<< ENTIRE IMU MAIN COMMENTED OUT - REMOVE THIS LINE TO ACTIVATE >>>> */
+
 
 #include <stdint.h>
 #include "ECUAL/ENCODER/ENCODER.h"
@@ -1133,4 +1135,7 @@ int main(void)
 
 
 /* End of Encoder Test Code */
+
+
+#endif  /* <<<< END OF COMMENTED OUT IMU TEST CODE >>>> */
 
