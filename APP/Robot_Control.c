@@ -45,8 +45,8 @@ static const PID_ConfigType Robot_PidConfig = {
 };
 
 /* Last encoder values for odometry */
-static sint32 Robot_LastLeftTicks = 0;
-static sint32 Robot_LastRightTicks = 0;
+static int64_t Robot_LastLeftTicks = 0;
+static int64_t Robot_LastRightTicks = 0;
 
 /* ===================[Private Functions]=================== */
 
@@ -92,7 +92,7 @@ static uint8 Robot_VelToMotorCmd(float32 VelMps)
 /**
  * @brief Convert encoder ticks to meters
  */
-static float32 Robot_TicksToMeters(sint32 Ticks)
+static float32 Robot_TicksToMeters(int64_t Ticks)
 {
     float32 revolutions;
     
@@ -252,7 +252,7 @@ Std_ReturnType Robot_GetWheelVelocities(Robot_WheelVelType* WheelPtr)
  */
 Std_ReturnType Robot_GetStatus(Robot_StatusType* StatusPtr)
 {
-    float32 leftCurrent, rightCurrent;
+    ACS712_DataType leftCurrent, rightCurrent;
     float32 maxTemp;
     
     if (StatusPtr == NULL_PTR)
@@ -265,8 +265,8 @@ Std_ReturnType Robot_GetStatus(Robot_StatusType* StatusPtr)
     
     (void)ACS712_ReadCurrent(0u, &leftCurrent);
     (void)ACS712_ReadCurrent(1u, &rightCurrent);
-    StatusPtr->LeftCurrent = leftCurrent;
-    StatusPtr->RightCurrent = rightCurrent;
+    StatusPtr->LeftCurrent = leftCurrent.CurrentAmps;
+    StatusPtr->RightCurrent = rightCurrent.CurrentAmps;
     
     (void)ThermalMgmt_GetMaxTemperature(&maxTemp, NULL_PTR);
     StatusPtr->MaxTemperature = maxTemp;
@@ -305,12 +305,14 @@ void Robot_UpdateControl(void)
     Robot_TwistToWheels(&Robot_TargetVelocity, &targetLeftMps, &targetRightMps);
     
     /* Get current wheel velocities from encoders */
-    (void)Encoder_GetData(0u, &encoderLeft);
-    (void)Encoder_GetData(1u, &encoderRight);
+    (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &encoderLeft);
+    (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &encoderRight);
     
-    /* TODO: Convert encoder velocity to m/s */
-    Robot_WheelVel.LeftMps = encoderLeft.Velocity * 0.001f;  /* Placeholder */
-    Robot_WheelVel.RightMps = encoderRight.Velocity * 0.001f;
+    /* Convert encoder RPM to m/s */
+    Robot_WheelVel.LeftRPM = encoderLeft.VelocityRPM;
+    Robot_WheelVel.RightRPM = encoderRight.VelocityRPM;
+    Robot_WheelVel.LeftMps = (encoderLeft.VelocityRPM / 60.0f) * (2.0f * 3.14159f * ROBOT_WHEEL_RADIUS_M);
+    Robot_WheelVel.RightMps = (encoderRight.VelocityRPM / 60.0f) * (2.0f * 3.14159f * ROBOT_WHEEL_RADIUS_M);
     
     /* Run PID controllers */
     (void)PID_Compute(&Robot_PidConfig, &Robot_PidLeft,
@@ -329,10 +331,10 @@ void Robot_UpdateControl(void)
     rightDir = (pidOutputRight >= 0.0f) ? MOTOR_DIRECTION_FORWARD : MOTOR_DIRECTION_REVERSE;
     
     /* Apply to motors */
-    Motor_SetDirection(0u, leftDir);
-    Motor_SetSpeed(0u, leftCmd);
-    Motor_SetDirection(1u, rightDir);
-    Motor_SetSpeed(1u, rightCmd);
+    (void)Motor_SetDirection(0u, leftDir);
+    (void)Motor_SetSpeed(0u, leftCmd);
+    (void)Motor_SetDirection(1u, rightDir);
+    (void)Motor_SetSpeed(1u, rightCmd);
 }
 
 /**
@@ -341,20 +343,20 @@ void Robot_UpdateControl(void)
 void Robot_UpdateOdometry(void)
 {
     Encoder_DataType encoderLeft, encoderRight;
-    sint32 deltaLeft, deltaRight;
+    int64_t deltaLeft, deltaRight;
     float32 distLeft, distRight;
     float32 distCenter, deltaTheta;
     
     /* Get current encoder values */
-    (void)Encoder_GetData(0u, &encoderLeft);
-    (void)Encoder_GetData(1u, &encoderRight);
+    (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &encoderLeft);
+    (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &encoderRight);
     
     /* Calculate delta ticks */
-    deltaLeft = encoderLeft.Position - Robot_LastLeftTicks;
-    deltaRight = encoderRight.Position - Robot_LastRightTicks;
+    deltaLeft = encoderLeft.PositionCounts - Robot_LastLeftTicks;
+    deltaRight = encoderRight.PositionCounts - Robot_LastRightTicks;
     
-    Robot_LastLeftTicks = encoderLeft.Position;
-    Robot_LastRightTicks = encoderRight.Position;
+    Robot_LastLeftTicks = encoderLeft.PositionCounts;
+    Robot_LastRightTicks = encoderRight.PositionCounts;
     
     /* Convert to distances */
     distLeft = Robot_TicksToMeters(deltaLeft);

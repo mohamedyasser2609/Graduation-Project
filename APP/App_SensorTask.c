@@ -32,10 +32,10 @@ extern const AM2320_ConfigType AM2320_Config;
 
 /* ===================[Public Sensor Data]=================== */
 /* These can be read by other tasks */
-static IMU_ProcessedDataType App_ImuData;
+static IMU_CalibratedDataType App_ImuData;
 static GPS_DataType App_GpsData;
 static Encoder_DataType App_EncoderData[2];
-static float32 App_MotorCurrent[2];
+static ACS712_DataType App_MotorCurrent[2];
 static AM2320_DataType App_TempData[3];
 
 static boolean App_SensorInitialized = FALSE;
@@ -56,20 +56,20 @@ void App_SensorTask_Init(void)
  */
 void App_SensorTask_Run(void)
 {
-    if (!App_SensorInitialized)
+    if (App_SensorInitialized == FALSE)
     {
         App_SensorTask_Init();
     }
     
     /* 1. Read IMU data */
-    (void)IMU_ReadProcessedData(&App_ImuData);
+    (void)IMU_ReadCalibratedData(&App_ImuData);
     
     /* 2. Read GPS data */
     (void)GPS_GetData(&App_GpsData);
     
     /* 3. Read encoder data */
-    (void)Encoder_GetData(0u, &App_EncoderData[0]);
-    (void)Encoder_GetData(1u, &App_EncoderData[1]);
+    (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &App_EncoderData[0]);
+    (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &App_EncoderData[1]);
     
     /* 4. Read motor current */
     (void)ACS712_ReadCurrent(0u, &App_MotorCurrent[0]);
@@ -90,7 +90,7 @@ void App_SensorTask_Run(void)
  * @param[out] DataPtr Pointer to store IMU data
  * @return E_OK on success
  */
-Std_ReturnType App_SensorTask_GetImuData(IMU_ProcessedDataType* DataPtr)
+Std_ReturnType App_SensorTask_GetImuData(IMU_CalibratedDataType* DataPtr)
 {
     if (DataPtr == NULL_PTR)
     {
@@ -137,10 +137,10 @@ Std_ReturnType App_SensorTask_GetEncoderData(uint8 Channel, Encoder_DataType* Da
 /**
  * @brief Get motor current
  * @param[in] Channel Motor channel (0=left, 1=right)
- * @param[out] CurrentPtr Pointer to store current (Amps)
+ * @param[out] CurrentPtr Pointer to store current data
  * @return E_OK on success
  */
-Std_ReturnType App_SensorTask_GetMotorCurrent(uint8 Channel, float32* CurrentPtr)
+Std_ReturnType App_SensorTask_GetMotorCurrent(uint8 Channel, ACS712_DataType* CurrentPtr)
 {
     if ((CurrentPtr == NULL_PTR) || (Channel > 1u))
     {

@@ -45,24 +45,32 @@ static uint32 App_SafetyFaultFlags = 0u;
  */
 static void App_Safety_CheckMotorCurrent(void)
 {
+    ACS712_DataType currentData;
+    
     /* Check left motor overload */
-    if (ACS712_IsOverload(0u))
+    if (ACS712_ReadCurrent(0u, &currentData) == E_OK)
     {
-        App_SafetyFaultFlags |= FAULT_MOTOR_LEFT_OVERLOAD;
-        App_SafetyOverloadCount++;
-        
-        /* Stop motor on overload */
-        Motor_Stop(0u);
+        if (currentData.Status == ACS712_CHANNEL_OVERLOAD)
+        {
+            App_SafetyFaultFlags |= FAULT_MOTOR_LEFT_OVERLOAD;
+            App_SafetyOverloadCount++;
+            
+            /* Stop motor on overload */
+            (void)Motor_Stop(0u);
+        }
     }
     
     /* Check right motor overload */
-    if (ACS712_IsOverload(1u))
+    if (ACS712_ReadCurrent(1u, &currentData) == E_OK)
     {
-        App_SafetyFaultFlags |= FAULT_MOTOR_RIGHT_OVERLOAD;
-        App_SafetyOverloadCount++;
-        
-        /* Stop motor on overload */
-        Motor_Stop(1u);
+        if (currentData.Status == ACS712_CHANNEL_OVERLOAD)
+        {
+            App_SafetyFaultFlags |= FAULT_MOTOR_RIGHT_OVERLOAD;
+            App_SafetyOverloadCount++;
+            
+            /* Stop motor on overload */
+            (void)Motor_Stop(1u);
+        }
     }
 }
 
@@ -83,7 +91,7 @@ static void App_Safety_CheckThermal(void)
         ThermalMgmt_EmergencyCooling();
     }
     
-    if (ThermalMgmt_IsShutdownRequired())
+    if (ThermalMgmt_IsShutdownRequired() == TRUE)
     {
         App_SafetyFaultFlags |= FAULT_THERMAL_SHUTDOWN;
         
@@ -112,13 +120,13 @@ void App_SafetyTask_Init(void)
  */
 void App_SafetyTask_Run(void)
 {
-    if (!App_SafetyInitialized)
+    if (App_SafetyInitialized == FALSE)
     {
         App_SafetyTask_Init();
     }
     
     /* 1. Feed watchdog to prevent reset */
-    Wdg_Trigger();
+    Wdg_Service();
     
     /* 2. Check motor current for overload */
     App_Safety_CheckMotorCurrent();

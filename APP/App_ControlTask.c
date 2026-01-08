@@ -81,23 +81,23 @@ void App_ControlTask_Run(void)
     Motor_DirectionType leftDir;
     Motor_DirectionType rightDir;
     
-    if (!App_ControlInitialized)
+    if (App_ControlInitialized == FALSE)
     {
         App_ControlTask_Init();
     }
     
     /* 1. Get encoder feedback */
-    (void)Encoder_GetData(0u, &encoderLeft);
-    (void)Encoder_GetData(1u, &encoderRight);
+    (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &encoderLeft);
+    (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &encoderRight);
     
-    /* 2. Compute PID for left motor */
+    /* 2. Compute PID for left motor (using VelocityRPM from Encoder_DataType) */
     (void)PID_Compute(&App_PidConfig, &App_PidStateLeft,
-                      App_SetpointLeft, encoderLeft.Velocity,
+                      App_SetpointLeft, encoderLeft.VelocityRPM,
                       &pidOutputLeft);
     
     /* 3. Compute PID for right motor */
     (void)PID_Compute(&App_PidConfig, &App_PidStateRight,
-                      App_SetpointRight, encoderRight.Velocity,
+                      App_SetpointRight, encoderRight.VelocityRPM,
                       &pidOutputRight);
     
     /* 4. Convert PID output to motor commands */
@@ -126,10 +126,10 @@ void App_ControlTask_Run(void)
     }
     
     /* 5. Command motors */
-    Motor_SetDirection(0u, leftDir);
-    Motor_SetSpeed(0u, leftSpeed);
-    Motor_SetDirection(1u, rightDir);
-    Motor_SetSpeed(1u, rightSpeed);
+    (void)Motor_SetDirection(0u, leftDir);
+    (void)Motor_SetSpeed(0u, leftSpeed);
+    (void)Motor_SetDirection(1u, rightDir);
+    (void)Motor_SetSpeed(1u, rightSpeed);
 }
 
 /**

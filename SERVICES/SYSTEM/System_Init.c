@@ -36,10 +36,10 @@
 #include "../../ECUAL/FAN/FAN.h"
 
 /* ===================[SERVICES Includes]=================== */
-#include "../../SERVICES/COMM/ComStack.h"
-#include "../../SERVICES/THERMAL/ThermalMgmt.h"
-#include "../../SERVICES/DIAG/Diagnostics.h"
-#include "../../SERVICES/PID/PID.h"
+#include "../COMM/ComStack.h"
+#include "../THERMAL/ThermalMgmt.h"
+#include "../DIAG/Diagnostics.h"
+#include "../PID/PID.h"
 
 /* ===================[APP Includes]=================== */
 #include "../../APP/Robot_Control.h"
@@ -49,7 +49,7 @@
 extern const Gpio_ConfigType Gpio_Configuration;
 extern const Uart_ConfigType Uart_Config;
 extern const Pwm_ConfigType Pwm_Config;
-extern const I2c_ConfigType I2c_Config;
+extern const I2C_ConfigType I2C_Config;
 extern const Adc_ConfigType Adc_Config;
 extern const Qei_ConfigType Qei_Config;
 extern const Wdg_ConfigType Wdg_Config;
@@ -86,7 +86,7 @@ void System_Init(void)
     Adc_Init(&Adc_Config);
     
     /* Initialize I2C (for IMU and temperature sensors) */
-    I2c_Init(&I2c_Config);
+    I2C_Init(&I2C_Config);
     
     /* Initialize PWM (for motors and fans) */
     Pwm_Init(&Pwm_Config);
