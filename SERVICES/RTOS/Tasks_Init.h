@@ -1,17 +1,16 @@
 /**
  * @file Tasks_Init.h
  * @brief FreeRTOS Task Initialization Header
- * @details Public interface for task initialization and management
+ * @details Public interface for task initialization and queue access
  *
  * @author Mohamed Yasser
  * @date Jan 08, 2026
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 #ifndef TASKS_INIT_H
 #define TASKS_INIT_H
 
-/* ===================[Includes]=================== */
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -20,8 +19,7 @@
 
 /**
  * @brief Initialize all tasks and start the scheduler
- * @details Creates queues, tasks, and starts FreeRTOS scheduler
- * @return Never returns if successful
+ * @note This function never returns
  */
 void Tasks_Init(void);
 
@@ -38,22 +36,15 @@ BaseType_t Tasks_CreateAll(void);
 BaseType_t Tasks_CreateQueues(void);
 
 /**
- * @brief Get handle for a specific task
- * @param[in] taskName Name identifier ("Safety", "Control", etc.)
- * @return Task handle or NULL if not found
+ * @brief Get the wheel speed command queue handle
+ * @return Queue handle for wheel speed commands (Comm -> Control)
  */
-TaskHandle_t Tasks_GetHandle(const char* taskName);
+QueueHandle_t Tasks_GetWheelSpeedCmdQueue(void);
 
 /**
- * @brief Get the motor command queue handle
- * @return Queue handle for motor commands
+ * @brief Get the sensor feedback queue handle
+ * @return Queue handle for sensor feedback (Sensor -> Comm)
  */
-QueueHandle_t Tasks_GetMotorCommandQueue(void);
-
-/**
- * @brief Get the sensor data queue handle
- * @return Queue handle for sensor data
- */
-QueueHandle_t Tasks_GetSensorDataQueue(void);
+QueueHandle_t Tasks_GetSensorFeedbackQueue(void);
 
 #endif /* TASKS_INIT_H */

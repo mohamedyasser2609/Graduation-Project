@@ -1,29 +1,30 @@
 /**
  * @file App_ControlTask.c
  * @brief Motor Control Task Implementation
- * @details PID-based motor control for differential drive robot
+ * @details PID-based motor control consuming wheel speed commands from queue
  *
- * Control Loop:
- * - Receives wheel speed setpoints from ROS2 (via Comm task)
- * - Reads encoder feedback
- * - Computes PID output
- * - Commands motor driver
+ * Receives: WheelSpeedCmdType from Comm Task via queue
+ * Outputs:  PWM commands to motor driver
  *
  * @author Mohamed Yasser
  * @date Jan 08, 2026
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 #include "../CONFIG/Std_Types.h"
+
+/* FreeRTOS includes */
+#include "FreeRTOS.h"
+#include "queue.h"
 
 /* Driver includes */
 #include "../ECUAL/MOTOR/Motor.h"
 #include "../ECUAL/ENCODER/Encoder.h"
 #include "../SERVICES/PID/PID.h"
+#include "../SERVICES/RTOS/Tasks_Init.h"
 
-/* ===================[External Configurations]=================== */
-extern const Motor_ConfigType Motor_Config;
-extern const PID_ConfigType PID_Config;
+/* Shared types */
+#include "App_SharedTypes.h"
 
 /* ===================[Private Variables]=================== */
 static boolean App_ControlInitialized = FALSE;
@@ -32,16 +33,23 @@ static boolean App_ControlInitialized = FALSE;
 static PID_StateType App_PidStateLeft;
 static PID_StateType App_PidStateRight;
 
-/* Setpoints from ROS2 (ticks/second or m/s) */
-static float32 App_SetpointLeft = 0.0f;
-static float32 App_SetpointRight = 0.0f;
+/* Target wheel speeds from ROS2 (rad/s) */
+static float32 App_TargetLeftRadS = 0.0f;
+static float32 App_TargetRightRadS = 0.0f;
 
-/* PID configuration for both motors */
+/* Command timeout (ticks) */
+#define CMD_TIMEOUT_TICKS   (100u)  /* ~1 second at 100Hz */
+static uint32 App_LastCmdTime = 0u;
+
+/* Queue handle */
+static QueueHandle_t App_WheelCmdQueue = NULL;
+
+/* PID configuration */
 static const PID_ConfigType App_PidConfig = {
-    .Kp = 1.0f,
-    .Ki = 0.5f,
-    .Kd = 0.1f,
-    .SampleTimeSec = 0.01f,     /* 10ms control loop */
+    .Kp = 2.0f,
+    .Ki = 0.8f,
+    .Kd = 0.05f,
+    .SampleTimeSec = 0.01f,
     .OutMin = -100.0f,
     .OutMax = 100.0f,
     .IntegratorMin = -50.0f,
@@ -50,6 +58,47 @@ static const PID_ConfigType App_PidConfig = {
     .DerivativeFilterAlpha = 0.1f
 };
 
+/* ===================[Private Functions]=================== */
+
+/**
+ * @brief Convert rad/s to RPM
+ */
+static float32 RadSToRPM(float32 radPerSec)
+{
+    return radPerSec * RAD_TO_RPM;
+}
+
+/**
+ * @brief Check for new commands from Comm task
+ */
+static void App_CheckCommandQueue(void)
+{
+    WheelSpeedCmdType cmd;
+    
+    if (App_WheelCmdQueue == NULL)
+    {
+        return;
+    }
+    
+    /* Non-blocking receive from queue */
+    if (xQueueReceive(App_WheelCmdQueue, &cmd, 0) == pdTRUE)
+    {
+        if (cmd.Valid)
+        {
+            App_TargetLeftRadS = cmd.LeftRadPerSec;
+            App_TargetRightRadS = cmd.RightRadPerSec;
+            App_LastCmdTime = xTaskGetTickCount();
+        }
+    }
+    
+    /* Check for command timeout - stop if no commands received */
+    if ((xTaskGetTickCount() - App_LastCmdTime) > CMD_TIMEOUT_TICKS)
+    {
+        App_TargetLeftRadS = 0.0f;
+        App_TargetRightRadS = 0.0f;
+    }
+}
+
 /* ===================[Public Functions]=================== */
 
 /**
@@ -57,12 +106,16 @@ static const PID_ConfigType App_PidConfig = {
  */
 void App_ControlTask_Init(void)
 {
+    /* Get queue handle */
+    App_WheelCmdQueue = Tasks_GetWheelSpeedCmdQueue();
+    
     /* Initialize PID states */
     (void)PID_Init(&App_PidConfig, &App_PidStateLeft);
     (void)PID_Init(&App_PidConfig, &App_PidStateRight);
     
-    App_SetpointLeft = 0.0f;
-    App_SetpointRight = 0.0f;
+    App_TargetLeftRadS = 0.0f;
+    App_TargetRightRadS = 0.0f;
+    App_LastCmdTime = xTaskGetTickCount();
     
     App_ControlInitialized = TRUE;
 }
@@ -74,6 +127,8 @@ void App_ControlTask_Run(void)
 {
     Encoder_DataType encoderLeft;
     Encoder_DataType encoderRight;
+    float32 targetLeftRPM;
+    float32 targetRightRPM;
     float32 pidOutputLeft;
     float32 pidOutputRight;
     uint8 leftSpeed;
@@ -86,22 +141,28 @@ void App_ControlTask_Run(void)
         App_ControlTask_Init();
     }
     
-    /* 1. Get encoder feedback */
+    /* 1. Check for new commands from Comm task */
+    App_CheckCommandQueue();
+    
+    /* 2. Convert rad/s targets to RPM */
+    targetLeftRPM = RadSToRPM(App_TargetLeftRadS);
+    targetRightRPM = RadSToRPM(App_TargetRightRadS);
+    
+    /* 3. Get encoder feedback */
     (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &encoderLeft);
     (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &encoderRight);
     
-    /* 2. Compute PID for left motor (using VelocityRPM from Encoder_DataType) */
+    /* 4. Compute PID for left motor */
     (void)PID_Compute(&App_PidConfig, &App_PidStateLeft,
-                      App_SetpointLeft, encoderLeft.VelocityRPM,
+                      targetLeftRPM, encoderLeft.VelocityRPM,
                       &pidOutputLeft);
     
-    /* 3. Compute PID for right motor */
+    /* 5. Compute PID for right motor */
     (void)PID_Compute(&App_PidConfig, &App_PidStateRight,
-                      App_SetpointRight, encoderRight.VelocityRPM,
+                      targetRightRPM, encoderRight.VelocityRPM,
                       &pidOutputRight);
     
-    /* 4. Convert PID output to motor commands */
-    /* Left motor */
+    /* 6. Convert PID output to motor commands */
     if (pidOutputLeft >= 0.0f)
     {
         leftDir = MOTOR_DIRECTION_FORWARD;
@@ -113,7 +174,6 @@ void App_ControlTask_Run(void)
         leftSpeed = (uint8)((-pidOutputLeft > 100.0f) ? 100u : (uint8)(-pidOutputLeft));
     }
     
-    /* Right motor */
     if (pidOutputRight >= 0.0f)
     {
         rightDir = MOTOR_DIRECTION_FORWARD;
@@ -125,7 +185,7 @@ void App_ControlTask_Run(void)
         rightSpeed = (uint8)((-pidOutputRight > 100.0f) ? 100u : (uint8)(-pidOutputRight));
     }
     
-    /* 5. Command motors */
+    /* 7. Command motors */
     (void)Motor_SetDirection(0u, leftDir);
     (void)Motor_SetSpeed(0u, leftSpeed);
     (void)Motor_SetDirection(1u, rightDir);
@@ -133,30 +193,27 @@ void App_ControlTask_Run(void)
 }
 
 /**
- * @brief Set wheel speed setpoints
- * @param[in] LeftSpeed Left wheel speed setpoint
- * @param[in] RightSpeed Right wheel speed setpoint
+ * @brief Set wheel speed targets directly (for Robot_Control module)
  */
-void App_ControlTask_SetWheelSpeeds(float32 LeftSpeed, float32 RightSpeed)
+void App_ControlTask_SetWheelSpeeds(float32 LeftRadS, float32 RightRadS)
 {
-    App_SetpointLeft = LeftSpeed;
-    App_SetpointRight = RightSpeed;
+    App_TargetLeftRadS = LeftRadS;
+    App_TargetRightRadS = RightRadS;
+    App_LastCmdTime = xTaskGetTickCount();
 }
 
 /**
- * @brief Get current setpoints
- * @param[out] LeftSpeed Pointer to store left setpoint
- * @param[out] RightSpeed Pointer to store right setpoint
+ * @brief Get current targets
  */
-void App_ControlTask_GetSetpoints(float32* LeftSpeed, float32* RightSpeed)
+void App_ControlTask_GetSetpoints(float32* LeftRadS, float32* RightRadS)
 {
-    if (LeftSpeed != NULL_PTR)
+    if (LeftRadS != NULL_PTR)
     {
-        *LeftSpeed = App_SetpointLeft;
+        *LeftRadS = App_TargetLeftRadS;
     }
-    if (RightSpeed != NULL_PTR)
+    if (RightRadS != NULL_PTR)
     {
-        *RightSpeed = App_SetpointRight;
+        *RightRadS = App_TargetRightRadS;
     }
 }
 
@@ -165,8 +222,8 @@ void App_ControlTask_GetSetpoints(float32* LeftSpeed, float32* RightSpeed)
  */
 void App_ControlTask_EmergencyStop(void)
 {
-    App_SetpointLeft = 0.0f;
-    App_SetpointRight = 0.0f;
+    App_TargetLeftRadS = 0.0f;
+    App_TargetRightRadS = 0.0f;
     
     (void)PID_Reset(&App_PidStateLeft);
     (void)PID_Reset(&App_PidStateRight);

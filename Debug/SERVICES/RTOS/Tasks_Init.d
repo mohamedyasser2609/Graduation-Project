@@ -24,6 +24,8 @@ SERVICES/RTOS/Tasks_Init.obj: D:/graduation\ project/ccs\ project\ workspace/Gra
 SERVICES/RTOS/Tasks_Init.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/queue.h
 SERVICES/RTOS/Tasks_Init.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/semphr.h
 SERVICES/RTOS/Tasks_Init.obj: ../CONFIG/Std_Types.h
+SERVICES/RTOS/Tasks_Init.obj: ../APP/App_SharedTypes.h
+SERVICES/RTOS/Tasks_Init.obj: ../SERVICES/RTOS/Tasks_Init.h
 
 ../SERVICES/RTOS/Tasks_Init.c:
 
@@ -72,4 +74,8 @@ D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Sourc
 D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/semphr.h:
 
 ../CONFIG/Std_Types.h:
+
+../APP/App_SharedTypes.h:
+
+../SERVICES/RTOS/Tasks_Init.h:
 

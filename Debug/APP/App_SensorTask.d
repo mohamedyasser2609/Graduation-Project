@@ -13,6 +13,16 @@ APP/App_SensorTask.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/i
 APP/App_SensorTask.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 APP/App_SensorTask.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h
 APP/App_SensorTask.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h
+APP/App_SensorTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/FreeRTOS.h
+APP/App_SensorTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/SERVICES/RTOS/FreeRTOSConfig.h
+APP/App_SensorTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/projdefs.h
+APP/App_SensorTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/portable.h
+APP/App_SensorTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/deprecated_definitions.h
+APP/App_SensorTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/portable/CCS/ARM_CM3/portmacro.h
+APP/App_SensorTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/mpu_wrappers.h
+APP/App_SensorTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/queue.h
+APP/App_SensorTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/task.h
+APP/App_SensorTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/list.h
 APP/App_SensorTask.obj: ../ECUAL/IMU/IMU.h
 APP/App_SensorTask.obj: ../MCAL/I2C/I2C.h
 APP/App_SensorTask.obj: ../MCAL/I2C/I2C_Types.h
@@ -35,6 +45,8 @@ APP/App_SensorTask.obj: ../ECUAL/CURRENT_SENSOR/ACS712_Cfg.h
 APP/App_SensorTask.obj: ../ECUAL/TEMP_SENSOR/AM2320.h
 APP/App_SensorTask.obj: ../ECUAL/TEMP_SENSOR/AM2320_Types.h
 APP/App_SensorTask.obj: ../ECUAL/TEMP_SENSOR/AM2320_Cfg.h
+APP/App_SensorTask.obj: ../SERVICES/RTOS/Tasks_Init.h
+APP/App_SensorTask.obj: ../APP/App_SharedTypes.h
 
 ../APP/App_SensorTask.c:
 
@@ -61,6 +73,26 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/FreeRTOS.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/SERVICES/RTOS/FreeRTOSConfig.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/projdefs.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/portable.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/deprecated_definitions.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/portable/CCS/ARM_CM3/portmacro.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/mpu_wrappers.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/queue.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/task.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/list.h:
 
 ../ECUAL/IMU/IMU.h:
 
@@ -105,4 +137,8 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 ../ECUAL/TEMP_SENSOR/AM2320_Types.h:
 
 ../ECUAL/TEMP_SENSOR/AM2320_Cfg.h:
+
+../SERVICES/RTOS/Tasks_Init.h:
+
+../APP/App_SharedTypes.h:
 

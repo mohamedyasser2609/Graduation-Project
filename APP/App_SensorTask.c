@@ -1,21 +1,21 @@
 /**
  * @file App_SensorTask.c
  * @brief Sensor Reading Task Implementation
- * @details Reads all sensors and publishes data for other tasks
+ * @details Reads sensors and publishes feedback to Comm task via queue
  *
- * Sensors:
- * - IMU (MPU-9250): Accelerometer, Gyroscope, Magnetometer
- * - GPS: Position, velocity
- * - Encoders: Wheel ticks and velocity
- * - Current sensors: Motor current
- * - Temperature sensors: System temperatures
+ * Publishes: SensorFeedbackType to Comm Task via queue
+ * Format:    Encoder ticks, IMU yaw, GPS coordinates
  *
  * @author Mohamed Yasser
  * @date Jan 08, 2026
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 #include "../CONFIG/Std_Types.h"
+
+/* FreeRTOS includes */
+#include "FreeRTOS.h"
+#include "queue.h"
 
 /* Driver includes */
 #include "../ECUAL/IMU/IMU.h"
@@ -23,22 +23,72 @@
 #include "../ECUAL/ENCODER/Encoder.h"
 #include "../ECUAL/CURRENT_SENSOR/ACS712.h"
 #include "../ECUAL/TEMP_SENSOR/AM2320.h"
+#include "../SERVICES/RTOS/Tasks_Init.h"
 
-/* ===================[External Configurations]=================== */
-extern const IMU_ConfigType IMU_Config;
-extern const Encoder_ConfigType Encoder_Config;
-extern const ACS712_ConfigType ACS712_Config;
-extern const AM2320_ConfigType AM2320_Config;
+/* Shared types */
+#include "App_SharedTypes.h"
 
-/* ===================[Public Sensor Data]=================== */
-/* These can be read by other tasks */
+/* ===================[Private Variables]=================== */
+static boolean App_SensorInitialized = FALSE;
+
+/* Cached sensor data */
 static IMU_CalibratedDataType App_ImuData;
 static GPS_DataType App_GpsData;
 static Encoder_DataType App_EncoderData[2];
 static ACS712_DataType App_MotorCurrent[2];
-static AM2320_DataType App_TempData[3];
 
-static boolean App_SensorInitialized = FALSE;
+/* Queue handle */
+static QueueHandle_t App_FeedbackQueue = NULL;
+
+/* Feedback publish counter (publish every N calls) */
+#define FEEDBACK_PUBLISH_RATE   (2u)    /* Every 40ms at 20ms task period */
+static uint8 App_FeedbackCounter = 0u;
+
+/* ===================[Private Functions]=================== */
+
+/**
+ * @brief Calculate yaw from IMU gyroscope (simple integration)
+ * @note In real application, use proper sensor fusion (Madgwick, Kalman)
+ */
+static float32 App_GetYawDegrees(void)
+{
+    static float32 yawAccumulator = 0.0f;
+    
+    /* Simple integration of gyro Z (deg/s * dt) */
+    /* Sample time = 20ms = 0.02s */
+    yawAccumulator += App_ImuData.gyro.z * 0.02f;
+    
+    /* Normalize to 0-360 */
+    while (yawAccumulator >= 360.0f) yawAccumulator -= 360.0f;
+    while (yawAccumulator < 0.0f) yawAccumulator += 360.0f;
+    
+    return yawAccumulator;
+}
+
+/**
+ * @brief Publish sensor feedback to queue
+ */
+static void App_PublishFeedback(void)
+{
+    SensorFeedbackType feedback;
+    
+    if (App_FeedbackQueue == NULL)
+    {
+        return;
+    }
+    
+    /* Fill feedback structure */
+    feedback.LeftEncoderTicks = (sint32)App_EncoderData[0].PositionCounts;
+    feedback.RightEncoderTicks = (sint32)App_EncoderData[1].PositionCounts;
+    feedback.YawDegrees = App_GetYawDegrees();
+    feedback.Latitude = App_GpsData.position.latitude;
+    feedback.Longitude = App_GpsData.position.longitude;
+    feedback.Timestamp = xTaskGetTickCount();
+    feedback.Valid = TRUE;
+    
+    /* Send to queue (overwrite if full - always send latest) */
+    (void)xQueueOverwrite(App_FeedbackQueue, &feedback);
+}
 
 /* ===================[Public Functions]=================== */
 
@@ -47,7 +97,10 @@ static boolean App_SensorInitialized = FALSE;
  */
 void App_SensorTask_Init(void)
 {
-    /* Sensors should already be initialized by System_Init */
+    /* Get queue handle */
+    App_FeedbackQueue = Tasks_GetSensorFeedbackQueue();
+    
+    App_FeedbackCounter = 0u;
     App_SensorInitialized = TRUE;
 }
 
@@ -68,6 +121,7 @@ void App_SensorTask_Run(void)
     (void)GPS_GetData(&App_GpsData);
     
     /* 3. Read encoder data */
+    Encoder_UpdateAll();  /* Update velocity calculations */
     (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &App_EncoderData[0]);
     (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &App_EncoderData[1]);
     
@@ -75,20 +129,17 @@ void App_SensorTask_Run(void)
     (void)ACS712_ReadCurrent(0u, &App_MotorCurrent[0]);
     (void)ACS712_ReadCurrent(1u, &App_MotorCurrent[1]);
     
-    /* 5. Read temperature sensors (less frequent - every 5th call) */
-    static uint8 tempReadCounter = 0u;
-    tempReadCounter++;
-    if (tempReadCounter >= 5u)
+    /* 5. Publish feedback at reduced rate */
+    App_FeedbackCounter++;
+    if (App_FeedbackCounter >= FEEDBACK_PUBLISH_RATE)
     {
-        tempReadCounter = 0u;
-        (void)AM2320_ReadAllSensors(App_TempData);
+        App_FeedbackCounter = 0u;
+        App_PublishFeedback();
     }
 }
 
 /**
  * @brief Get IMU data
- * @param[out] DataPtr Pointer to store IMU data
- * @return E_OK on success
  */
 Std_ReturnType App_SensorTask_GetImuData(IMU_CalibratedDataType* DataPtr)
 {
@@ -103,8 +154,6 @@ Std_ReturnType App_SensorTask_GetImuData(IMU_CalibratedDataType* DataPtr)
 
 /**
  * @brief Get GPS data
- * @param[out] DataPtr Pointer to store GPS data
- * @return E_OK on success
  */
 Std_ReturnType App_SensorTask_GetGpsData(GPS_DataType* DataPtr)
 {
@@ -119,9 +168,6 @@ Std_ReturnType App_SensorTask_GetGpsData(GPS_DataType* DataPtr)
 
 /**
  * @brief Get encoder data
- * @param[in] Channel Encoder channel (0=left, 1=right)
- * @param[out] DataPtr Pointer to store encoder data
- * @return E_OK on success
  */
 Std_ReturnType App_SensorTask_GetEncoderData(uint8 Channel, Encoder_DataType* DataPtr)
 {
@@ -136,9 +182,6 @@ Std_ReturnType App_SensorTask_GetEncoderData(uint8 Channel, Encoder_DataType* Da
 
 /**
  * @brief Get motor current
- * @param[in] Channel Motor channel (0=left, 1=right)
- * @param[out] CurrentPtr Pointer to store current data
- * @return E_OK on success
  */
 Std_ReturnType App_SensorTask_GetMotorCurrent(uint8 Channel, ACS712_DataType* CurrentPtr)
 {
