@@ -40,6 +40,7 @@ SERVICES/SYSTEM/System_Init.obj: ../MCAL/QEI/QEI_Cfg.h
 SERVICES/SYSTEM/System_Init.obj: ../MCAL/WDG/Wdg.h
 SERVICES/SYSTEM/System_Init.obj: ../MCAL/WDG/WDG_Types.h
 SERVICES/SYSTEM/System_Init.obj: ../MCAL/WDG/WDG_Cfg.h
+SERVICES/SYSTEM/System_Init.obj: ../MCAL/MPU/MPU.h
 SERVICES/SYSTEM/System_Init.obj: ../ECUAL/IMU/IMU.h
 SERVICES/SYSTEM/System_Init.obj: ../ECUAL/IMU/IMU_Cfg.h
 SERVICES/SYSTEM/System_Init.obj: ../ECUAL/GPS/GPS.h
@@ -150,6 +151,8 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 ../MCAL/WDG/WDG_Types.h:
 
 ../MCAL/WDG/WDG_Cfg.h:
+
+../MCAL/MPU/MPU.h:
 
 ../ECUAL/IMU/IMU.h:
 

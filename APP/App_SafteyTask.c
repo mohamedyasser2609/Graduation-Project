@@ -3,60 +3,72 @@
  * @brief Safety Monitoring Task Implementation
  * @details Highest priority task for system safety monitoring
  *
- * Responsibilities:
- * - Feed watchdog timer
- * - Monitor motor current for overload
- * - Check temperature limits
- * - Emergency stop on fault conditions
+ * SAFETY RESPONSIBILITIES:
+ * 1. Feed watchdog (ONLY this task feeds WDG)
+ * 2. Monitor motor current for overload
+ * 3. Check temperature limits
+ * 4. Manage motor enable privilege
+ * 5. Enter safe state on fault conditions
+ *
+ * PRIVILEGE MODEL:
+ * - This task is the SOLE owner of WDG feed
+ * - This task controls motor enable via SafeState module
+ * - Control Task must request permission to run motors
  *
  * @author Mohamed Yasser
- * @date Jan 08, 2026
- * @version 1.0.0
+ * @date Jan 09, 2026
+ * @version 2.0.0
  */
 
 #include "../CONFIG/Std_Types.h"
+
+/* FreeRTOS includes */
+#include "FreeRTOS.h"
+#include "task.h"
 
 /* Driver includes */
 #include "../MCAL/WDG/Wdg.h"
 #include "../ECUAL/CURRENT_SENSOR/ACS712.h"
 #include "../ECUAL/MOTOR/Motor.h"
 #include "../SERVICES/THERMAL/ThermalMgmt.h"
+#include "../SERVICES/DIAG/Diagnostics.h"
 
-/* ===================[External Configurations]=================== */
-extern const Wdg_ConfigType Wdg_Config;
-extern const ACS712_ConfigType ACS712_Config;
+/* Safe state manager */
+#include "App_SafeState.h"
 
 /* ===================[Private Variables]=================== */
 static boolean App_SafetyInitialized = FALSE;
-static uint32 App_SafetyOverloadCount = 0u;
-static uint32 App_SafetyFaultFlags = 0u;
+static uint32 App_SafetyCycleCount = 0u;
 
-/* Fault flag bits */
-#define FAULT_MOTOR_LEFT_OVERLOAD   (1u << 0u)
-#define FAULT_MOTOR_RIGHT_OVERLOAD  (1u << 1u)
-#define FAULT_THERMAL_CRITICAL      (1u << 2u)
-#define FAULT_THERMAL_SHUTDOWN      (1u << 3u)
-#define FAULT_WATCHDOG              (1u << 4u)
+/* Health check flags */
+static boolean App_Health_ThermalOk = TRUE;
+static boolean App_Health_CurrentOk = TRUE;
+static boolean App_Health_CommOk = TRUE;
+
+/* Heartbeat tracking */
+static uint32 App_LastHeartbeatTime = 0u;
+#define HEARTBEAT_TIMEOUT_TICKS     (200u)  /* 2 seconds at 100Hz tick */
 
 /* ===================[Private Functions]=================== */
 
 /**
  * @brief Check motor current limits
+ * @return TRUE if all currents within limits
  */
-static void App_Safety_CheckMotorCurrent(void)
+static boolean App_Safety_CheckMotorCurrent(void)
 {
     ACS712_DataType currentData;
+    boolean allOk = TRUE;
     
     /* Check left motor overload */
     if (ACS712_ReadCurrent(0u, &currentData) == E_OK)
     {
         if (currentData.Status == ACS712_CHANNEL_OVERLOAD)
         {
-            App_SafetyFaultFlags |= FAULT_MOTOR_LEFT_OVERLOAD;
-            App_SafetyOverloadCount++;
-            
-            /* Stop motor on overload */
-            (void)Motor_Stop(0u);
+            SafeState_SetFault(FAULT_FLAG_MOTOR_L_OVERLOAD);
+            SafeState_Enter(SAFESTATE_REASON_MOTOR_LEFT_OVERLOAD);
+            Diag_ReportDtc(DIAG_DTC_MOTOR_OVERLOAD, TRUE);
+            allOk = FALSE;
         }
     }
     
@@ -65,27 +77,32 @@ static void App_Safety_CheckMotorCurrent(void)
     {
         if (currentData.Status == ACS712_CHANNEL_OVERLOAD)
         {
-            App_SafetyFaultFlags |= FAULT_MOTOR_RIGHT_OVERLOAD;
-            App_SafetyOverloadCount++;
-            
-            /* Stop motor on overload */
-            (void)Motor_Stop(1u);
+            SafeState_SetFault(FAULT_FLAG_MOTOR_R_OVERLOAD);
+            SafeState_Enter(SAFESTATE_REASON_MOTOR_RIGHT_OVERLOAD);
+            Diag_ReportDtc(DIAG_DTC_MOTOR_OVERLOAD, TRUE);
+            allOk = FALSE;
         }
     }
+    
+    return allOk;
 }
 
 /**
  * @brief Check thermal limits
+ * @return TRUE if all temperatures within limits
  */
-static void App_Safety_CheckThermal(void)
+static boolean App_Safety_CheckThermal(void)
 {
     ThermalMgmt_StatusType thermalStatus;
+    boolean allOk = TRUE;
     
     thermalStatus = ThermalMgmt_GetStatus();
     
     if (thermalStatus == THERMALMGMT_STATUS_CRITICAL)
     {
-        App_SafetyFaultFlags |= FAULT_THERMAL_CRITICAL;
+        SafeState_SetFault(FAULT_FLAG_ENCLOSURE_THERMAL);
+        Diag_ReportDtc(DIAG_DTC_THERMAL_CRITICAL, TRUE);
+        allOk = FALSE;
         
         /* Force maximum cooling */
         ThermalMgmt_EmergencyCooling();
@@ -93,11 +110,43 @@ static void App_Safety_CheckThermal(void)
     
     if (ThermalMgmt_IsShutdownRequired() == TRUE)
     {
-        App_SafetyFaultFlags |= FAULT_THERMAL_SHUTDOWN;
-        
-        /* Stop motors to reduce heat generation */
-        Motor_StopAll();
+        SafeState_Enter(SAFESTATE_REASON_ENCLOSURE_THERMAL);
+        Diag_ReportDtc(DIAG_DTC_THERMAL_SHUTDOWN, TRUE);
+        allOk = FALSE;
     }
+    
+    return allOk;
+}
+
+/**
+ * @brief Check communication heartbeat
+ * @return TRUE if heartbeat is alive
+ */
+static boolean App_Safety_CheckHeartbeat(void)
+{
+    uint32 currentTick = xTaskGetTickCount();
+    
+    if ((currentTick - App_LastHeartbeatTime) > HEARTBEAT_TIMEOUT_TICKS)
+    {
+        SafeState_SetFault(FAULT_FLAG_HEARTBEAT_TIMEOUT);
+        SafeState_Enter(SAFESTATE_REASON_HEARTBEAT_TIMEOUT);
+        return FALSE;
+    }
+    
+    return TRUE;
+}
+
+/**
+ * @brief Evaluate overall system health
+ * @return TRUE if all subsystems healthy
+ */
+static boolean App_Safety_EvaluateHealth(void)
+{
+    App_Health_CurrentOk = App_Safety_CheckMotorCurrent();
+    App_Health_ThermalOk = App_Safety_CheckThermal();
+    App_Health_CommOk = App_Safety_CheckHeartbeat();
+    
+    return (App_Health_CurrentOk && App_Health_ThermalOk && App_Health_CommOk);
 }
 
 /* ===================[Public Functions]=================== */
@@ -107,59 +156,93 @@ static void App_Safety_CheckThermal(void)
  */
 void App_SafetyTask_Init(void)
 {
-    /* Initialize watchdog (if not already done) */
-    /* Wdg_Init(&Wdg_Config); */
+    /* Initialize safe state manager */
+    SafeState_Init();
     
-    App_SafetyFaultFlags = 0u;
-    App_SafetyOverloadCount = 0u;
+    /* Initialize heartbeat time */
+    App_LastHeartbeatTime = xTaskGetTickCount();
+    
+    App_SafetyCycleCount = 0u;
     App_SafetyInitialized = TRUE;
+    
+    Diag_LogEvent(DIAG_SRC_SAFETY, 0x0001u, DIAG_SEVERITY_INFO, NULL_PTR);
 }
 
 /**
  * @brief Safety task main function (called by FreeRTOS task)
+ * @note This runs every 10ms - highest priority
  */
 void App_SafetyTask_Run(void)
 {
+    boolean systemHealthy;
+    
     if (App_SafetyInitialized == FALSE)
     {
         App_SafetyTask_Init();
     }
     
-    /* 1. Feed watchdog to prevent reset */
-    Wdg_Service();
+    App_SafetyCycleCount++;
     
-    /* 2. Check motor current for overload */
-    App_Safety_CheckMotorCurrent();
+    /* 1. Evaluate all subsystem health */
+    systemHealthy = App_Safety_EvaluateHealth();
     
-    /* 3. Check thermal conditions */
-    App_Safety_CheckThermal();
+    /* 2. Update safe state manager */
+    SafeState_Update();
     
-    /* 4. Clear transient faults after checking */
-    /* Overload flags are cleared after motor restarts successfully */
+    /* 3. CRITICAL: Feed watchdog ONLY if system is healthy */
+    if (systemHealthy && (SafeState_GetStatus() <= SAFESTATE_WARNING))
+    {
+        Wdg_Service();
+    }
+    /* If NOT fed, WDG will timeout in 500ms → MCU reset → motors off */
+    
+    /* 4. Handle motor enable requests */
+    if (systemHealthy)
+    {
+        /* Allow motor enable if requested and healthy */
+        (void)SafeState_RequestMotorEnable();
+    }
+    else
+    {
+        /* Force motor disable on any fault */
+        SafeState_RequestMotorDisable();
+    }
 }
 
 /**
- * @brief Get current fault flags
- * @return Fault flags bitmap
+ * @brief Report heartbeat received from ROS
+ * @note Called by Comm Task when heartbeat packet received
  */
-uint32 App_SafetyTask_GetFaults(void)
+void App_SafetyTask_ReportHeartbeat(void)
 {
-    return App_SafetyFaultFlags;
+    App_LastHeartbeatTime = xTaskGetTickCount();
+    SafeState_ClearFault(FAULT_FLAG_HEARTBEAT_TIMEOUT);
 }
 
 /**
- * @brief Clear fault flags
+ * @brief Get safety task cycle count
+ * @return Number of safety task cycles executed
  */
-void App_SafetyTask_ClearFaults(void)
+uint32 App_SafetyTask_GetCycleCount(void)
 {
-    App_SafetyFaultFlags = 0u;
+    return App_SafetyCycleCount;
 }
 
 /**
- * @brief Check if emergency stop is active
- * @return TRUE if e-stop active
+ * @brief Check if motor operation is safe
+ * @return TRUE if motors can be operated
  */
-boolean App_SafetyTask_IsEmergencyStop(void)
+boolean App_SafetyTask_IsMotorSafe(void)
 {
-    return ((App_SafetyFaultFlags & (FAULT_THERMAL_SHUTDOWN | FAULT_MOTOR_LEFT_OVERLOAD | FAULT_MOTOR_RIGHT_OVERLOAD)) != 0u);
+    return SafeState_IsMotorEnableAllowed();
+}
+
+/**
+ * @brief Request emergency stop
+ * @note Can be called from any task
+ */
+void App_SafetyTask_RequestEmergencyStop(void)
+{
+    SafeState_Enter(SAFESTATE_REASON_ESTOP_COMMAND);
+    Diag_LogEvent(DIAG_SRC_SAFETY, 0x00FFu, DIAG_SEVERITY_WARNING, NULL_PTR);
 }

@@ -42,6 +42,7 @@ APP/App_ControlTask.obj: ../SERVICES/PID/PID.h
 APP/App_ControlTask.obj: ../SERVICES/PID/PID_Types.h
 APP/App_ControlTask.obj: ../SERVICES/PID/PID_Cfg.h
 APP/App_ControlTask.obj: ../SERVICES/RTOS/Tasks_Init.h
+APP/App_ControlTask.obj: ../APP/App_SafeState.h
 APP/App_ControlTask.obj: ../APP/App_SharedTypes.h
 
 ../APP/App_ControlTask.c:
@@ -127,6 +128,8 @@ D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Sourc
 ../SERVICES/PID/PID_Cfg.h:
 
 ../SERVICES/RTOS/Tasks_Init.h:
+
+../APP/App_SafeState.h:
 
 ../APP/App_SharedTypes.h:
 

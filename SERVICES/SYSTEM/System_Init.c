@@ -25,6 +25,7 @@
 #include "../../MCAL/ADC/Adc.h"
 #include "../../MCAL/QEI/Qei.h"
 #include "../../MCAL/WDG/Wdg.h"
+#include "../../MCAL/MPU/MPU.h"
 
 /* ===================[ECUAL Includes]=================== */
 #include "../../ECUAL/IMU/IMU.h"
@@ -74,6 +75,14 @@ extern const Diag_ConfigType Diag_Config;
  */
 void System_Init(void)
 {
+    /* ===== Phase 0: MPU Configuration (FIRST - before any peripheral access) ===== */
+    /*
+     * SAFETY CRITICAL:
+     * Configure MPU to protect WDT and PWM registers
+     * Any unprivileged access will trigger MemManage fault
+     */
+    MPU_Init();
+    
     /* ===== Phase 1: MCAL Layer ===== */
     
     /* Initialize GPIO */
@@ -134,12 +143,17 @@ void System_Init(void)
     /* Initialize Robot Controller */
     Robot_Init();
     
-    /* ===== Phase 6: Watchdog (last) ===== */
-    /* Note: Enable watchdog after all init complete */
-    /* Wdg_Init(&Wdg_Config); */
+    /* ===== Phase 6: Watchdog (LAST - after all init complete) ===== */
+    /*
+     * SAFETY CRITICAL:
+     * - WDG is initialized LAST so all drivers are ready
+     * - ONLY Safety Task will feed the WDG (privilege model)
+     * - If Safety Task hangs, WDG resets MCU in 500ms
+     */
+    Wdg_Init(&Wdg_Config);
     
     Diag_LogEvent(DIAG_SRC_SYSTEM, 0x0011u, DIAG_SEVERITY_INFO, NULL_PTR);
-    Diag_DebugPrint("[SYS] Initialization complete\r\n");
+    Diag_DebugPrint("[SYS] Initialization complete - WDG active\r\n");
 }
 
 /**

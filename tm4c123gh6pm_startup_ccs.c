@@ -67,6 +67,8 @@ extern void Adc_ADC1SS0_ISR(void);
 extern void Adc_ADC1SS1_ISR(void);
 extern void Adc_ADC1SS2_ISR(void);
 extern void Adc_ADC1SS3_ISR(void);
+// MPU MemManage fault handler
+extern void MemManage_Handler(void);
 
 //*****************************************************************************
 //
@@ -83,7 +85,7 @@ void (* const g_pfnVectors[])(void) =
     ResetISR,                               // The reset handler
     NmiSR,                                  // The NMI handler
     FaultISR,                               // The hard fault handler
-    IntDefaultHandler,                      // The MPU fault handler
+    MemManage_Handler,                      // The MPU fault handler
     IntDefaultHandler,                      // The bus fault handler
     IntDefaultHandler,                      // The usage fault handler
     0,                                      // Reserved

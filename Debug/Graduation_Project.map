@@ -1,33 +1,33 @@
 ******************************************************************************
                   TI ARM Linker PC v20.2.7                     
 ******************************************************************************
->> Linked Thu Jan  8 14:20:32 2026
+>> Linked Fri Jan  9 01:02:15 2026
 
 OUTPUT FILE NAME:   <Graduation_Project.out>
-ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 00003265
+ENTRY POINT SYMBOL: "_c_int00_noargs"  address: 00003485
 
 
 MEMORY CONFIGURATION
 
          name            origin    length      used     unused   attr    fill
 ----------------------  --------  ---------  --------  --------  ----  --------
-  FLASH                 00000000   00040000  00003472  0003cb8e  R  X
-  SRAM                  20000000   00008000  00000375  00007c8b  RW X
+  FLASH                 00000000   00040000  00003692  0003c96e  R  X
+  SRAM                  20000000   00008000  00000381  00007c7f  RW X
 
 
 SEGMENT ALLOCATION MAP
 
 run origin  load origin   length   init length attrs members
 ----------  ----------- ---------- ----------- ----- -------
-00000000    00000000    00003478   00003478    r-x
+00000000    00000000    00003698   00003698    r-x
   00000000    00000000    0000026c   0000026c    r-- .intvecs
-  0000026c    0000026c    0000306a   0000306a    r-x .text
-  000032d8    000032d8    00000164   00000164    r-- .const
-  00003440    00003440    00000038   00000038    r-- .cinit
-20000000    20000000    00000375   00000000    rw-
+  0000026c    0000026c    0000328a   0000328a    r-x .text
+  000034f8    000034f8    00000164   00000164    r-- .const
+  00003660    00003660    00000038   00000038    r-- .cinit
+20000000    20000000    00000381   00000000    rw-
   20000000    20000000    00000200   00000000    rw- .stack
   20000200    20000200    00000140   00000000    rw- .bss
-  20000340    20000340    00000035   00000000    rw- .data
+  20000340    20000340    00000041   00000000    rw- .data
 
 
 SECTION ALLOCATION MAP
@@ -38,7 +38,7 @@ section   page    origin      length       input sections
 .intvecs   0    00000000    0000026c     
                   00000000    0000026c     tm4c123gh6pm_startup_ccs.obj (.intvecs)
 
-.text      0    0000026c    0000306a     
+.text      0    0000026c    0000328a     
                   0000026c    00000d60     GPIO.obj (.text)
                   00000fcc    00000cf0     ADC.obj (.text)
                   00001cbc    00000648     UART.obj (.text)
@@ -46,32 +46,32 @@ section   page    origin      length       input sections
                   00002808    000003d8     MCU.obj (.text)
                   00002be0    00000274     Det.obj (.text)
                   00002e54    0000024c     main_ros2.obj (.text)
-                  000030a0    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
-                  0000313c    0000007a                                   : memset_t2.asm.obj (.text)
-                  000031b6    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
-                  0000321e    00000002     --HOLE-- [fill = 0]
-                  00003220    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
-                  00003264    00000034                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
-                  00003298    0000001c                                   : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset:__TI_zero_init_nomemset)
-                  000032b4    0000000e                                   : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
-                  000032c2    0000000c     tm4c123gh6pm_startup_ccs.obj (.text)
-                  000032ce    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
-                  000032d2    00000004                                   : exit.c.obj (.text:abort:abort)
+                  000030a0    00000220     MPU.obj (.text)
+                  000032c0    0000009c     rtsv7M4_T_le_v4SPD16_eabi.lib : memcpy_t2.asm.obj (.text)
+                  0000335c    0000007a                                   : memset_t2.asm.obj (.text)
+                  000033d6    00000068                                   : copy_decompress_lzss.c.obj (.text:decompress:lzss:__TI_decompress_lzss)
+                  0000343e    00000002     --HOLE-- [fill = 0]
+                  00003440    00000044                                   : autoinit.c.obj (.text:__TI_auto_init_nobinit_nopinit:__TI_auto_init_nobinit_nopinit)
+                  00003484    00000034                                   : boot_cortex_m.c.obj (.text:_c_int00_noargs:_c_int00_noargs)
+                  000034b8    0000001c                                   : copy_zero_init.c.obj (.text:decompress:ZI:__TI_zero_init_nomemset:__TI_zero_init_nomemset)
+                  000034d4    0000000e                                   : copy_decompress_none.c.obj (.text:decompress:none:__TI_decompress_none)
+                  000034e2    0000000c     tm4c123gh6pm_startup_ccs.obj (.text)
+                  000034ee    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : pre_init.c.obj (.text:_system_pre_init)
+                  000034f2    00000004                                   : exit.c.obj (.text:abort:abort)
 
-.const     0    000032d8    00000164     
-                  000032d8    00000108     Gpio_PBCfg.obj (.const:Gpio_PinConfigurations)
-                  000033e0    00000020     UART.obj (.const:Uart_BaseAddress)
-                  00003400    00000018     main_ros2.obj (.const:$P$T0$1)
-                  00003418    00000018     main_ros2.obj (.const:$P$T1$2)
-                  00003430    00000008     Gpio_PBCfg.obj (.const:Gpio_Configuration)
-                  00003438    00000004     Mcu_PBcfg.obj (.const:Mcu_Config_80MHz)
+.const     0    000034f8    00000164     
+                  000034f8    00000108     Gpio_PBCfg.obj (.const:Gpio_PinConfigurations)
+                  00003600    00000020     UART.obj (.const:Uart_BaseAddress)
+                  00003620    00000018     main_ros2.obj (.const:$P$T0$1)
+                  00003638    00000018     main_ros2.obj (.const:$P$T1$2)
+                  00003650    00000008     Gpio_PBCfg.obj (.const:Gpio_Configuration)
+                  00003658    00000004     Mcu_PBcfg.obj (.const:Mcu_Config_80MHz)
 
-.cinit     0    00003440    00000038     
-                  00003440    00000013     (.cinit..data.load) [load image, compression = lzss]
-                  00003453    00000001     --HOLE-- [fill = 0]
-                  00003454    0000000c     (__TI_handler_table)
-                  00003460    00000008     (.cinit..bss.load) [load image, compression = zero_init]
-                  00003468    00000010     (__TI_cinit_table)
+.cinit     0    00003660    00000038     
+                  00003660    00000014     (.cinit..data.load) [load image, compression = lzss]
+                  00003674    0000000c     (__TI_handler_table)
+                  00003680    00000008     (.cinit..bss.load) [load image, compression = zero_init]
+                  00003688    00000010     (__TI_cinit_table)
 
 .init_array 
 *          0    00000000    00000000     UNINITIALIZED
@@ -81,15 +81,17 @@ section   page    origin      length       input sections
                   200002c0    00000060     UART.obj (.bss:Uart_RuntimeState)
                   20000320    00000020     ADC.obj (.bss:Adc_GroupRuntime)
 
-.data      0    20000340    00000035     UNINITIALIZED
+.data      0    20000340    00000041     UNINITIALIZED
                   20000340    0000000d     MCU.obj (.data)
-                  2000034d    00000001     NVIC.obj (.data)
-                  2000034e    00000002     --HOLE--
+                  2000034d    00000001     MPU.obj (.data)
+                  2000034e    00000001     NVIC.obj (.data)
+                  2000034f    00000001     --HOLE--
                   20000350    0000000c     Det.obj (.data)
-                  2000035c    00000009     GPIO.obj (.data)
-                  20000365    00000003     --HOLE--
-                  20000368    00000008     main_ros2.obj (.data)
-                  20000370    00000005     ADC.obj (.data)
+                  2000035c    0000000c     MPU.obj (.data:MPU_LastFault)
+                  20000368    00000009     GPIO.obj (.data)
+                  20000371    00000003     --HOLE--
+                  20000374    00000008     main_ros2.obj (.data)
+                  2000037c    00000005     ADC.obj (.data)
 
 .stack     0    20000000    00000200     UNINITIALIZED
                   20000000    00000004     rtsv7M4_T_le_v4SPD16_eabi.lib : boot_cortex_m.c.obj (.stack)
@@ -130,6 +132,11 @@ MODULE SUMMARY
     +--+------------------------------+-------+---------+---------+
        Total:                         984     4         13     
                                                                
+    .\MCAL\MPU\
+       MPU.obj                        544     0         13     
+    +--+------------------------------+-------+---------+---------+
+       Total:                         544     0         13     
+                                                               
     .\MCAL\NVIC\
        NVIC.obj                       1284    0         1      
     +--+------------------------------+-------+---------+---------+
@@ -154,21 +161,21 @@ MODULE SUMMARY
        Total:                         552     0         0      
                                                                
        Stack:                         0       0         512    
-       Linker Generated:              0       55        0      
+       Linker Generated:              0       56        0      
     +--+------------------------------+-------+---------+---------+
-       Grand Total:                   12392   1031      880    
+       Grand Total:                   12936   1032      893    
 
 
 LINKER GENERATED COPY TABLES
 
-__TI_cinit_table @ 00003468 records: 2, size/record: 8, table size: 16
-	.data: load addr=00003440, load size=00000013 bytes, run addr=20000340, run size=00000035 bytes, compression=lzss
-	.bss: load addr=00003460, load size=00000008 bytes, run addr=20000200, run size=00000140 bytes, compression=zero_init
+__TI_cinit_table @ 00003688 records: 2, size/record: 8, table size: 16
+	.data: load addr=00003660, load size=00000014 bytes, run addr=20000340, run size=00000041 bytes, compression=lzss
+	.bss: load addr=00003680, load size=00000008 bytes, run addr=20000200, run size=00000140 bytes, compression=zero_init
 
 
 LINKER GENERATED HANDLER TABLE
 
-__TI_handler_table @ 00003454 records: 3, size/record: 4, table size: 12
+__TI_handler_table @ 00003674 records: 3, size/record: 4, table size: 12
 	index: 0, handler: __TI_decompress_lzss
 	index: 1, handler: __TI_decompress_none
 	index: 2, handler: __TI_zero_init
@@ -199,7 +206,7 @@ address   name
 00001689  Adc_SetupResultBuffer         
 00001759  Adc_StartGroupConversion      
 0000182b  Adc_StopGroupConversion       
-000032d3  C$$EXIT                       
+000034f3  C$$EXIT                       
 00002ddb  Det_ClearErrorBuffer          
 00002c87  Det_DeInit                    
 00002e0d  Det_GetErrorCount             
@@ -211,7 +218,7 @@ address   name
 00002efb  ForwardPCToRPi                
 00002f5b  ForwardRPiToPC                
 00000ee5  Gpio_ClearInterrupt           
-00003430  Gpio_Configuration            
+00003650  Gpio_Configuration            
 00000e7b  Gpio_DisableInterrupt         
 00000e15  Gpio_EnableInterrupt          
 00000af1  Gpio_FlipChannel              
@@ -226,7 +233,14 @@ address   name
 000009cb  Gpio_WriteChannel             
 00000d97  Gpio_WriteChannelGroup        
 00000aa7  Gpio_WritePort                
-00003438  Mcu_Config_80MHz              
+000031d7  MPU_ClearFaultInfo            
+000031a5  MPU_Disable                   
+00003191  MPU_Enable                    
+000031b9  MPU_GetFaultInfo              
+000030e9  MPU_GetRegionCount            
+000030f3  MPU_Init                      
+000031f1  MPU_MemManageFaultHandler     
+00003658  Mcu_Config_80MHz              
 000029b1  Mcu_DisablePeripheralClock    
 00002853  Mcu_DistributePllClock        
 00002973  Mcu_EnablePeripheralClock     
@@ -238,6 +252,7 @@ address   name
 0000282b  Mcu_InitClock                 
 00002909  Mcu_PerformReset              
 00002911  Mcu_SetMode                   
+00003267  MemManage_Handler             
 000026d7  NVIC_ClearPendingIRQ          
 000025ab  NVIC_DisableIRQ               
 0000256b  NVIC_EnableIRQ                
@@ -249,7 +264,7 @@ address   name
 0000268b  NVIC_SetPendingIRQ            
 000025f1  NVIC_SetPriority              
 00002e57  PC_Print                      
-000032c3  ResetISR                      
+000034e3  ResetISR                      
 00002e55  Timer2A_Handler               
 00001f0f  Uart_DeInit                   
 0000220f  Uart_GetStatus                
@@ -265,42 +280,42 @@ address   name
 20000200  __STACK_END                   
 00000200  __STACK_SIZE                  
 20000200  __STACK_TOP                   
-00003468  __TI_CINIT_Base               
-00003478  __TI_CINIT_Limit              
-00003454  __TI_Handler_Table_Base       
-00003460  __TI_Handler_Table_Limit      
-00003221  __TI_auto_init_nobinit_nopinit
-000031b7  __TI_decompress_lzss          
-000032b5  __TI_decompress_none          
+00003688  __TI_CINIT_Base               
+00003698  __TI_CINIT_Limit              
+00003674  __TI_Handler_Table_Base       
+00003680  __TI_Handler_Table_Limit      
+00003441  __TI_auto_init_nobinit_nopinit
+000033d7  __TI_decompress_lzss          
+000034d5  __TI_decompress_none          
 ffffffff  __TI_pprof_out_hndl           
 ffffffff  __TI_prof_data_size           
 ffffffff  __TI_prof_data_start          
 00000000  __TI_static_base__            
-00003299  __TI_zero_init_nomemset       
-0000313d  __aeabi_memclr                
-0000313d  __aeabi_memclr4               
-0000313d  __aeabi_memclr8               
-000030a1  __aeabi_memcpy                
-000030a1  __aeabi_memcpy4               
-000030a1  __aeabi_memcpy8               
-0000313f  __aeabi_memset                
-0000313f  __aeabi_memset4               
-0000313f  __aeabi_memset8               
+000034b9  __TI_zero_init_nomemset       
+0000335d  __aeabi_memclr                
+0000335d  __aeabi_memclr4               
+0000335d  __aeabi_memclr8               
+000032c1  __aeabi_memcpy                
+000032c1  __aeabi_memcpy4               
+000032c1  __aeabi_memcpy8               
+0000335f  __aeabi_memset                
+0000335f  __aeabi_memset4               
+0000335f  __aeabi_memset8               
 ffffffff  __binit__                     
 ffffffff  __c_args__                    
 UNDEFED   __mpu_init                    
 20000000  __stack                       
 20000000  __start___llvm_prf_cnts       
 20000000  __stop___llvm_prf_cnts        
-00003265  _c_int00_noargs               
+00003485  _c_int00_noargs               
 UNDEFED   _system_post_cinit            
-000032cf  _system_pre_init              
-000032d3  abort                         
+000034ef  _system_pre_init              
+000034f3  abort                         
 ffffffff  binit                         
 00000000  g_pfnVectors                  
 00002fb1  main                          
-000030a1  memcpy                        
-00003145  memset                        
+000032c1  memcpy                        
+00003365  memset                        
 
 
 GLOBAL SYMBOLS: SORTED BY Symbol Address 
@@ -391,32 +406,40 @@ address   name
 00002efb  ForwardPCToRPi                
 00002f5b  ForwardRPiToPC                
 00002fb1  main                          
-000030a1  __aeabi_memcpy                
-000030a1  __aeabi_memcpy4               
-000030a1  __aeabi_memcpy8               
-000030a1  memcpy                        
-0000313d  __aeabi_memclr                
-0000313d  __aeabi_memclr4               
-0000313d  __aeabi_memclr8               
-0000313f  __aeabi_memset                
-0000313f  __aeabi_memset4               
-0000313f  __aeabi_memset8               
-00003145  memset                        
-000031b7  __TI_decompress_lzss          
-00003221  __TI_auto_init_nobinit_nopinit
-00003265  _c_int00_noargs               
-00003299  __TI_zero_init_nomemset       
-000032b5  __TI_decompress_none          
-000032c3  ResetISR                      
-000032cf  _system_pre_init              
-000032d3  C$$EXIT                       
-000032d3  abort                         
-00003430  Gpio_Configuration            
-00003438  Mcu_Config_80MHz              
-00003454  __TI_Handler_Table_Base       
-00003460  __TI_Handler_Table_Limit      
-00003468  __TI_CINIT_Base               
-00003478  __TI_CINIT_Limit              
+000030e9  MPU_GetRegionCount            
+000030f3  MPU_Init                      
+00003191  MPU_Enable                    
+000031a5  MPU_Disable                   
+000031b9  MPU_GetFaultInfo              
+000031d7  MPU_ClearFaultInfo            
+000031f1  MPU_MemManageFaultHandler     
+00003267  MemManage_Handler             
+000032c1  __aeabi_memcpy                
+000032c1  __aeabi_memcpy4               
+000032c1  __aeabi_memcpy8               
+000032c1  memcpy                        
+0000335d  __aeabi_memclr                
+0000335d  __aeabi_memclr4               
+0000335d  __aeabi_memclr8               
+0000335f  __aeabi_memset                
+0000335f  __aeabi_memset4               
+0000335f  __aeabi_memset8               
+00003365  memset                        
+000033d7  __TI_decompress_lzss          
+00003441  __TI_auto_init_nobinit_nopinit
+00003485  _c_int00_noargs               
+000034b9  __TI_zero_init_nomemset       
+000034d5  __TI_decompress_none          
+000034e3  ResetISR                      
+000034ef  _system_pre_init              
+000034f3  C$$EXIT                       
+000034f3  abort                         
+00003650  Gpio_Configuration            
+00003658  Mcu_Config_80MHz              
+00003674  __TI_Handler_Table_Base       
+00003680  __TI_Handler_Table_Limit      
+00003688  __TI_CINIT_Base               
+00003698  __TI_CINIT_Limit              
 20000000  __stack                       
 20000000  __start___llvm_prf_cnts       
 20000000  __stop___llvm_prf_cnts        
@@ -431,4 +454,4 @@ ffffffff  binit
 UNDEFED   __mpu_init                    
 UNDEFED   _system_post_cinit            
 
-[123 symbols]
+[131 symbols]

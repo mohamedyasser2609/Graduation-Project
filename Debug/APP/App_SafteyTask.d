@@ -13,6 +13,15 @@ APP/App_SafteyTask.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/i
 APP/App_SafteyTask.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 APP/App_SafteyTask.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h
 APP/App_SafteyTask.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h
+APP/App_SafteyTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/FreeRTOS.h
+APP/App_SafteyTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/SERVICES/RTOS/FreeRTOSConfig.h
+APP/App_SafteyTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/projdefs.h
+APP/App_SafteyTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/portable.h
+APP/App_SafteyTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/deprecated_definitions.h
+APP/App_SafteyTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/portable/CCS/ARM_CM3/portmacro.h
+APP/App_SafteyTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/mpu_wrappers.h
+APP/App_SafteyTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/task.h
+APP/App_SafteyTask.obj: D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/list.h
 APP/App_SafteyTask.obj: ../MCAL/WDG/Wdg.h
 APP/App_SafteyTask.obj: ../CONFIG/Compiler.h
 APP/App_SafteyTask.obj: ../CONFIG/Det.h
@@ -33,6 +42,8 @@ APP/App_SafteyTask.obj: ../ECUAL/MOTOR/MOTOR_Cfg.h
 APP/App_SafteyTask.obj: ../SERVICES/THERMAL/ThermalMgmt.h
 APP/App_SafteyTask.obj: ../SERVICES/THERMAL/ThermalMgmt_Types.h
 APP/App_SafteyTask.obj: ../SERVICES/THERMAL/ThermalMgmt_Cfg.h
+APP/App_SafteyTask.obj: ../SERVICES/DIAG/Diagnostics.h
+APP/App_SafteyTask.obj: ../APP/App_SafeState.h
 
 ../APP/App_SafteyTask.c:
 
@@ -59,6 +70,24 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/FreeRTOS.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/SERVICES/RTOS/FreeRTOSConfig.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/projdefs.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/portable.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/deprecated_definitions.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/portable/CCS/ARM_CM3/portmacro.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/mpu_wrappers.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/task.h:
+
+D:/graduation\ project/ccs\ project\ workspace/Graduation_Project/FreeRTOS/Source/include/list.h:
 
 ../MCAL/WDG/Wdg.h:
 
@@ -99,4 +128,8 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 ../SERVICES/THERMAL/ThermalMgmt_Types.h:
 
 ../SERVICES/THERMAL/ThermalMgmt_Cfg.h:
+
+../SERVICES/DIAG/Diagnostics.h:
+
+../APP/App_SafeState.h:
 

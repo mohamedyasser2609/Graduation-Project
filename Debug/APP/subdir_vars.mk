@@ -8,6 +8,7 @@ SHELL = cmd.exe
 C_SRCS += \
 ../APP/App_ControlTask.c \
 ../APP/App_Main.c \
+../APP/App_SafeState.c \
 ../APP/App_SafteyTask.c \
 ../APP/App_SensorTask.c \
 ../APP/App_ThermalTask.c \
@@ -17,6 +18,7 @@ C_SRCS += \
 C_DEPS += \
 ./APP/App_ControlTask.d \
 ./APP/App_Main.d \
+./APP/App_SafeState.d \
 ./APP/App_SafteyTask.d \
 ./APP/App_SensorTask.d \
 ./APP/App_ThermalTask.d \
@@ -26,6 +28,7 @@ C_DEPS += \
 OBJS += \
 ./APP/App_ControlTask.obj \
 ./APP/App_Main.obj \
+./APP/App_SafeState.obj \
 ./APP/App_SafteyTask.obj \
 ./APP/App_SensorTask.obj \
 ./APP/App_ThermalTask.obj \
@@ -35,6 +38,7 @@ OBJS += \
 OBJS__QUOTED += \
 "APP\App_ControlTask.obj" \
 "APP\App_Main.obj" \
+"APP\App_SafeState.obj" \
 "APP\App_SafteyTask.obj" \
 "APP\App_SensorTask.obj" \
 "APP\App_ThermalTask.obj" \
@@ -44,6 +48,7 @@ OBJS__QUOTED += \
 C_DEPS__QUOTED += \
 "APP\App_ControlTask.d" \
 "APP\App_Main.d" \
+"APP\App_SafeState.d" \
 "APP\App_SafteyTask.d" \
 "APP\App_SensorTask.d" \
 "APP\App_ThermalTask.d" \
@@ -53,6 +58,7 @@ C_DEPS__QUOTED += \
 C_SRCS__QUOTED += \
 "../APP/App_ControlTask.c" \
 "../APP/App_Main.c" \
+"../APP/App_SafeState.c" \
 "../APP/App_SafteyTask.c" \
 "../APP/App_SensorTask.c" \
 "../APP/App_ThermalTask.c" \

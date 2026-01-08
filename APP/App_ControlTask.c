@@ -23,6 +23,9 @@
 #include "../SERVICES/PID/PID.h"
 #include "../SERVICES/RTOS/Tasks_Init.h"
 
+/* Safe state manager - PRIVILEGE CHECK */
+#include "App_SafeState.h"
+
 /* Shared types */
 #include "App_SharedTypes.h"
 
@@ -185,11 +188,20 @@ void App_ControlTask_Run(void)
         rightSpeed = (uint8)((-pidOutputRight > 100.0f) ? 100u : (uint8)(-pidOutputRight));
     }
     
-    /* 7. Command motors */
-    (void)Motor_SetDirection(0u, leftDir);
-    (void)Motor_SetSpeed(0u, leftSpeed);
-    (void)Motor_SetDirection(1u, rightDir);
-    (void)Motor_SetSpeed(1u, rightSpeed);
+    /* 7. PRIVILEGE CHECK: Only command motors if SafeState allows */
+    if (SafeState_IsMotorEnableAllowed())
+    {
+        (void)Motor_SetDirection(0u, leftDir);
+        (void)Motor_SetSpeed(0u, leftSpeed);
+        (void)Motor_SetDirection(1u, rightDir);
+        (void)Motor_SetSpeed(1u, rightSpeed);
+    }
+    else
+    {
+        /* Safety has disabled motors - ensure they are stopped */
+        (void)Motor_Stop(0u);
+        (void)Motor_Stop(1u);
+    }
 }
 
 /**
