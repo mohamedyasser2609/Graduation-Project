@@ -25,8 +25,8 @@
 /* configCPU_CLOCK_HZ must be set to the frequency of the clock that drives 
  * the peripheral used to generate the kernels periodic tick interrupt.
  * This is very often, but not always, equal to the main system clock frequency.
- * Default frequency in Tiva-C Micro-controllers is 16Mhz */
-#define configCPU_CLOCK_HZ                    (( unsigned long )16000000)
+ * TM4C123GH6PM running at 80MHz using PLL */
+#define configCPU_CLOCK_HZ                    (( unsigned long )80000000)
 
 /* configTICK_RATE_HZ sets frequency of the tick interrupt in Hz, so
  * in our case Tick time will be 10ms */
@@ -56,8 +56,8 @@
 /* Sets the total size of the FreeRTOS heap, in bytes, when heap_1.c, heap_2.c
  * or heap_4.c are included in the build. This value is defaulted to 4096 bytes but
  * it must be tailored to each application. Note the heap will appear in the .bss
- * section. */
-#define configTOTAL_HEAP_SIZE                 ((size_t)(4096))
+ * section. Increased for robot controller application with multiple tasks. */
+#define configTOTAL_HEAP_SIZE                 ((size_t)(8192))
 
 /******************************************************************************/
 /* Hook and callback function related definitions. ****************************/
