@@ -113,6 +113,10 @@ PDE_DEPS__QUOTED :=
 SUBDIRS := \
 . \
 APP \
+APP/Common \
+APP/Control \
+APP/Safety \
+APP/Tasks \
 CONFIG \
 ECUAL/Button \
 ECUAL/CURRENT_SENSOR \

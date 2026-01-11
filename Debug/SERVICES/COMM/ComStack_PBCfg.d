@@ -15,6 +15,7 @@ SERVICES/COMM/ComStack_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20
 SERVICES/COMM/ComStack_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 SERVICES/COMM/ComStack_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h
 SERVICES/COMM/ComStack_PBCfg.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h
+SERVICES/COMM/ComStack_PBCfg.obj: ../MCAL/UART/Uart_Types.h
 SERVICES/COMM/ComStack_PBCfg.obj: ../SERVICES/COMM/ComStack_Cfg.h
 
 ../SERVICES/COMM/ComStack_PBCfg.c:
@@ -46,6 +47,8 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
+
+../MCAL/UART/Uart_Types.h:
 
 ../SERVICES/COMM/ComStack_Cfg.h:
 

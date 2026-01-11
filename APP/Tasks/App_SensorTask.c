@@ -11,22 +11,22 @@
  * @version 1.1.0
  */
 
-#include "../CONFIG/Std_Types.h"
+#include "../../CONFIG/Std_Types.h"
 
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
 #include "queue.h"
 
 /* Driver includes */
-#include "../ECUAL/IMU/IMU.h"
-#include "../ECUAL/GPS/GPS.h"
-#include "../ECUAL/ENCODER/Encoder.h"
-#include "../ECUAL/CURRENT_SENSOR/ACS712.h"
-#include "../ECUAL/TEMP_SENSOR/AM2320.h"
-#include "../SERVICES/RTOS/Tasks_Init.h"
+#include "../../ECUAL/IMU/IMU.h"
+#include "../../ECUAL/GPS/GPS.h"
+#include "../../ECUAL/ENCODER/Encoder.h"
+#include "../../ECUAL/CURRENT_SENSOR/ACS712.h"
+#include "../../ECUAL/TEMP_SENSOR/AM2320.h"
+#include "../../SERVICES/RTOS/Tasks_Init.h"
 
 /* Shared types */
-#include "App_SharedTypes.h"
+#include "../Common/App_SharedTypes.h"
 
 /* ===================[Private Variables]=================== */
 static boolean App_SensorInitialized = FALSE;

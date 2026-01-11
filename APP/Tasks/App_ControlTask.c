@@ -11,23 +11,23 @@
  * @version 1.1.0
  */
 
-#include "../CONFIG/Std_Types.h"
+#include "../../CONFIG/Std_Types.h"
 
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
 #include "queue.h"
 
 /* Driver includes */
-#include "../ECUAL/MOTOR/Motor.h"
-#include "../ECUAL/ENCODER/Encoder.h"
-#include "../SERVICES/PID/PID.h"
-#include "../SERVICES/RTOS/Tasks_Init.h"
+#include "../../ECUAL/MOTOR/Motor.h"
+#include "../../ECUAL/ENCODER/Encoder.h"
+#include "../../SERVICES/PID/PID.h"
+#include "../../SERVICES/RTOS/Tasks_Init.h"
 
 /* Safe state manager - PRIVILEGE CHECK */
-#include "App_SafeState.h"
+#include "../Safety/App_SafeState.h"
 
 /* Shared types */
-#include "App_SharedTypes.h"
+#include "../Common/App_SharedTypes.h"
 
 /* ===================[Private Variables]=================== */
 static boolean App_ControlInitialized = FALSE;
@@ -191,16 +191,16 @@ void App_ControlTask_Run(void)
     /* 7. PRIVILEGE CHECK: Only command motors if SafeState allows */
     if (SafeState_IsMotorEnableAllowed())
     {
-        (void)Motor_SetDirection(0u, leftDir);
-        (void)Motor_SetSpeed(0u, leftSpeed);
-        (void)Motor_SetDirection(1u, rightDir);
-        (void)Motor_SetSpeed(1u, rightSpeed);
+        (void)Motor_SetDirection(MOTOR_CHANNEL_LEFT, leftDir);
+        (void)Motor_SetSpeed(MOTOR_CHANNEL_LEFT, leftSpeed);
+        (void)Motor_SetDirection(MOTOR_CHANNEL_RIGHT, rightDir);
+        (void)Motor_SetSpeed(MOTOR_CHANNEL_RIGHT, rightSpeed);
     }
     else
     {
         /* Safety has disabled motors - ensure they are stopped */
-        (void)Motor_Stop(0u);
-        (void)Motor_Stop(1u);
+        (void)Motor_Stop(MOTOR_CHANNEL_LEFT);
+        (void)Motor_Stop(MOTOR_CHANNEL_RIGHT);
     }
 }
 

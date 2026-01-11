@@ -16,7 +16,7 @@
 #ifndef APP_SAFESTATE_H
 #define APP_SAFESTATE_H
 
-#include "../CONFIG/Std_Types.h"
+#include "../../CONFIG/Std_Types.h"
 
 /* ===================[Fault Definitions]=================== */
 

@@ -18,7 +18,7 @@
 #define APP_ROBOT_CONTROL_H_
 
 /* ===================[Includes]=================== */
-#include "../CONFIG/Std_Types.h"
+#include "../../CONFIG/Std_Types.h"
 
 /* ===================[Macros]=================== */
 /** @brief Robot physical parameters */

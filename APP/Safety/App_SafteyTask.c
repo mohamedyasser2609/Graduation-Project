@@ -20,21 +20,24 @@
  * @version 2.0.0
  */
 
-#include "../CONFIG/Std_Types.h"
+#include "../../CONFIG/Std_Types.h"
 
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
 #include "task.h"
 
 /* Driver includes */
-#include "../MCAL/WDG/Wdg.h"
-#include "../ECUAL/CURRENT_SENSOR/ACS712.h"
-#include "../ECUAL/MOTOR/Motor.h"
-#include "../SERVICES/THERMAL/ThermalMgmt.h"
-#include "../SERVICES/DIAG/Diagnostics.h"
+#include "../../MCAL/WDG/Wdg.h"
+#include "../../ECUAL/CURRENT_SENSOR/ACS712.h"
+#include "../../ECUAL/MOTOR/Motor.h"
+#include "../../SERVICES/THERMAL/ThermalMgmt.h"
+#include "../../SERVICES/DIAG/Diagnostics.h"
 
 /* Safe state manager */
 #include "App_SafeState.h"
+
+/* Resource management */
+#include "../Common/App_ResourceMap.h"
 
 /* ===================[Private Variables]=================== */
 static boolean App_SafetyInitialized = FALSE;
@@ -206,6 +209,23 @@ void App_SafetyTask_Run(void)
     {
         /* Force motor disable on any fault */
         SafeState_RequestMotorDisable();
+    }
+    
+    /* 5. Publish safety status to Comm task for ROS reporting */
+    {
+        SafetyStatusMsgType statusMsg;
+        SafeState_InfoType safeInfo;
+        
+        SafeState_GetInfo(&safeInfo);
+        
+        statusMsg.FaultFlags = safeInfo.FaultFlags;
+        statusMsg.Timestamp = xTaskGetTickCount();
+        statusMsg.SafeStateStatus = (uint8)safeInfo.Status;
+        statusMsg.LastFaultReason = (uint8)safeInfo.LastReason;
+        statusMsg.MotorEnabled = safeInfo.MotorEnableAllowed;
+        statusMsg.RequiresAck = (safeInfo.FaultFlags != 0u);
+        
+        (void)ResourceMap_SendSafetyStatus(&statusMsg);
     }
 }
 

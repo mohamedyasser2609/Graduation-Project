@@ -70,7 +70,7 @@ SERVICES/SYSTEM/System_Init.obj: ../SERVICES/DIAG/Diagnostics.h
 SERVICES/SYSTEM/System_Init.obj: ../SERVICES/PID/PID.h
 SERVICES/SYSTEM/System_Init.obj: ../SERVICES/PID/PID_Types.h
 SERVICES/SYSTEM/System_Init.obj: ../SERVICES/PID/PID_Cfg.h
-SERVICES/SYSTEM/System_Init.obj: ../APP/Robot_Control.h
+SERVICES/SYSTEM/System_Init.obj: ../APP/Control/Robot_Control.h
 
 ../SERVICES/SYSTEM/System_Init.c:
 
@@ -212,5 +212,5 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 
 ../SERVICES/PID/PID_Cfg.h:
 
-../APP/Robot_Control.h:
+../APP/Control/Robot_Control.h:
 

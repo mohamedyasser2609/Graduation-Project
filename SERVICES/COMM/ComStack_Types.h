@@ -17,6 +17,7 @@
 
 /* ===================[Includes]=================== */
 #include "../../CONFIG/Std_Types.h"
+#include "../../MCAL/UART/Uart_Types.h"
 
 /* ===================[Macros]=================== */
 /** @brief Module identification */
@@ -200,7 +201,7 @@ typedef struct
  */
 typedef struct
 {
-    uint8       UartModule;         /**< UART module to use (0-7) */
+    Uart_ModuleType UartModule;     /**< UART module to use */
     uint16      RxTimeoutMs;        /**< Receive timeout in ms */
     uint16      TxRetries;          /**< Number of transmit retries */
     boolean     AutoAck;            /**< Auto-acknowledge received packets */

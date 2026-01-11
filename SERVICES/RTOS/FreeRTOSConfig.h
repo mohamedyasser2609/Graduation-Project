@@ -59,6 +59,15 @@
  * section. Increased for robot controller application with multiple tasks. */
 #define configTOTAL_HEAP_SIZE                 ((size_t)(8192))
 
+/* Support for dynamic allocation (required for mutexes and queues) */
+#define configSUPPORT_DYNAMIC_ALLOCATION      1
+
+/* Mutex support (required for ResourceMap encoder access) */
+#define configUSE_MUTEXES                     1
+
+/* Queue support */
+#define configUSE_QUEUE_SETS                  0
+
 /******************************************************************************/
 /* Hook and callback function related definitions. ****************************/
 /******************************************************************************/

@@ -8,8 +8,8 @@
  * @version 1.0.0
  */
 
-#include "../CONFIG/Std_Types.h"
-#include "../SERVICES/THERMAL/ThermalMgmt.h"
+#include "../../CONFIG/Std_Types.h"
+#include "../../SERVICES/THERMAL/ThermalMgmt.h"
 
 /* ===================[External Configurations]=================== */
 extern const ThermalMgmt_ConfigType ThermalMgmt_Config;

@@ -9,7 +9,7 @@
  */
 
 #include "App_SafeState.h"
-#include "../ECUAL/MOTOR/Motor.h"
+#include "../../ECUAL/MOTOR/Motor.h"
 
 /* FreeRTOS includes for tick count */
 #include "FreeRTOS.h"
@@ -59,6 +59,12 @@ static boolean SafeState_IsCooldownComplete(void)
 
 void SafeState_Init(void)
 {
+    /* Prevent re-initialization */
+    if (SafeState_Initialized)
+    {
+        return;  /* Already initialized */
+    }
+    
     SafeState_Info.Status = SAFESTATE_NORMAL;
     SafeState_Info.LastReason = SAFESTATE_REASON_NONE;
     SafeState_Info.FaultFlags = 0u;

@@ -26,7 +26,8 @@
 #include "semphr.h"
 
 #include "../../CONFIG/Std_Types.h"
-#include "../../APP/App_SharedTypes.h"
+#include "../../APP/Common/App_SharedTypes.h"
+#include "../../APP/Common/App_ResourceMap.h"
 #include "Tasks_Init.h"
 
 /* ===================[Task Priorities]=================== */
@@ -222,6 +223,12 @@ BaseType_t Tasks_CreateAll(void)
 
 void Tasks_Init(void)
 {
+    /* Initialize resource management (mutexes, queues) */
+    if (ResourceMap_Init() != E_OK)
+    {
+        for (;;) { }  /* Resource init failed */
+    }
+    
     if (Tasks_CreateQueues() != pdPASS)
     {
         for (;;) { }  /* Queue creation failed */

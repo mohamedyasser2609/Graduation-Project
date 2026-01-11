@@ -15,10 +15,10 @@ SERVICES/COMM/ComStack.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.L
 SERVICES/COMM/ComStack.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/machine/_stdint.h
 SERVICES/COMM/ComStack.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h
 SERVICES/COMM/ComStack.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h
+SERVICES/COMM/ComStack.obj: ../MCAL/UART/Uart_Types.h
 SERVICES/COMM/ComStack.obj: ../SERVICES/COMM/ComStack_Cfg.h
 SERVICES/COMM/ComStack.obj: ../MCAL/UART/Uart.h
 SERVICES/COMM/ComStack.obj: ../CONFIG/Det.h
-SERVICES/COMM/ComStack.obj: ../MCAL/UART/Uart_Types.h
 SERVICES/COMM/ComStack.obj: ../MCAL/UART/Uart_Cfg.h
 SERVICES/COMM/ComStack.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/string.h
 SERVICES/COMM/ComStack.obj: C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/xlocale/_string.h
@@ -53,13 +53,13 @@ C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/sys/_stdint.h:
 
 C:/ti/ccs1281/ccs/tools/compiler/ti-cgt-arm_20.2.7.LTS/include/stddef.h:
 
+../MCAL/UART/Uart_Types.h:
+
 ../SERVICES/COMM/ComStack_Cfg.h:
 
 ../MCAL/UART/Uart.h:
 
 ../CONFIG/Det.h:
-
-../MCAL/UART/Uart_Types.h:
 
 ../MCAL/UART/Uart_Cfg.h:
 

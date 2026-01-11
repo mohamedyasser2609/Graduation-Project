@@ -14,11 +14,11 @@
  */
 
 #include "Robot_Control.h"
-#include "../ECUAL/MOTOR/Motor.h"
-#include "../ECUAL/ENCODER/Encoder.h"
-#include "../ECUAL/CURRENT_SENSOR/ACS712.h"
-#include "../SERVICES/THERMAL/ThermalMgmt.h"
-#include "../SERVICES/PID/PID.h"
+#include "../../ECUAL/MOTOR/Motor.h"
+#include "../../ECUAL/ENCODER/Encoder.h"
+#include "../../ECUAL/CURRENT_SENSOR/ACS712.h"
+#include "../../SERVICES/THERMAL/ThermalMgmt.h"
+#include "../../SERVICES/PID/PID.h"
 #include <math.h>
 
 /* ===================[Private Variables]=================== */
@@ -253,7 +253,7 @@ Std_ReturnType Robot_GetWheelVelocities(Robot_WheelVelType* WheelPtr)
 Std_ReturnType Robot_GetStatus(Robot_StatusType* StatusPtr)
 {
     ACS712_DataType leftCurrent, rightCurrent;
-    float32 maxTemp;
+    ThermalMgmt_DataType thermalData;
     
     if (StatusPtr == NULL_PTR)
     {
@@ -263,13 +263,20 @@ Std_ReturnType Robot_GetStatus(Robot_StatusType* StatusPtr)
     StatusPtr->State = Robot_CurrentState;
     StatusPtr->BatteryVoltage = 12.0f;  /* TODO: Read from ADC */
     
-    (void)ACS712_ReadCurrent(0u, &leftCurrent);
-    (void)ACS712_ReadCurrent(1u, &rightCurrent);
+    (void)ACS712_ReadCurrent(0u, &leftCurrent);   /* Channel 0 = Left motor */
+    (void)ACS712_ReadCurrent(1u, &rightCurrent);  /* Channel 1 = Right motor */
     StatusPtr->LeftCurrent = leftCurrent.CurrentAmps;
     StatusPtr->RightCurrent = rightCurrent.CurrentAmps;
     
-    (void)ThermalMgmt_GetMaxTemperature(&maxTemp, NULL_PTR);
-    StatusPtr->MaxTemperature = maxTemp;
+    /* Get thermal data using proper API */
+    if (ThermalMgmt_GetData(&thermalData) == E_OK)
+    {
+        StatusPtr->MaxTemperature = thermalData.MaxTemperature;
+    }
+    else
+    {
+        StatusPtr->MaxTemperature = 0.0f;  /* Default on error */
+    }
     
     StatusPtr->ErrorFlags = 0u;  /* TODO: Aggregate from safety task */
     
@@ -331,10 +338,10 @@ void Robot_UpdateControl(void)
     rightDir = (pidOutputRight >= 0.0f) ? MOTOR_DIRECTION_FORWARD : MOTOR_DIRECTION_REVERSE;
     
     /* Apply to motors */
-    (void)Motor_SetDirection(0u, leftDir);
-    (void)Motor_SetSpeed(0u, leftCmd);
-    (void)Motor_SetDirection(1u, rightDir);
-    (void)Motor_SetSpeed(1u, rightCmd);
+    (void)Motor_SetDirection(MOTOR_CHANNEL_LEFT, leftDir);
+    (void)Motor_SetSpeed(MOTOR_CHANNEL_LEFT, leftCmd);
+    (void)Motor_SetDirection(MOTOR_CHANNEL_RIGHT, rightDir);
+    (void)Motor_SetSpeed(MOTOR_CHANNEL_RIGHT, rightCmd);
 }
 
 /**

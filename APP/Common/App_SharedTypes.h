@@ -11,7 +11,7 @@
 #ifndef APP_SHAREDTYPES_H
 #define APP_SHAREDTYPES_H
 
-#include "../CONFIG/Std_Types.h"
+#include "../../CONFIG/Std_Types.h"
 
 /* ===================[Command Structures (ROS -> MCU)]=================== */
 

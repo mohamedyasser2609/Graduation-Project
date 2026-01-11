@@ -16,19 +16,19 @@
  * @version 1.1.0
  */
 
-#include "../CONFIG/Std_Types.h"
+#include "../../CONFIG/Std_Types.h"
 
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
 #include "queue.h"
 
 /* Service includes */
-#include "../MCAL/UART/Uart.h"
-#include "../SERVICES/COMM/ComStack.h"
-#include "../SERVICES/RTOS/Tasks_Init.h"
+#include "../../MCAL/UART/Uart.h"
+#include "../../SERVICES/COMM/ComStack.h"
+#include "../../SERVICES/RTOS/Tasks_Init.h"
 
 /* Shared types */
-#include "App_SharedTypes.h"
+#include "../Common/App_SharedTypes.h"
 
 /* ===================[Private Variables]=================== */
 static boolean App_CommInitialized = FALSE;

@@ -12,6 +12,9 @@
 #ifndef COMSTACK_CFG_H
 #define COMSTACK_CFG_H
 
+/* Include UART types for Uart_ModuleType enum */
+#include "../../MCAL/UART/Uart_Types.h"
+
 /* ===================[Pre-compile Options]=================== */
 
 /**
@@ -53,7 +56,7 @@
 /**
  * @brief Default UART module for ROS2 communication
  */
-#define COMSTACK_DEFAULT_UART_MODULE    (1u)    /* UART1: PB0/PB1 */
+#define COMSTACK_DEFAULT_UART_MODULE    UART_MODULE_1    /* UART1: PB0/PB1 */
 
 /**
  * @brief Default receive timeout in milliseconds
