@@ -12,6 +12,7 @@
  */
 
 #include "../../CONFIG/Std_Types.h"
+#include "../../CONFIG/System_FeatureFlags.h"
 
 /* FreeRTOS includes */
 #include "FreeRTOS.h"
@@ -19,7 +20,9 @@
 
 /* Driver includes */
 #include "../../ECUAL/IMU/IMU.h"
+#if (FEATURE_GPS_ENABLED == 1u)
 #include "../../ECUAL/GPS/GPS.h"
+#endif
 #include "../../ECUAL/ENCODER/Encoder.h"
 #include "../../ECUAL/CURRENT_SENSOR/ACS712.h"
 #include "../../ECUAL/TEMP_SENSOR/AM2320.h"
@@ -33,7 +36,9 @@ static boolean App_SensorInitialized = FALSE;
 
 /* Cached sensor data */
 static IMU_CalibratedDataType App_ImuData;
+#if (FEATURE_GPS_ENABLED == 1u)
 static GPS_DataType App_GpsData;
+#endif
 static Encoder_DataType App_EncoderData[2];
 static ACS712_DataType App_MotorCurrent[2];
 
@@ -81,8 +86,13 @@ static void App_PublishFeedback(void)
     feedback.LeftEncoderTicks = (sint32)App_EncoderData[0].PositionCounts;
     feedback.RightEncoderTicks = (sint32)App_EncoderData[1].PositionCounts;
     feedback.YawDegrees = App_GetYawDegrees();
+#if (FEATURE_GPS_ENABLED == 1u)
     feedback.Latitude = App_GpsData.position.latitude;
     feedback.Longitude = App_GpsData.position.longitude;
+#else
+    feedback.Latitude = 0.0f;
+    feedback.Longitude = 0.0f;
+#endif
     feedback.Timestamp = xTaskGetTickCount();
     feedback.Valid = TRUE;
     
@@ -117,8 +127,10 @@ void App_SensorTask_Run(void)
     /* 1. Read IMU data */
     (void)IMU_ReadCalibratedData(&App_ImuData);
     
+#if (FEATURE_GPS_ENABLED == 1u)
     /* 2. Read GPS data */
     (void)GPS_GetData(&App_GpsData);
+#endif
     
     /* 3. Read encoder data */
     Encoder_UpdateAll();  /* Update velocity calculations */
@@ -152,6 +164,7 @@ Std_ReturnType App_SensorTask_GetImuData(IMU_CalibratedDataType* DataPtr)
     return E_OK;
 }
 
+#if (FEATURE_GPS_ENABLED == 1u)
 /**
  * @brief Get GPS data
  */
@@ -165,6 +178,7 @@ Std_ReturnType App_SensorTask_GetGpsData(GPS_DataType* DataPtr)
     *DataPtr = App_GpsData;
     return E_OK;
 }
+#endif
 
 /**
  * @brief Get encoder data

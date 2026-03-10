@@ -28,8 +28,11 @@
 #include "../../MCAL/MPU/MPU.h"
 
 /* ===================[ECUAL Includes]=================== */
+#include "../../CONFIG/System_FeatureFlags.h"
 #include "../../ECUAL/IMU/IMU.h"
+#if (FEATURE_GPS_ENABLED == 1u)
 #include "../../ECUAL/GPS/GPS.h"
+#endif
 #include "../../ECUAL/ENCODER/Encoder.h"
 #include "../../ECUAL/MOTOR/Motor.h"
 #include "../../ECUAL/CURRENT_SENSOR/ACS712.h"
