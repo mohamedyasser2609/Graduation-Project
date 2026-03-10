@@ -250,15 +250,21 @@ static void Gpio_ConfigurePin(const Gpio_PinConfigType* PinConfig)
     }
     
     /* Configure internal resistor */
-    /* Special case: I2C pins need both open drain AND pull-up */
+    /* Special case: I2C pins need special configuration */
     if (PinConfig->Mode == GPIO_MODE_ALT_FUNC && 
         (PinConfig->AlternateFuncNum == 3u) &&  /* I2C alternate function */
         (PinConfig->Port == GPIO_PORT_B) && 
         ((PinConfig->Pin == GPIO_PIN_2) || (PinConfig->Pin == GPIO_PIN_3))) {
-        /* I2C pins: Enable both open drain and pull-up */
-        portReg->ODR |= pinMask;  /* Open drain required for I2C */
+        /* I2C pins: Enable pull-up on both, but open-drain ONLY on SDA */
         portReg->PUR |= pinMask;  /* Pull-up for I2C bus */
         portReg->PDR &= ~pinMask;
+        if (PinConfig->Pin == GPIO_PIN_3) {
+            /* SDA (PB3): Must be open-drain */
+            portReg->ODR |= pinMask;
+        } else {
+            /* SCL (PB2): Push-pull is OK (and required for some I2C slaves) */
+            portReg->ODR &= ~pinMask;
+        }
     } else {
         /* Normal configuration */
         switch(PinConfig->InternalResistor) {

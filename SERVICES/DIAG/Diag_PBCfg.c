@@ -12,7 +12,7 @@
 /* ===================[Service Configuration]=================== */
 const Diag_ConfigType Diag_Config =
 {
-    .DebugUartModule = 0u,      /* UART0 for debug output */
+    .DebugUartModule = UART_MODULE_0,  /* UART0 for debug output */
     .DebugEnabled    = TRUE,    /* Enable debug printing */
     .EventLogEnabled = TRUE     /* Enable event logging */
 };

@@ -152,6 +152,34 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
         .DirectionChangeable = FALSE
     },
     
+    /* PWM Pins for Fans - Port B (PB6=Fan0, PB7=Fan1) */
+    {
+        .Port = GPIO_PORT_B,
+        .Pin = GPIO_PIN_6,
+        .Direction = GPIO_PIN_OUT,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_OFF,
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 4u,  /* M0PWM0 - Fan 0 PWM */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_B,
+        .Pin = GPIO_PIN_7,
+        .Direction = GPIO_PIN_OUT,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_OFF,
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 4u,  /* M0PWM1 - Fan 1 PWM */
+        .DirectionChangeable = FALSE
+    },
+    
     /* Motor PWM Pins - Port A (PA6=M0PWM0 Left Motor, PA7=M0PWM1 Right Motor) */
     {
         .Port = GPIO_PORT_A,

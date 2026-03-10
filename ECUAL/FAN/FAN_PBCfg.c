@@ -21,7 +21,7 @@ static const Fan_ConfigItemType Fan_Configs[] =
     {
         .FanId          = 0u,
         .Mode           = FAN_MODE_PWM,
-        .PwmChannel     = 0u,               /* PWM0 - M0PWM0 (PB6) */
+        .PwmChannel     = 3u,               /* PWM Channel 3 (PB6 - was M0PWM0) */
         .TachChannel    = 0xFFu,            /* Tachometer not used */
         .MinDutyPercent = FAN_FFB0812EHE_MIN_DUTY,
         .MaxRpm         = FAN_FFB0812EHE_MAX_RPM,
@@ -31,7 +31,7 @@ static const Fan_ConfigItemType Fan_Configs[] =
     {
         .FanId          = 1u,
         .Mode           = FAN_MODE_PWM,
-        .PwmChannel     = 1u,               /* PWM1 - M0PWM1 (PB7) */
+        .PwmChannel     = 4u,               /* PWM Channel 4 (PB7 - was M0PWM1) */
         .TachChannel    = 0xFFu,            /* Tachometer not used */
         .MinDutyPercent = FAN_FFB0812EHE_MIN_DUTY,
         .MaxRpm         = FAN_FFB0812EHE_MAX_RPM,

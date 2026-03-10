@@ -21,6 +21,7 @@
 
 /* ===================[Includes]=================== */
 #include "../../CONFIG/Std_Types.h"
+#include "../../MCAL/UART/Uart_Types.h"
 
 /* ===================[Macros]=================== */
 /** @brief Module identification */
@@ -124,7 +125,7 @@ typedef struct
  */
 typedef struct
 {
-    uint8       DebugUartModule;/**< UART for debug output */
+    Uart_ModuleType DebugUartModule;/**< UART for debug output */
     boolean     DebugEnabled;   /**< Enable debug output */
     boolean     EventLogEnabled;/**< Enable event logging */
 } Diag_ConfigType;

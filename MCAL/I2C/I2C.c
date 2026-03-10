@@ -539,14 +539,16 @@ uint8 I2C_ScanBus(I2C_ModuleType Module, uint8* FoundAddresses, uint8 MaxDevices
             continue;
         }
         
-        /* Check status - device exists if ADRACK is set and ERROR is not set */
+        /* Check status - device exists if NO errors occurred
+         * ADRACK bit is set when slave did NOT acknowledge (device not present)
+         * Device found if: no ERROR and no ADRACK (address was ACKed) */
         status = *regs->MCS;
-        if ((status & I2C_MCS_ERROR) == 0 && (status & I2C_MCS_ADRACK)) {
-            /* Address was acknowledged - device exists */
+        if ((status & I2C_MCS_ERROR) == 0) {
+            /* No error - device acknowledged the address */
             (void)*regs->MDR;  /* Read data to clear (value not used) */
             FoundAddresses[count++] = addr;
         } else {
-            /* Address not acknowledged or error - no device */
+            /* Error or NACK - no device at this address */
             *regs->MCS = I2C_MCS_STOP;  /* Clear error */
         }
         

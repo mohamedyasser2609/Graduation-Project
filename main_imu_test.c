@@ -22,7 +22,7 @@
  * @version 1.0.0
  */
 
-#if 0  /* <<<< ENTIRE IMU MAIN COMMENTED OUT - REMOVE THIS LINE TO ACTIVATE >>>> */
+#if 0 /* Set to 1 to enable this test */
 
 
 #include "MCAL/MCU/Mcu.h"
@@ -472,6 +472,12 @@ int main(void)
     Mcu_Init(Mcu_ConfigPtr);
     Mcu_InitClock(MCU_CLOCK_80MHZ);
     
+    /* Wait for PLL to lock and then distribute (switch to PLL) */
+    while (Mcu_GetPllStatus() != MCU_PLL_LOCKED) {
+        /* Wait for PLL lock */
+    }
+    Mcu_DistributePllClock();
+    
     /* Wait for system to stabilize */
     SimpleDelay(100000);
     
@@ -490,6 +496,11 @@ int main(void)
     Uart_SendString(UART_MODULE_0, (const uint8*)"MPU-9250 IMU Test Application\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"TM4C123GH6PM - I2C0 Test\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"========================================\r\n");
+    
+    /* Debug: Print system clock */
+    Uart_SendString(UART_MODULE_0, (const uint8*)"System Clock: ");
+    Uart_SendInt(UART_MODULE_0, (sint32)(Mcu_GetSystemClock() / 1000000));
+    Uart_SendString(UART_MODULE_0, (const uint8*)" MHz\r\n");
     
     /* Initialize I2C */
     Uart_SendString(UART_MODULE_0, (const uint8*)"Initializing I2C...\r\n");
@@ -547,6 +558,6 @@ int main(void)
     }
 }
 
+#endif
 
-#endif  /* <<<< END OF COMMENTED OUT IMU TEST CODE >>>> */
 

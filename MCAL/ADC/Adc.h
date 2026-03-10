@@ -15,6 +15,14 @@ void Adc_StopGroupConversion(Adc_GroupType Group);
 Std_ReturnType Adc_ReadGroup(Adc_GroupType Group, Adc_ValueGroupType* DataBufferPtr);
 Adc_StatusType Adc_GetGroupStatus(Adc_GroupType Group);
 
+/**
+ * @brief Read single ADC channel value
+ * @param Channel ADC channel number
+ * @param Value Pointer to store ADC value
+ * @return E_OK if successful
+ */
+Std_ReturnType Adc_ReadChannel(uint8 Channel, uint16* Value);
+
 void Adc_EnableHardwareTrigger(Adc_GroupType Group);
 void Adc_DisableHardwareTrigger(Adc_GroupType Group);
 void Adc_EnableGroupNotification(Adc_GroupType Group);

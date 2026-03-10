@@ -75,6 +75,12 @@ void MPU_Init(void)
 {
     uint8 regionCount;
     
+    /* Prevent re-initialization */
+    if (MPU_Initialized)
+    {
+        return;
+    }
+    
     /* Check if MPU is present */
     regionCount = MPU_GetRegionCount();
     if (regionCount == 0u)

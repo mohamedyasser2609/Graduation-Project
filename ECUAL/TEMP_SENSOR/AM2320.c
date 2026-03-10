@@ -135,7 +135,7 @@ static Std_ReturnType AM2320_WakeupSensor(uint8 I2cModule)
     Std_ReturnType status;
     
     /* Send wake-up signal: I2C start + address, sensor won't ACK */
-    status = I2c_WriteData(I2cModule, AM2320_I2C_ADDRESS, NULL_PTR, 0u);
+    status = I2C_MasterTransmit(I2cModule, AM2320_I2C_ADDRESS, NULL_PTR, 0u);
     
     /* Ignore NACK - sensor is waking up */
     (void)status;
@@ -158,7 +158,7 @@ static Std_ReturnType AM2320_SendReadCommand(uint8 I2cModule)
     command[1] = AM2320_REG_HUM_HIGH;   /* Start at humidity register */
     command[2] = AM2320_REG_COUNT;      /* Read 4 registers */
     
-    status = I2c_WriteData(I2cModule, AM2320_I2C_ADDRESS, command, AM2320_COMMAND_LENGTH);
+    status = I2C_MasterTransmit(I2cModule, AM2320_I2C_ADDRESS, command, AM2320_COMMAND_LENGTH);
     
     if (status == E_OK)
     {
@@ -176,7 +176,7 @@ static Std_ReturnType AM2320_ReadResponse(uint8 I2cModule, uint8* Buffer)
 {
     Std_ReturnType status;
     
-    status = I2c_ReadData(I2cModule, AM2320_I2C_ADDRESS, Buffer, AM2320_RESPONSE_LENGTH);
+    status = I2C_MasterReceive(I2cModule, AM2320_I2C_ADDRESS, Buffer, AM2320_RESPONSE_LENGTH);
     
     return status;
 }

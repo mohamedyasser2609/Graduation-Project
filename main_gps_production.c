@@ -26,7 +26,7 @@
  * @version 2.0.0 Production
  */
 
-#if 0  /* <<<< ENTIRE IMU MAIN COMMENTED OUT - REMOVE THIS LINE TO ACTIVATE >>>> */
+#if 1  /* <<<< ENTIRE IMU MAIN COMMENTED OUT - REMOVE THIS LINE TO ACTIVATE >>>> */
 
 
 /* ===================[Includes]=================== */

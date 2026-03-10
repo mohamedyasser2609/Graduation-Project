@@ -25,6 +25,7 @@
  * @version 2.0.0 (Transparent Bridge Mode)
  */
 
+#if 0  /* <<<< ENTIRE IMU MAIN COMMENTED OUT - REMOVE THIS LINE TO ACTIVATE >>>> */
 
 
 /* ===================[Includes]=================== */
@@ -238,5 +239,6 @@ int main(void) {
     /* Never reached - infinite loop above */
 }
 
+#endif  /* <<<< END OF COMMENTED OUT IMU TEST CODE >>>> */
 
 

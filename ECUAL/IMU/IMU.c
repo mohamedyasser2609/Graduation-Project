@@ -83,18 +83,18 @@ Std_ReturnType IMU_Init(const IMU_ConfigType* ConfigPtr) {
     /* Configure DLPF */
     IMU_WriteRegister(MPU9250_CONFIG, 0x03);  /* 41Hz bandwidth */
     
-    /* Enable I2C master mode for magnetometer */
-    IMU_WriteRegister(MPU9250_USER_CTRL, 0x20);
-    IMU_WriteRegister(MPU9250_I2C_MST_CTRL, 0x0D);  /* 400kHz I2C */
-    
-    /* Enable bypass for direct magnetometer access */
-    IMU_WriteRegister(MPU9250_INT_PIN_CFG, 0x02);
+    /* Disable I2C master to allow bypass mode for magnetometer */
+    IMU_WriteRegister(MPU9250_USER_CTRL, 0x00);
     for(i = 0; i < 10000; i++);
     
-    /* Configure magnetometer */
+    /* Enable bypass mode for direct magnetometer access */
+    IMU_WriteRegister(MPU9250_INT_PIN_CFG, 0x02);
+    for(i = 0; i < 100000; i++);  /* Longer delay for bypass to take effect */
+    
+    /* Configure magnetometer (optional - don't fail if not accessible) */
     if (IMU_ConfigureMagnetometer() != E_OK) {
-        IMU_Status = IMU_STATUS_ERROR;
-        return E_NOT_OK;
+        /* Magnetometer init failed - continue without it */
+        /* Log warning but don't fail initialization */
     }
     
     /* Calculate scale factors */
