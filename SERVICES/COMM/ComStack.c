@@ -514,6 +514,7 @@ ComStack_RxResultType ComStack_GetPacket(ComStack_PacketType* PacketPtr)
     return COMSTACK_RX_OK;
 }
 
+#if (FEATURE_GPS_ENABLED == 1u)
 /**
  * @brief Send GPS data
  */
@@ -535,49 +536,50 @@ ComStack_TxResultType ComStack_SendGpsData(const ComStack_GpsDataType* GpsData)
     
     return ComStack_SendPacket(COMSTACK_CMD_GPS_DATA, data, 14u);
 }
+#endif
 
 /**
- * @brief Send IMU data
+ * @brief Send IMU data (fixed-point sint16 × 100)
  */
 ComStack_TxResultType ComStack_SendImuData(const ComStack_ImuDataType* ImuData)
 {
-    uint8 data[24];
+    uint8 data[12];
     
     if (ImuData == NULL_PTR)
     {
         return COMSTACK_TX_ERROR;
     }
     
-    /* Pack IMU data (6 floats = 24 bytes) */
-    (void)memcpy(&data[0], &ImuData->AccelX, 4u);
-    (void)memcpy(&data[4], &ImuData->AccelY, 4u);
-    (void)memcpy(&data[8], &ImuData->AccelZ, 4u);
-    (void)memcpy(&data[12], &ImuData->GyroX, 4u);
-    (void)memcpy(&data[16], &ImuData->GyroY, 4u);
-    (void)memcpy(&data[20], &ImuData->GyroZ, 4u);
+    /* Pack IMU data (6 × sint16 = 12 bytes) */
+    (void)memcpy(&data[0],  &ImuData->AccelX, 2u);
+    (void)memcpy(&data[2],  &ImuData->AccelY, 2u);
+    (void)memcpy(&data[4],  &ImuData->AccelZ, 2u);
+    (void)memcpy(&data[6],  &ImuData->GyroX, 2u);
+    (void)memcpy(&data[8],  &ImuData->GyroY, 2u);
+    (void)memcpy(&data[10], &ImuData->GyroZ, 2u);
     
-    return ComStack_SendPacket(COMSTACK_CMD_IMU_DATA, data, 24u);
+    return ComStack_SendPacket(COMSTACK_CMD_IMU_DATA, data, 12u);
 }
 
 /**
- * @brief Send encoder data
+ * @brief Send encoder data (velocity as sint16 × 100)
  */
 ComStack_TxResultType ComStack_SendEncoderData(const ComStack_EncoderDataType* EncoderData)
 {
-    uint8 data[16];
+    uint8 data[12];
     
     if (EncoderData == NULL_PTR)
     {
         return COMSTACK_TX_ERROR;
     }
     
-    /* Pack encoder data */
+    /* Pack encoder data: 2 × sint32 ticks + 2 × sint16 velocity = 12 bytes */
     (void)memcpy(&data[0], &EncoderData->LeftTicks, 4u);
     (void)memcpy(&data[4], &EncoderData->RightTicks, 4u);
-    (void)memcpy(&data[8], &EncoderData->LeftVelocity, 4u);
-    (void)memcpy(&data[12], &EncoderData->RightVelocity, 4u);
+    (void)memcpy(&data[8], &EncoderData->LeftVelocity, 2u);
+    (void)memcpy(&data[10], &EncoderData->RightVelocity, 2u);
     
-    return ComStack_SendPacket(COMSTACK_CMD_ENCODER_DATA, data, 16u);
+    return ComStack_SendPacket(COMSTACK_CMD_ENCODER_DATA, data, 12u);
 }
 
 /**

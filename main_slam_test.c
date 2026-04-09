@@ -1,33 +1,33 @@
 /**
  * @file main_slam_test.c
- * @brief SLAM Test Application — Encoder + IMU → ROS2
+ * @brief SLAM Test Application — Full Robot Control + Sensor Feedback
  * @details Standalone main for testing SLAM mapping with ROS2.
  *
  * What this does:
  * - Sends Encoder data (ticks + velocity) to RPi via ComStack @ 50Hz
  * - Sends IMU data (accel + gyro) to RPi via ComStack @ 50Hz
- * - Receives Motor commands from RPi and applies them
+ * - Receives Motor commands from RPi and applies them via Robot_Control
+ * - Uses PID velocity control and differential drive kinematics
+ * - Computes odometry (dead reckoning)
  * - Debug output on UART0
  *
  * What this does NOT do:
  * - No GPS (wired directly to RPi)
- * - No temperature/current monitoring
  * - No FreeRTOS (simple super-loop for stability)
  *
  * Hardware:
  * - UART0 (PA0/PA1): Debug @ 115200
  * - UART1 (PB0/PB1): ROS2 RPi @ 115200
  * - I2C0 (PB2/PB3): MPU-9250 IMU
- * - QEI0 (PD6/PD7): Left Encoder
- * - QEI1 (PC5/PC6): Right Encoder
- * - PWM0 (PA6/PA7): Motors
+ * - QEI0/QEI1: Left/Right Encoders
+ * - PWM0: Left/Right Motors
  *
  * @author Mohamed Yasser
- * @date Mar 10, 2026
- * @version 1.0.0
+ * @date Mar 12, 2026
+ * @version 2.0.0 (Robot_Control integration)
  */
 
-#if 1 /* Set to 1 to enable this main file */
+#if 0 /* Set to 1 to enable this main file */
 
 /* ===================[Includes]=================== */
 #include "MCAL/MCU/Mcu.h"
@@ -42,6 +42,7 @@
 #include "ECUAL/MOTOR/Motor.h"
 
 #include "SERVICES/COMM/ComStack.h"
+#include "APP/Control/Robot_Control.h"
 
 #include "CONFIG/Std_Types.h"
 
@@ -58,8 +59,9 @@ extern const Motor_ConfigType Motor_Config;
 extern const ComStack_ConfigType ComStack_Config;
 
 /* ===================[Definitions]=================== */
-#define SLAM_LOOP_DELAY         (1600000u)  /* ~20ms at 80MHz → 50Hz */
+#define SLAM_LOOP_DELAY         (1600000u)  /* ~20ms at 80MHz -> 50Hz */
 #define DEBUG_PRINT_INTERVAL    (50u)       /* Print debug every 50 loops (~1s) */
+#define CONTROL_DIVIDER         (2u)        /* Run PID at 100Hz (every 2nd loop) */
 
 /* ===================[Helper Functions]=================== */
 
@@ -118,7 +120,9 @@ static IMU_SensorDataType      imuRaw;
 static Encoder_DataType         encoderLeft;
 static Encoder_DataType         encoderRight;
 static ComStack_PacketType      rxPacket;
+static Robot_OdometryType       odometry;
 static uint32                   loopCounter = 0u;
+static uint32                   controlCounter = 0u;
 static uint32                   txCount = 0u;
 static uint32                   rxCmdCount = 0u;
 
@@ -126,6 +130,7 @@ static uint32                   rxCmdCount = 0u;
 
 /**
  * @brief Send encoder data via ComStack (CMD 0x23)
+ * @details Ticks as sint32, velocity as sint16 RPM×100
  */
 static void SendEncoderPacket(void)
 {
@@ -133,8 +138,8 @@ static void SendEncoderPacket(void)
     
     encData.LeftTicks = (sint32)encoderLeft.PositionCounts;
     encData.RightTicks = (sint32)encoderRight.PositionCounts;
-    encData.LeftVelocity = encoderLeft.VelocityRPM;
-    encData.RightVelocity = encoderRight.VelocityRPM;
+    encData.LeftVelocity = (sint16)(encoderLeft.VelocityRPM * 100.0f);
+    encData.RightVelocity = (sint16)(encoderRight.VelocityRPM * 100.0f);
     
     ComStack_SendEncoderData(&encData);
     txCount++;
@@ -142,21 +147,22 @@ static void SendEncoderPacket(void)
 
 /**
  * @brief Send IMU data via ComStack (CMD 0x22)
+ * @details All values as sint16, real_value × 100
  */
 static void SendImuPacket(void)
 {
     ComStack_ImuDataType imuData;
     
-    /* Convert raw to float (simple scaling, not calibrated) */
-    /* Accel: ±2g range → 16384 LSB/g */
-    imuData.AccelX = (float32)imuRaw.accel.x / 16384.0f;
-    imuData.AccelY = (float32)imuRaw.accel.y / 16384.0f;
-    imuData.AccelZ = (float32)imuRaw.accel.z / 16384.0f;
+    /* Convert raw to physical units, then scale ×100 to sint16 */
+    /* Accel: +/-2g range -> 16384 LSB/g -> m/s² -> ×100 */
+    imuData.AccelX = (sint16)(((float32)imuRaw.accel.x / 16384.0f) * 981.0f);
+    imuData.AccelY = (sint16)(((float32)imuRaw.accel.y / 16384.0f) * 981.0f);
+    imuData.AccelZ = (sint16)(((float32)imuRaw.accel.z / 16384.0f) * 981.0f);
     
-    /* Gyro: ±250°/s range → 131 LSB/°/s → convert to rad/s */
-    imuData.GyroX = ((float32)imuRaw.gyro.x / 131.0f) * 0.01745329f;
-    imuData.GyroY = ((float32)imuRaw.gyro.y / 131.0f) * 0.01745329f;
-    imuData.GyroZ = ((float32)imuRaw.gyro.z / 131.0f) * 0.01745329f;
+    /* Gyro: +/-250 deg/s range -> 131 LSB/deg/s -> rad/s -> ×100 */
+    imuData.GyroX = (sint16)(((float32)imuRaw.gyro.x / 131.0f) * 1.745329f);
+    imuData.GyroY = (sint16)(((float32)imuRaw.gyro.y / 131.0f) * 1.745329f);
+    imuData.GyroZ = (sint16)(((float32)imuRaw.gyro.z / 131.0f) * 1.745329f);
     
     ComStack_SendImuData(&imuData);
     txCount++;
@@ -166,13 +172,15 @@ static void SendImuPacket(void)
 
 /**
  * @brief Process received motor commands from ROS2
+ * @details Converts signed speed (-100 to +100) to Robot_TwistType
+ *          using differential drive inverse kinematics.
  */
 static void ProcessMotorCommand(const ComStack_PacketType* pkt)
 {
     sint16 leftSpeed;
     sint16 rightSpeed;
-    Motor_DirectionType leftDir, rightDir;
-    uint8 leftAbs, rightAbs;
+    Robot_TwistType twist;
+    float32 leftVel, rightVel;
     
     if (pkt->Length < 4u)
     {
@@ -183,18 +191,26 @@ static void ProcessMotorCommand(const ComStack_PacketType* pkt)
     leftSpeed = (sint16)(((uint16)pkt->Data[1] << 8u) | (uint16)pkt->Data[0]);
     rightSpeed = (sint16)(((uint16)pkt->Data[3] << 8u) | (uint16)pkt->Data[2]);
     
-    /* Direction and absolute speed */
-    leftDir = (leftSpeed >= 0) ? MOTOR_DIRECTION_FORWARD : MOTOR_DIRECTION_REVERSE;
-    leftAbs = (uint8)((leftSpeed >= 0) ? leftSpeed : -leftSpeed);
-    if (leftAbs > 100u) leftAbs = 100u;
+    /* Clamp to -100..+100 */
+    if (leftSpeed > 100) leftSpeed = 100;
+    if (leftSpeed < -100) leftSpeed = -100;
+    if (rightSpeed > 100) rightSpeed = 100;
+    if (rightSpeed < -100) rightSpeed = -100;
     
-    rightDir = (rightSpeed >= 0) ? MOTOR_DIRECTION_FORWARD : MOTOR_DIRECTION_REVERSE;
-    rightAbs = (uint8)((rightSpeed >= 0) ? rightSpeed : -rightSpeed);
-    if (rightAbs > 100u) rightAbs = 100u;
+    /* Convert percentage (-100..100) to velocity (m/s) */
+    /* Max speed = ROBOT_MAX_LINEAR_VEL (1.0 m/s) */
+    leftVel = ((float32)leftSpeed / 100.0f) * ROBOT_MAX_LINEAR_VEL;
+    rightVel = ((float32)rightSpeed / 100.0f) * ROBOT_MAX_LINEAR_VEL;
     
-    /* Apply to motors */
-    Motor_SetSpeedAndDirection(MOTOR_CHANNEL_LEFT, leftAbs, leftDir);
-    Motor_SetSpeedAndDirection(MOTOR_CHANNEL_RIGHT, rightAbs, rightDir);
+    /* Convert wheel velocities to Twist (linear.x + angular.z) */
+    /* v = (v_l + v_r) / 2 */
+    /* w = (v_r - v_l) / L */
+    twist.LinearX = (leftVel + rightVel) / 2.0f;
+    twist.LinearY = 0.0f;
+    twist.AngularZ = (rightVel - leftVel) / ROBOT_WHEEL_BASE_M;
+    
+    /* Apply via Robot_Control (clamping + state checks built in) */
+    (void)Robot_SetVelocity(&twist);
     
     rxCmdCount++;
 }
@@ -221,28 +237,26 @@ int main(void)
     
     PrintString("\r\n");
     PrintString("========================================\r\n");
-    PrintString(" SLAM Test Application v1.0\r\n");
-    PrintString(" Encoder + IMU -> ROS2 | Motor <- ROS2\r\n");
+    PrintString(" SLAM Test Application v2.0\r\n");
+    PrintString(" Robot Control + Encoder + IMU -> ROS2\r\n");
+    PrintString(" Motor Control with PID <- ROS2\r\n");
     PrintString(" GPS: Excluded (wired to RPi)\r\n");
     PrintString("========================================\r\n");
     
-    /* ===== 4. UART1 (ROS2 RPi) ===== */
-    /* ComStack will use UART1 as configured in ComStack_PBCfg */
-    
-    /* ===== 5. I2C (for IMU) ===== */
+    /* ===== 4. I2C (for IMU) ===== */
     PrintString("[INIT] I2C...\r\n");
     I2C_Init(&I2C0_Master_100kHz);
     SimpleDelay(50000);
     
-    /* ===== 6. PWM (for motors) ===== */
+    /* ===== 5. PWM (for motors) ===== */
     PrintString("[INIT] PWM...\r\n");
     Pwm_Init(&Pwm_Configuration);
     
-    /* ===== 7. QEI (for encoders) ===== */
+    /* ===== 6. QEI (for encoders) ===== */
     PrintString("[INIT] QEI...\r\n");
     Qei_Init(&Qei_Config);
     
-    /* ===== 8. ECUAL Drivers ===== */
+    /* ===== 7. ECUAL Drivers ===== */
     
     /* IMU */
     PrintString("[INIT] IMU...");
@@ -261,10 +275,14 @@ int main(void)
     PrintString("[INIT] Motors...\r\n");
     Motor_Init(&Motor_Config);
     
+    /* ===== 8. Robot Controller (PID + Kinematics) ===== */
+    PrintString("[INIT] Robot Controller (PID + Diff Drive)...\r\n");
+    Robot_Init();
+    
     /* ===== 9. ComStack ===== */
     PrintString("[INIT] ComStack...\r\n");
     
-    /* UART1 for ROS2 needs to be initialized */
+    /* UART1 for ROS2 */
     {
         const Uart_ConfigType ros2Uart = {
             .Module = UART_MODULE_1,
@@ -286,15 +304,15 @@ int main(void)
     ComStack_Init(&ComStack_Config);
     
     PrintString("[INIT] All systems ready.\r\n");
-    PrintString("[LOOP] Starting 50Hz sensor loop...\r\n\r\n");
+    PrintString("[LOOP] Sensor TX @ 50Hz | PID Control @ 100Hz\r\n\r\n");
     
-    /* ===== Main Super-Loop ===== */
+    /* ===== Main Super-Loop (50Hz base rate) ===== */
     while (1)
     {
         /* --- RX: Process incoming bytes from RPi --- */
         ComStack_MainFunction();
         
-        /* --- RX: Handle any received packets --- */
+        /* --- RX: Handle received packets --- */
         while (ComStack_IsPacketAvailable())
         {
             if (ComStack_GetPacket(&rxPacket) == COMSTACK_RX_OK)
@@ -306,7 +324,7 @@ int main(void)
                         break;
                     
                     case COMSTACK_CMD_MOTOR_STOP:
-                        Motor_StopAll();
+                        Robot_EmergencyStop();
                         rxCmdCount++;
                         break;
                     
@@ -315,13 +333,12 @@ int main(void)
                         break;
                     
                     default:
-                        /* Unknown command — ignore */
                         break;
                 }
             }
         }
         
-        /* --- TX: Read sensors and send to RPi --- */
+        /* --- Sensor Reads (every loop = 50Hz) --- */
         
         /* Read IMU (raw) */
         (void)IMU_ReadRawData(&imuRaw);
@@ -331,7 +348,20 @@ int main(void)
         (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &encoderLeft);
         (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &encoderRight);
         
-        /* Send packets to RPi */
+        /* --- Robot Control Update --- */
+        
+        /* Update odometry every loop (50Hz) */
+        Robot_UpdateOdometry();
+        
+        /* Update PID control loop at 100Hz (every other 10ms half-cycle) */
+        controlCounter++;
+        if (controlCounter >= CONTROL_DIVIDER)
+        {
+            controlCounter = 0u;
+            Robot_UpdateControl();
+        }
+        
+        /* --- TX: Send sensor data to RPi (50Hz) --- */
         SendEncoderPacket();
         SendImuPacket();
         
@@ -339,6 +369,8 @@ int main(void)
         loopCounter++;
         if (loopCounter % DEBUG_PRINT_INTERVAL == 0u)
         {
+            (void)Robot_GetOdometry(&odometry);
+            
             PrintString("[SLAM] TX:");
             PrintInt32((sint32)txCount);
             PrintString(" RX:");
@@ -347,14 +379,15 @@ int main(void)
             PrintInt32((sint32)encoderLeft.PositionCounts);
             PrintString(" R:");
             PrintInt32((sint32)encoderRight.PositionCounts);
-            PrintString(" | AZ:");
-            PrintInt32((sint32)imuRaw.accel.z);
-            PrintString(" GZ:");
-            PrintInt32((sint32)imuRaw.gyro.z);
+            PrintString(" | State:");
+            PrintInt32((sint32)Robot_GetState());
+            PrintString(" OdomX:");
+            PrintInt32((sint32)(odometry.X * 1000.0f)); /* mm */
+            PrintString("mm");
             PrintString("\r\n");
         }
         
-        /* --- Loop Delay (~20ms → 50Hz) --- */
+        /* --- Loop Delay (~20ms -> 50Hz) --- */
         SimpleDelay(SLAM_LOOP_DELAY);
     }
 }

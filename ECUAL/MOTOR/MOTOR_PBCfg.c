@@ -4,8 +4,8 @@
  * @details Configuration for dual-channel motor control
  *
  * Hardware: Cytron MDD10A Rev2.0 Dual Channel Motor Driver
- * - Motor 1 (Left):  PWM Channel 3, Direction Pin PB2
- * - Motor 2 (Right): PWM Channel 4, Direction Pin PB3
+ * - Motor 1 (Left):  PWM Channel 3, Direction Pin PE1
+ * - Motor 2 (Right): PWM Channel 4, Direction Pin PE2
  *
  * PWM Configuration:
  * - Frequency: 20 kHz (typical for motor control)

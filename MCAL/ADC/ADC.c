@@ -524,6 +524,76 @@ void Adc_MainFunction_Handling(void)
     }
 }
 
+/**
+ * @brief Read a single ADC channel (blocking, uses ADC0 Sequencer 3)
+ * @param Channel ADC input channel number (0-11)
+ * @param Value Pointer to store 12-bit ADC result
+ * @return E_OK on success, E_NOT_OK on error
+ */
+Std_ReturnType Adc_ReadChannel(uint8 Channel, uint16* Value)
+{
+    uint32 base = ADC0_BASE_ADDRESS;
+    volatile uint32 timeout;
+
+    if (Value == NULL_PTR)
+    {
+        return E_NOT_OK;
+    }
+    if (Channel > 11u)
+    {
+        return E_NOT_OK;
+    }
+
+    /* Use Sequencer 3 (single sample) for ad-hoc reads */
+    /* Disable SS3 */
+    ADC_REG(base, ADC_ACTSS_OFFSET) &= ~(1u << 3u);
+
+    /* Set trigger to processor (software trigger) */
+    {
+        uint32 emux = ADC_REG(base, ADC_EMUX_OFFSET);
+        emux &= ~(0xFu << 12u);  /* Clear SS3 trigger bits */
+        ADC_REG(base, ADC_EMUX_OFFSET) = emux;
+    }
+
+    /* Configure SS3: single channel, end-of-sequence + interrupt enable */
+    ADC_REG(base, ADC_SSMUX0_OFFSET + (3u * ADC_SSMUX_STRIDE)) = (uint32)Channel & 0xFu;
+    ADC_REG(base, ADC_SSCTL0_OFFSET + (3u * ADC_SSMUX_STRIDE)) = 0x06u; /* IE0 | END0 */
+
+    /* Clear pending interrupt */
+    ADC_REG(base, ADC_ISC_OFFSET) = (1u << 3u);
+
+    /* Enable SS3 */
+    ADC_REG(base, ADC_ACTSS_OFFSET) |= (1u << 3u);
+
+    /* Trigger conversion */
+    ADC_REG(base, ADC_PSSI_OFFSET) = (1u << 3u);
+
+    /* Wait for completion (poll RIS bit 3) */
+    timeout = 100000u;
+    while (((ADC_REG(base, ADC_RIS_OFFSET) & (1u << 3u)) == 0u) && (timeout > 0u))
+    {
+        timeout--;
+    }
+
+    if (timeout == 0u)
+    {
+        /* Disable SS3 and return error */
+        ADC_REG(base, ADC_ACTSS_OFFSET) &= ~(1u << 3u);
+        return E_NOT_OK;
+    }
+
+    /* Read result */
+    *Value = (uint16)(ADC_REG(base, ADC_SSFIFO0_OFFSET + (3u * ADC_SSMUX_STRIDE)) & ADC_FIFO_DATA_MASK);
+
+    /* Clear interrupt flag */
+    ADC_REG(base, ADC_ISC_OFFSET) = (1u << 3u);
+
+    /* Disable SS3 */
+    ADC_REG(base, ADC_ACTSS_OFFSET) &= ~(1u << 3u);
+
+    return E_OK;
+}
+
 static void Adc_HandleIsr(Adc_HwUnitType Unit, Adc_SequencerType Sequencer)
 {
     if (Adc_ConfigPtr == NULL_PTR) {

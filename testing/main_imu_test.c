@@ -22,7 +22,7 @@
  * @version 1.0.0
  */
 
-#if 0 /* Set to 1 to enable this test */
+#if 1 /* Set to 1 to enable this test */
 
 
 #include "MCAL/MCU/Mcu.h"

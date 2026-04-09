@@ -17,6 +17,7 @@
 
 /* ===================[Includes]=================== */
 #include "../../CONFIG/Std_Types.h"
+#include "../../CONFIG/System_FeatureFlags.h"
 #include "../../MCAL/UART/Uart_Types.h"
 
 /* ===================[Macros]=================== */
@@ -61,7 +62,9 @@
 #define COMSTACK_CMD_MOTOR_CMD          (0x10u)
 #define COMSTACK_CMD_MOTOR_STOP         (0x11u)
 #define COMSTACK_CMD_SENSOR_DATA        (0x20u)
-#define COMSTACK_CMD_GPS_DATA           (0x21u)
+#if (FEATURE_GPS_ENABLED == 1u)
+#define COMSTACK_CMD_GPS_DATA           (0x21u)  /* GPS wired to RPi — excluded */
+#endif
 #define COMSTACK_CMD_IMU_DATA           (0x22u)
 #define COMSTACK_CMD_ENCODER_DATA       (0x23u)
 #define COMSTACK_CMD_CURRENT_DATA       (0x24u)
@@ -149,8 +152,10 @@ typedef struct
     sint16      RightSpeed;         /**< Right wheel speed (-100 to +100) */
 } ComStack_MotorCmdType;
 
+#if (FEATURE_GPS_ENABLED == 1u)
 /**
  * @brief GPS data structure (for transmission)
+ * @note GPS is currently wired directly to RPi — this struct is excluded.
  */
 typedef struct
 {
@@ -160,29 +165,30 @@ typedef struct
     uint8       FixType;            /**< GPS fix type */
     uint8       NumSatellites;      /**< Number of satellites */
 } ComStack_GpsDataType;
+#endif
 
 /**
- * @brief IMU data structure (for transmission)
+ * @brief IMU data structure (for transmission) — fixed-point ×100
  */
 typedef struct
 {
-    float32     AccelX;             /**< Acceleration X (m/s²) */
-    float32     AccelY;             /**< Acceleration Y (m/s²) */
-    float32     AccelZ;             /**< Acceleration Z (m/s²) */
-    float32     GyroX;              /**< Angular rate X (rad/s) */
-    float32     GyroY;              /**< Angular rate Y (rad/s) */
-    float32     GyroZ;              /**< Angular rate Z (rad/s) */
+    sint16      AccelX;             /**< Acceleration X (m/s² × 100) */
+    sint16      AccelY;             /**< Acceleration Y (m/s² × 100) */
+    sint16      AccelZ;             /**< Acceleration Z (m/s² × 100) */
+    sint16      GyroX;              /**< Angular rate X (rad/s × 100) */
+    sint16      GyroY;              /**< Angular rate Y (rad/s × 100) */
+    sint16      GyroZ;              /**< Angular rate Z (rad/s × 100) */
 } ComStack_ImuDataType;
 
 /**
- * @brief Encoder data structure (for transmission)
+ * @brief Encoder data structure (for transmission) — fixed-point velocity ×100
  */
 typedef struct
 {
     sint32      LeftTicks;          /**< Left encoder ticks */
     sint32      RightTicks;         /**< Right encoder ticks */
-    float32     LeftVelocity;       /**< Left velocity (ticks/s) */
-    float32     RightVelocity;      /**< Right velocity (ticks/s) */
+    sint16      LeftVelocity;       /**< Left velocity (RPM × 100) */
+    sint16      RightVelocity;      /**< Right velocity (RPM × 100) */
 } ComStack_EncoderDataType;
 
 /**

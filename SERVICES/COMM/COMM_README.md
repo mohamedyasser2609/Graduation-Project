@@ -1,467 +1,244 @@
-# ROS 2 UART Communication Bridge
+# ROS 2 UART Communication Protocol
 
 **TM4C123GH6PM ↔ Raspberry Pi 5 (ROS 2)**
 
 ---
 
-## 🎯 Overview
+## Overview
 
-Bidirectional UART communication between TM4C123 microcontroller and Raspberry Pi 5 running ROS 2.
+Bidirectional UART between TM4C123 and RPi 5. All sensor data uses **fixed-point integer × 100** (no floating-point on the wire).
 
-**Use Cases:**
-- Send sensor data (GPS, IMU, encoders) from TM4C to ROS 2
-- Receive motor commands from ROS 2 to TM4C
-- Real-time robot control and monitoring
-- Telemetry and logging
+- **TM4C sends**: Encoder ticks/velocity + IMU accel/gyro (both as integers)
+- **TM4C receives**: Motor speed commands
+- **GPS**: Wired directly to RPi (not sent by TM4C)
 
 ---
 
-## 🔌 Hardware Connections
+## Hardware Connections
 
-### **TM4C123 ↔ Raspberry Pi 5**
+| TM4C Pin | Function | RPi Pin | GPIO |
+|----------|----------|---------|------|
+| **PB1** | UART1 TX | **Pin 10** | GPIO 15 (RX) |
+| **PB0** | UART1 RX | **Pin 8** | GPIO 14 (TX) |
+| **GND** | Ground | **Pin 6** | GND |
 
-| TM4C Pin | Function | RPi Pin | GPIO | Notes |
-|----------|----------|---------|------|-------|
-| **PB1** | UART1 TX | **Pin 10** | GPIO 15 (RX) | TM4C sends data |
-| **PB0** | UART1 RX | **Pin 8** | GPIO 14 (TX) | TM4C receives data |
-| **GND** | Ground | **Pin 6** | GND | **CRITICAL!** |
+**UART: 115200 baud, 8N1, No flow control**
 
-**⚠️ IMPORTANT:**
-- **Common ground is MANDATORY** - Connect GND pins!
-- Both devices run at **3.3V logic** - No level shifter needed ✅
-- Do NOT connect VCC pins (power separately)
+⚠️ Common GND is mandatory. Both are 3.3V logic — no level shifter needed.
 
-### **Raspberry Pi 5 GPIO Pinout:**
+---
+
+## Packet Structure
 
 ```
-         3.3V  [ 1] [ 2]  5V
-    GPIO 2     [ 3] [ 4]  5V
-    GPIO 3     [ 5] [ 6]  GND  ← Connect to TM4C GND
-    GPIO 4     [ 7] [ 8]  GPIO 14 (TX) ← Connect to PB0
-         GND   [ 9] [10]  GPIO 15 (RX) ← Connect to PB1
+┌──────────┬─────────┬────────┬──────────────┬──────────┬─────────┐
+│  0xAA    │ COMMAND │ LENGTH │ DATA         │ CHECKSUM │  0x55   │
+│ (1 byte) │ (1 byte)│(1 byte)│ (0-120 bytes)│ (1 byte) │ (1 byte)│
+└──────────┴─────────┴────────┴──────────────┴──────────┴─────────┘
+```
+
+**Checksum** = `CMD ^ LEN ^ DATA[0] ^ DATA[1] ^ ... ^ DATA[N-1]`
+
+All multi-byte values are **little-endian**.
+
+---
+
+## Command Table
+
+| Command | ID | Direction | Data Length | Description |
+|---------|------|-----------|-------------|-------------|
+| PING | `0x01` | Both | 0 | Heartbeat |
+| ACK | `0x02` | Both | 0 | Acknowledgment |
+| MOTOR_CMD | `0x10` | RPi → TM4C | 4 | Motor speed control |
+| MOTOR_STOP | `0x11` | RPi → TM4C | 0 | Emergency stop |
+| IMU_DATA | `0x22` | TM4C → RPi | **12** | IMU accel + gyro (sint16 × 100) |
+| ENCODER_DATA | `0x23` | TM4C → RPi | **12** | Encoder ticks + velocity |
+
+---
+
+## Data Format Details
+
+### ENCODER_DATA (0x23) — TM4C → RPi — 12 bytes
+
+```
+Byte [0-3]:   Left encoder ticks    (sint32, raw tick count)
+Byte [4-7]:   Right encoder ticks   (sint32, raw tick count)
+Byte [8-9]:   Left velocity         (sint16, RPM × 100)
+Byte [10-11]: Right velocity        (sint16, RPM × 100)
+```
+
+**To get real RPM:** divide sint16 by 100.0
+```python
+left_ticks, right_ticks, left_vel_x100, right_vel_x100 = struct.unpack('<iihh', data)
+left_rpm = left_vel_x100 / 100.0   # e.g. 5000 → 50.00 RPM
+```
+
+### IMU_DATA (0x22) — TM4C → RPi — 12 bytes
+
+```
+Byte [0-1]:   Accel X  (sint16, m/s² × 100)
+Byte [2-3]:   Accel Y  (sint16, m/s² × 100)
+Byte [4-5]:   Accel Z  (sint16, m/s² × 100)
+Byte [6-7]:   Gyro X   (sint16, rad/s × 100)
+Byte [8-9]:   Gyro Y   (sint16, rad/s × 100)
+Byte [10-11]: Gyro Z   (sint16, rad/s × 100)
+```
+
+**To get real values:** divide sint16 by 100.0
+```python
+ax, ay, az, gx, gy, gz = struct.unpack('<6h', data)
+accel_x = ax / 100.0   # e.g. 981 → 9.81 m/s² (1g)
+gyro_x  = gx / 100.0   # e.g. 174 → 1.74 rad/s
+```
+
+### MOTOR_CMD (0x10) — RPi → TM4C — 4 bytes
+
+```
+Byte [0-1]: Left motor speed   (sint16, range: -100 to +100)
+Byte [2-3]: Right motor speed  (sint16, range: -100 to +100)
+```
+
+Positive = Forward, Negative = Reverse, 0 = Stop.
+
+```python
+data = struct.pack('<hh', 50, 30)  # Left=50%, Right=30% forward
+```
+
+### MOTOR_STOP (0x11) — RPi → TM4C — 0 bytes
+
+Emergency stop. No data payload.
+
+---
+
+## Verified Raw Hex Example
+
+Captured from TM4C UART on RPi (verified working 2026-04-09):
+
+```
+Encoder packet:
+aa 23 0c 05 00 00 00 00 00 00 00 00 00 00 00 2a 55
+│  │  │  │            │            │         │  │
+│  │  │  └LeftTicks=5 └RightTicks=0└Vel=0,0  │  └END
+│  │  └ LEN=12                               └ XOR=0x2A
+│  └ CMD=0x23
+└ START
+
+IMU packet:
+aa 22 0c 00 00 00 00 00 00 00 00 00 00 00 00 2e 55
+         └── All zeros (IMU not connected) ──┘
 ```
 
 ---
 
-## 📡 Communication Protocol
-
-### **Packet Structure:**
-
-```
-┌──────────┬─────────┬────────┬──────────┬──────────┬─────────┐
-│ START    │ COMMAND │ LENGTH │ DATA     │ CHECKSUM │ END     │
-│ (0xAA)   │ (1 byte)│(1 byte)│(0-120 B) │ (1 byte) │ (0x55)  │
-└──────────┴─────────┴────────┴──────────┴──────────┴─────────┘
-```
-
-**Fields:**
-- **START:** Always `0xAA`
-- **COMMAND:** Command ID (see below)
-- **LENGTH:** Number of data bytes (0-120)
-- **DATA:** Payload (variable length)
-- **CHECKSUM:** XOR of (COMMAND ^ LENGTH ^ DATA[0] ^ DATA[1] ^ ...)
-- **END:** Always `0x55`
-
-### **Command IDs:**
-
-| Command | ID | Direction | Description |
-|---------|-----|-----------|-------------|
-| **PING** | `0x01` | Both | Heartbeat/connection test |
-| **ACK** | `0x02` | Both | Acknowledgment |
-| **MOTOR_CMD** | `0x10` | ROS2 → TM4C | Motor control |
-| **SENSOR_DATA** | `0x20` | TM4C → ROS2 | Generic sensor data |
-| **GPS_DATA** | `0x21` | TM4C → ROS2 | GPS coordinates |
-| **IMU_DATA** | `0x22` | TM4C → ROS2 | IMU (accel/gyro) |
-| **STATUS** | `0x30` | Both | System status |
-| **ERROR** | `0xFF` | Both | Error message |
-
----
-
-## 🚀 Quick Start
-
-### **Step 1: TM4C Setup**
-
-1. **Build and Flash:**
-   ```
-   Project → Clean
-   Project → Build
-   Run → Debug → Resume
-   ```
-
-2. **Verify Debug Output:**
-   Open serial terminal (115200 baud):
-   ```
-   ========================================
-     ROS 2 UART Bridge - TM4C123GH6PM     
-   ========================================
-   ROS 2 UART: UART1 (PB0/PB1) @ 115200 baud
-   Debug UART: UART0 (PA0/PA1) @ 115200 baud
-   
-   Waiting for ROS 2 connection...
-   
-   [TX] Initial PING sent to ROS 2
-   ```
-
-### **Step 2: Raspberry Pi Setup**
-
-1. **Enable UART on RPi:**
-   ```bash
-   sudo raspi-config
-   # Interface Options → Serial Port
-   # Login shell: NO
-   # Serial port hardware: YES
-   sudo reboot
-   ```
-
-2. **Verify UART Device:**
-   ```bash
-   ls -l /dev/serial0
-   # Should link to /dev/ttyAMA0
-   ```
-
-3. **Install Python Serial:**
-   ```bash
-   pip3 install pyserial
-   ```
-
-### **Step 3: Test Communication**
-
-Use the provided Python test script (see below).
-
----
-
-## 🐍 Python Test Script (Raspberry Pi)
-
-Save as `ros2_uart_test.py`:
+## Complete Python Bridge Implementation
 
 ```python
 #!/usr/bin/env python3
 """
-ROS 2 UART Communication Test Script
-Tests bidirectional communication with TM4C123
+TM4C ComStack UART Bridge — Receives sensor data, sends motor commands.
 """
 
 import serial
-import time
 import struct
+import time
 
-# Configuration
-SERIAL_PORT = '/dev/serial0'  # RPi UART
-BAUD_RATE = 115200
+START_BYTE       = 0xAA
+END_BYTE         = 0x55
 
-# Protocol constants
-START_BYTE = 0xAA
-END_BYTE = 0x55
-
-# Commands
-CMD_PING = 0x01
-CMD_ACK = 0x02
-CMD_MOTOR_CMD = 0x10
-CMD_STATUS = 0x30
+CMD_PING         = 0x01
+CMD_ACK          = 0x02
+CMD_MOTOR_CMD    = 0x10
+CMD_MOTOR_STOP   = 0x11
+CMD_IMU_DATA     = 0x22
+CMD_ENCODER_DATA = 0x23
 
 def calculate_checksum(command, length, data):
-    """Calculate XOR checksum"""
     checksum = command ^ length
     for byte in data:
         checksum ^= byte
-    return checksum
+    return checksum & 0xFF
 
 def send_packet(ser, command, data=b''):
-    """Send packet to TM4C"""
     length = len(data)
     checksum = calculate_checksum(command, length, data)
-    
     packet = bytes([START_BYTE, command, length]) + data + bytes([checksum, END_BYTE])
-    
     ser.write(packet)
-    print(f"[TX] Command: 0x{command:02X}, Length: {length}, Data: {data.hex()}")
 
-def receive_packet(ser, timeout=1.0):
-    """Receive packet from TM4C"""
+def receive_packet(ser, timeout=0.1):
+    """Returns (command, data) or (None, None)"""
     start_time = time.time()
-    
     while (time.time() - start_time) < timeout:
-        if ser.in_waiting > 0:
-            # Look for start byte
-            byte = ser.read(1)
-            if byte[0] == START_BYTE:
-                # Read command and length
-                header = ser.read(2)
-                if len(header) < 2:
-                    continue
-                    
-                command = header[0]
-                length = header[1]
-                
-                # Read data
-                data = ser.read(length) if length > 0 else b''
-                
-                # Read checksum and end byte
-                footer = ser.read(2)
-                if len(footer) < 2:
-                    continue
-                    
-                checksum = footer[0]
-                end_byte = footer[1]
-                
-                # Validate
-                if end_byte == END_BYTE:
-                    calc_checksum = calculate_checksum(command, length, data)
-                    if checksum == calc_checksum:
-                        print(f"[RX] Command: 0x{command:02X}, Length: {length}, Data: {data.hex()}")
-                        return command, data
-                    else:
-                        print(f"[ERROR] Checksum mismatch!")
-                else:
-                    print(f"[ERROR] Invalid end byte: 0x{end_byte:02X}")
-    
+        byte = ser.read(1)
+        if len(byte) == 0:
+            continue
+        if byte[0] != START_BYTE:
+            continue
+        header = ser.read(2)
+        if len(header) < 2:
+            continue
+        command, length = header[0], header[1]
+        if length > 120:
+            continue
+        data = ser.read(length) if length > 0 else b''
+        if len(data) < length:
+            continue
+        footer = ser.read(2)
+        if len(footer) < 2:
+            continue
+        if footer[1] != END_BYTE:
+            continue
+        if footer[0] != calculate_checksum(command, length, data):
+            continue
+        return command, data
     return None, None
 
-def main():
-    print("=" * 50)
-    print("  ROS 2 UART Communication Test")
-    print("  Raspberry Pi 5 ↔ TM4C123GH6PM")
-    print("=" * 50)
-    
-    try:
-        # Open serial port
-        ser = serial.Serial(
-            port=SERIAL_PORT,
-            baudrate=BAUD_RATE,
-            bytesize=serial.EIGHTBITS,
-            parity=serial.PARITY_NONE,
-            stopbits=serial.STOPBITS_ONE,
-            timeout=1
-        )
-        
-        print(f"\n[OK] Serial port opened: {SERIAL_PORT} @ {BAUD_RATE} baud\n")
-        
-        time.sleep(0.5)
-        
-        # Test 1: Send PING
-        print("\n--- Test 1: PING ---")
-        send_packet(ser, CMD_PING, b'\x00\x00\x00\x01')
-        time.sleep(0.1)
-        cmd, data = receive_packet(ser)
-        if cmd == CMD_ACK:
-            print("[OK] Received ACK!\n")
-        
-        # Test 2: Request Status
-        print("--- Test 2: STATUS REQUEST ---")
-        send_packet(ser, CMD_STATUS)
-        time.sleep(0.1)
-        cmd, data = receive_packet(ser)
-        if cmd == CMD_STATUS:
-            print(f"[OK] Status data: {data.hex()}\n")
-        
-        # Test 3: Send Motor Command
-        print("--- Test 3: MOTOR COMMAND ---")
-        motor_data = bytes([100, 50])  # Example: Motor1=100, Motor2=50
-        send_packet(ser, CMD_MOTOR_CMD, motor_data)
-        time.sleep(0.1)
-        cmd, data = receive_packet(ser)
-        if cmd == CMD_ACK:
-            print("[OK] Motor command acknowledged!\n")
-        
-        # Test 4: Continuous monitoring
-        print("--- Test 4: CONTINUOUS MONITORING ---")
-        print("Listening for 10 seconds...\n")
-        
-        start_time = time.time()
-        while (time.time() - start_time) < 10:
-            cmd, data = receive_packet(ser, timeout=0.5)
-            if cmd == CMD_PING:
-                print("[INFO] Heartbeat received")
-                # Send ACK
-                send_packet(ser, CMD_ACK)
-            time.sleep(0.1)
-        
-        print("\n[OK] Test completed successfully!")
-        
-        ser.close()
-        
-    except serial.SerialException as e:
-        print(f"[ERROR] Serial port error: {e}")
-    except KeyboardInterrupt:
-        print("\n[INFO] Test interrupted by user")
-    except Exception as e:
-        print(f"[ERROR] {e}")
+def parse_encoder(data):
+    """Parse 12-byte encoder packet → ticks + RPM"""
+    lt, rt, lv, rv = struct.unpack('<iihh', data[:12])
+    return {'left_ticks': lt, 'right_ticks': rt,
+            'left_rpm': lv / 100.0, 'right_rpm': rv / 100.0}
 
-if __name__ == "__main__":
-    main()
-```
+def parse_imu(data):
+    """Parse 12-byte IMU packet → m/s² and rad/s"""
+    ax, ay, az, gx, gy, gz = struct.unpack('<6h', data[:12])
+    return {'accel': (ax/100.0, ay/100.0, az/100.0),
+            'gyro':  (gx/100.0, gy/100.0, gz/100.0)}
 
-**Run the test:**
-```bash
-chmod +x ros2_uart_test.py
-python3 ros2_uart_test.py
-```
+def send_motor(ser, left_pct, right_pct):
+    """Send motor speeds (-100 to +100)"""
+    left_pct = max(-100, min(100, left_pct))
+    right_pct = max(-100, min(100, right_pct))
+    send_packet(ser, CMD_MOTOR_CMD, struct.pack('<hh', left_pct, right_pct))
 
----
+def send_stop(ser):
+    send_packet(ser, CMD_MOTOR_STOP)
 
-## 🤖 ROS 2 Integration
-
-### **Create ROS 2 Node:**
-
-Save as `tm4c_bridge_node.py`:
-
-```python
-#!/usr/bin/env python3
-import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import Twist
-from sensor_msgs.msg import NavSatFix, Imu
-from std_msgs.msg import String
-import serial
-import threading
-
-class TM4CBridgeNode(Node):
-    def __init__(self):
-        super().__init__('tm4c_bridge')
-        
-        # Serial connection
-        self.ser = serial.Serial('/dev/serial0', 115200, timeout=0.1)
-        
-        # Publishers
-        self.gps_pub = self.create_publisher(NavSatFix, 'gps/fix', 10)
-        self.imu_pub = self.create_publisher(Imu, 'imu/data', 10)
-        self.status_pub = self.create_publisher(String, 'tm4c/status', 10)
-        
-        # Subscribers
-        self.cmd_vel_sub = self.create_subscription(
-            Twist, 'cmd_vel', self.cmd_vel_callback, 10)
-        
-        # Start receive thread
-        self.rx_thread = threading.Thread(target=self.receive_loop, daemon=True)
-        self.rx_thread.start()
-        
-        self.get_logger().info('TM4C Bridge Node started')
-    
-    def cmd_vel_callback(self, msg):
-        """Convert ROS Twist to motor command"""
-        # Example: Convert linear.x and angular.z to motor speeds
-        left_speed = int((msg.linear.x - msg.angular.z) * 100)
-        right_speed = int((msg.linear.x + msg.angular.z) * 100)
-        
-        # Clamp to 0-255
-        left_speed = max(0, min(255, left_speed + 128))
-        right_speed = max(0, min(255, right_speed + 128))
-        
-        # Send motor command
-        self.send_packet(0x10, bytes([left_speed, right_speed]))
-    
-    def send_packet(self, command, data=b''):
-        """Send packet to TM4C"""
-        length = len(data)
-        checksum = command ^ length
-        for byte in data:
-            checksum ^= byte
-        
-        packet = bytes([0xAA, command, length]) + data + bytes([checksum, 0x55])
-        self.ser.write(packet)
-    
-    def receive_loop(self):
-        """Background thread to receive packets"""
-        while rclpy.ok():
-            # Implement packet reception and publish to ROS topics
-            # Similar to test script above
-            pass
-
-def main(args=None):
-    rclpy.init(args=args)
-    node = TM4CBridgeNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
-
+# === Example Usage ===
 if __name__ == '__main__':
-    main()
+    ser = serial.Serial('/dev/ttyAMA0', 115200, timeout=0.01)
+    while True:
+        cmd, data = receive_packet(ser)
+        if cmd == CMD_ENCODER_DATA:
+            enc = parse_encoder(data)
+            print(f"Encoder: L={enc['left_ticks']} R={enc['right_ticks']} "
+                  f"Lv={enc['left_rpm']:.1f} Rv={enc['right_rpm']:.1f} RPM")
+        elif cmd == CMD_IMU_DATA:
+            imu = parse_imu(data)
+            print(f"IMU: accel={imu['accel']} gyro={imu['gyro']}")
 ```
 
 ---
 
-## 📊 Example Use Cases
+## Troubleshooting
 
-### **1. Send GPS Data to ROS 2:**
-
-In `main_ros2.c`, add:
-
-```c
-void SendGPSData(float latitude, float longitude, float altitude) {
-    uint8 data[12];
-    
-    /* Pack floats into bytes (simple method) */
-    memcpy(&data[0], &latitude, 4);
-    memcpy(&data[4], &longitude, 4);
-    memcpy(&data[8], &altitude, 4);
-    
-    SendPacketToROS2(CMD_GPS_DATA, data, 12);
-}
-```
-
-### **2. Receive Motor Commands from ROS 2:**
-
-Already implemented in `ProcessPacket()`:
-
-```c
-case CMD_MOTOR_CMD:
-    uint8 leftMotor = packet->data[0];
-    uint8 rightMotor = packet->data[1];
-    
-    /* Control motors */
-    SetMotorSpeed(LEFT_MOTOR, leftMotor);
-    SetMotorSpeed(RIGHT_MOTOR, rightMotor);
-    
-    SendPacketToROS2(CMD_ACK, NULL_PTR, 0);
-    break;
-```
+| Problem | Solution |
+|---------|----------|
+| No data on RPi | Check TX→RX crossover, verify GND connected |
+| Garbled data | Verify 115200 baud, 8N1 both sides |
+| Checksum errors | Verify XOR: `CMD ^ LEN ^ DATA[0] ^ ... ^ DATA[N-1]` |
+| No UART on RPi | `sudo raspi-config` → Interface → Serial: shell=NO, hardware=YES |
+| Test raw bytes | `sudo stty -F /dev/ttyAMA0 115200 raw && sudo xxd /dev/ttyAMA0` |
 
 ---
 
-## 🔧 Troubleshooting
-
-### **No Communication:**
-
-1. **Check wiring:**
-   - TX → RX (crossover!)
-   - RX → TX
-   - GND → GND
-
-2. **Verify UART enabled on RPi:**
-   ```bash
-   ls -l /dev/serial0
-   dmesg | grep tty
-   ```
-
-3. **Check baud rate match:** Both must be 115200
-
-4. **Test loopback:**
-   - Short TX and RX on RPi
-   - Should echo back
-
-### **Garbled Data:**
-
-- Check baud rate (115200)
-- Verify 8N1 settings
-- Check for loose connections
-
-### **Checksum Errors:**
-
-- Verify checksum calculation matches
-- Check for data corruption
-- Add debug prints
-
----
-
-## 📝 Next Steps
-
-1. ✅ **Test basic communication** (Python script)
-2. ✅ **Integrate with ROS 2 node**
-3. ✅ **Add sensor data publishing** (GPS, IMU)
-4. ✅ **Implement motor control**
-5. ✅ **Add error handling and recovery**
-6. ✅ **Optimize packet rate**
-
----
-
-**Your TM4C is now ready to communicate with ROS 2!** 🤖🔗🛰️
+**Protocol Version:** 2.0 (fixed-point) | **UART:** 115200 baud, 8N1 | **Data Rate:** ~10Hz sensor updates | **Byte Order:** Little-endian

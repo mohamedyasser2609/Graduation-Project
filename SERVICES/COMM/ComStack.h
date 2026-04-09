@@ -101,12 +101,14 @@ ComStack_RxResultType ComStack_GetPacket(ComStack_PacketType* PacketPtr);
  */
 ComStack_TxResultType ComStack_SendMotorResponse(const ComStack_MotorCmdType* MotorData);
 
+#if (FEATURE_GPS_ENABLED == 1u)
 /**
  * @brief Send GPS data
  * @param[in] GpsData Pointer to GPS data
  * @return TX result status
  */
 ComStack_TxResultType ComStack_SendGpsData(const ComStack_GpsDataType* GpsData);
+#endif
 
 /**
  * @brief Send IMU data
