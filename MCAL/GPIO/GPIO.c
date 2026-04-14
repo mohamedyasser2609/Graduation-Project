@@ -255,15 +255,13 @@ static void Gpio_ConfigurePin(const Gpio_PinConfigType* PinConfig)
         (PinConfig->AlternateFuncNum == 3u) &&  /* I2C alternate function */
         (PinConfig->Port == GPIO_PORT_B) && 
         ((PinConfig->Pin == GPIO_PIN_2) || (PinConfig->Pin == GPIO_PIN_3))) {
-        /* I2C pins: Enable pull-up on both, but open-drain ONLY on SDA */
-        portReg->PUR |= pinMask;  /* Pull-up for I2C bus */
+        /* I2C pins special setup: Pull-ups ON. SCL=Push-Pull, SDA=Open-Drain */
+        portReg->PUR |= pinMask;
         portReg->PDR &= ~pinMask;
         if (PinConfig->Pin == GPIO_PIN_3) {
-            /* SDA (PB3): Must be open-drain */
-            portReg->ODR |= pinMask;
+            portReg->ODR |= pinMask;  /* SDA is Open-Drain */
         } else {
-            /* SCL (PB2): Push-pull is OK (and required for some I2C slaves) */
-            portReg->ODR &= ~pinMask;
+            portReg->ODR &= ~pinMask; /* SCL is Push-Pull for stronger clock drive */
         }
     } else {
         /* Normal configuration */

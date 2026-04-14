@@ -51,15 +51,15 @@
 /* ===================[External Configurations]=================== */
 /* MCAL Configurations */
 extern const Gpio_ConfigType Gpio_Configuration;
-extern const Uart_ConfigType Uart_Config;
-extern const Pwm_ConfigType Pwm_Config;
-extern const I2C_ConfigType I2C_Config;
+extern const Uart_ConfigType Uart0_Config_115200;
+extern const Pwm_ConfigType Pwm_Configuration;
+extern const I2C_ConfigType I2C0_Master_100kHz;
 extern const Adc_ConfigType Adc_Config;
 extern const Qei_ConfigType Qei_Config;
 extern const Wdg_ConfigType Wdg_Config;
 
 /* ECUAL Configurations */
-extern const IMU_ConfigType IMU_Config;
+extern const IMU_ConfigType IMU_Config_Default;
 extern const Encoder_ConfigType Encoder_Config;
 extern const Motor_ConfigType Motor_Config;
 extern const ACS712_ConfigType ACS712_Config;
@@ -92,16 +92,16 @@ void System_Init(void)
     Gpio_Init(&Gpio_Configuration);
     
     /* Initialize UART (for debug and ROS2 communication) */
-    Uart_Init(&Uart_Config);
+    Uart_Init(&Uart0_Config_115200);
     
     /* Initialize ADC (for current sensors) */
     Adc_Init(&Adc_Config);
     
     /* Initialize I2C (for IMU and temperature sensors) */
-    I2C_Init(&I2C_Config);
+    I2C_Init(&I2C0_Master_100kHz);
     
     /* Initialize PWM (for motors and fans) */
-    Pwm_Init(&Pwm_Config);
+    Pwm_Init(&Pwm_Configuration);
     
     /* Initialize QEI (for encoders) */
     Qei_Init(&Qei_Config);
@@ -113,7 +113,7 @@ void System_Init(void)
     /* ===== Phase 3: ECUAL Layer ===== */
     
     /* Initialize IMU */
-    if (IMU_Init(&IMU_Config) != E_OK)
+    if (IMU_Init(&IMU_Config_Default) != E_OK)
     {
         Diag_ReportDtc(DIAG_DTC_IMU_FAIL, TRUE);
     }

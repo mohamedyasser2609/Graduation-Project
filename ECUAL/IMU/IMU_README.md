@@ -1,4 +1,4 @@
-# MPU-9250 IMU Test Program
+# MPU-6050 IMU Test Program
 
 **9-Axis Motion Tracking: Accelerometer + Gyroscope + Magnetometer**
 
@@ -6,7 +6,7 @@
 
 ## 🎯 Overview
 
-The MPU-9250 is a 9-axis MotionTracking device combining:
+The MPU-6050 is a 9-axis MotionTracking device combining:
 - **3-axis Gyroscope** - Measures angular velocity (rotation)
 - **3-axis Accelerometer** - Measures linear acceleration (gravity, movement)
 - **3-axis Magnetometer** - Measures magnetic field (compass heading)
@@ -44,9 +44,9 @@ Perfect for:
 
 ## 🔌 Hardware Connections
 
-### **TM4C123 ↔ MPU-9250**
+### **TM4C123 ↔ MPU-6050**
 
-| TM4C Pin | Function | MPU-9250 Pin | Notes |
+| TM4C Pin | Function | MPU-6050 Pin | Notes |
 |----------|----------|--------------|-------|
 | **PB2** | I2C0 SCL | **SCL** | Clock line |
 | **PB3** | I2C0 SDA | **SDA** | Data line |
@@ -55,14 +55,14 @@ Perfect for:
 
 **⚠️ IMPORTANT:**
 - **Pull-up resistors** (4.7kΩ) required on SCL and SDA lines
-- Most MPU-9250 modules have built-in pull-ups ✅
+- Most MPU-6050 modules have built-in pull-ups ✅
 - I2C address: **0x68** (default) or **0x69** if AD0 pin is high
 
-### **MPU-9250 Module Pinout:**
+### **MPU-6050 Module Pinout:**
 
 ```
 ┌─────────────────┐
-│   MPU-9250      │
+│   MPU-6050      │
 ├─────────────────┤
 │ VCC  → 3.3V     │
 │ GND  → GND      │
@@ -79,7 +79,7 @@ Perfect for:
 
 ### **Step 1: Wire the Hardware**
 
-1. Connect MPU-9250 to TM4C as shown above
+1. Connect MPU-6050 to TM4C as shown above
 2. Verify 3.3V power supply
 3. Check GND connection
 
@@ -106,14 +106,14 @@ Perfect for:
 
 ```
 ========================================
-  MPU-9250 IMU Test - TM4C123GH6PM    
+  MPU-6050 IMU Test - TM4C123GH6PM    
 ========================================
 I2C0: PB2 (SCL), PB3 (SDA)
 Debug UART: UART0 @ 115200 baud
 
-Initializing MPU-9250...
+Initializing MPU-6050...
 WHO_AM_I: 0x71
-[OK] MPU-9250 initialized successfully!
+[OK] MPU-6050 initialized successfully!
 
 Reading IMU data every 1 second...
 ```
@@ -122,7 +122,7 @@ Reading IMU data every 1 second...
 
 ```
 ========================================
-MPU-9250 IMU Data
+MPU-6050 IMU Data
 ========================================
 Accelerometer (g):
   X: 0.02 g
@@ -194,13 +194,13 @@ Temperature: 24.50 °C
 **Debug steps:**
 ```c
 /* In main_imu.c, try alternate address: */
-#define MPU9250_I2C_ADDR  0x69  /* Instead of 0x68 */
+#define MPU6050_I2C_ADDR  0x69  /* Instead of 0x68 */
 ```
 
 ### **Problem: "Invalid device ID"**
 
 **WHO_AM_I values:**
-- **0x71** = MPU-9250 ✅
+- **0x71** = MPU-6050 ✅
 - **0x73** = MPU-9255 ✅
 - **0x68** = MPU-6050 (no magnetometer)
 - **Other** = Wrong device or communication error
@@ -259,11 +259,11 @@ imuData.gyroX_dps -= gyro_bias_x;
 ### **1. Change Accelerometer Range:**
 
 ```c
-/* In MPU9250_Init() function */
-/* ±2g  */ MPU9250_WriteRegister(MPU9250_ACCEL_CONFIG, 0x00);
-/* ±4g  */ MPU9250_WriteRegister(MPU9250_ACCEL_CONFIG, 0x08);
-/* ±8g  */ MPU9250_WriteRegister(MPU9250_ACCEL_CONFIG, 0x10);
-/* ±16g */ MPU9250_WriteRegister(MPU9250_ACCEL_CONFIG, 0x18);
+/* In MPU6050_Init() function */
+/* ±2g  */ MPU6050_WriteRegister(MPU6050_ACCEL_CONFIG, 0x00);
+/* ±4g  */ MPU6050_WriteRegister(MPU6050_ACCEL_CONFIG, 0x08);
+/* ±8g  */ MPU6050_WriteRegister(MPU6050_ACCEL_CONFIG, 0x10);
+/* ±16g */ MPU6050_WriteRegister(MPU6050_ACCEL_CONFIG, 0x18);
 
 /* Update scale factor accordingly */
 #define ACCEL_SCALE  ACCEL_SCALE_4G  /* Change to match */
@@ -272,11 +272,11 @@ imuData.gyroX_dps -= gyro_bias_x;
 ### **2. Change Gyroscope Range:**
 
 ```c
-/* In MPU9250_Init() function */
-/* ±250°/s  */ MPU9250_WriteRegister(MPU9250_GYRO_CONFIG, 0x00);
-/* ±500°/s  */ MPU9250_WriteRegister(MPU9250_GYRO_CONFIG, 0x08);
-/* ±1000°/s */ MPU9250_WriteRegister(MPU9250_GYRO_CONFIG, 0x10);
-/* ±2000°/s */ MPU9250_WriteRegister(MPU9250_GYRO_CONFIG, 0x18);
+/* In MPU6050_Init() function */
+/* ±250°/s  */ MPU6050_WriteRegister(MPU6050_GYRO_CONFIG, 0x00);
+/* ±500°/s  */ MPU6050_WriteRegister(MPU6050_GYRO_CONFIG, 0x08);
+/* ±1000°/s */ MPU6050_WriteRegister(MPU6050_GYRO_CONFIG, 0x10);
+/* ±2000°/s */ MPU6050_WriteRegister(MPU6050_GYRO_CONFIG, 0x18);
 
 /* Update scale factor accordingly */
 #define GYRO_SCALE  GYRO_SCALE_500DPS  /* Change to match */
@@ -285,9 +285,9 @@ imuData.gyroX_dps -= gyro_bias_x;
 ### **3. Enable Low-Pass Filter:**
 
 ```c
-/* In MPU9250_Init() function */
+/* In MPU6050_Init() function */
 /* DLPF_CFG = 3: Bandwidth 44Hz, Delay 4.9ms */
-MPU9250_WriteRegister(MPU9250_CONFIG, 0x03);
+MPU6050_WriteRegister(MPU6050_CONFIG, 0x03);
 ```
 
 ### **4. Adjust Sample Rate:**
@@ -295,7 +295,7 @@ MPU9250_WriteRegister(MPU9250_CONFIG, 0x03);
 ```c
 /* Sample Rate = Gyroscope Output Rate / (1 + SMPLRT_DIV) */
 /* For 100Hz: SMPLRT_DIV = 9 (assuming 1kHz gyro rate) */
-MPU9250_WriteRegister(0x19, 9);  /* Register 25: SMPLRT_DIV */
+MPU6050_WriteRegister(0x19, 9);  /* Register 25: SMPLRT_DIV */
 ```
 
 ---
@@ -345,7 +345,7 @@ angle = alpha * (angle + gyroX_dps * dt) + (1 - alpha) * accel_angle;
 | TEMP_OUT_H | 0x41 | Temperature high byte |
 | GYRO_XOUT_H | 0x43 | Gyro X high byte |
 
-**Full datasheet:** [MPU-9250 Product Specification](https://invensense.tdk.com/products/motion-tracking/9-axis/mpu-9250/)
+**Full datasheet:** [MPU-6050 Product Specification](https://invensense.tdk.com/products/motion-tracking/9-axis/mpu-6050/)
 
 ---
 
@@ -376,4 +376,4 @@ Pattern matching on accel/gyro data → Recognize gestures → Control actions
 
 ---
 
-**Your MPU-9250 IMU is ready to use! Build, flash, and start reading motion data!** 🚀📊🤖
+**Your MPU-6050 IMU is ready to use! Build, flash, and start reading motion data!** 🚀📊🤖

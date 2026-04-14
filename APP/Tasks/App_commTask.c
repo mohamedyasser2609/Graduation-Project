@@ -1,19 +1,20 @@
 /**
  * @file App_CommTask.c
- * @brief Communication Task Implementation
- * @details Handles ROS2 communication via UART with wheel speed parsing
+ * @brief Communication Task Implementation — Binary ComStack Protocol
+ * @details Handles ROS2 communication via ComStack binary framed protocol.
  *
- * RX Protocol:
- *   "W,<LeftRadS>,<RightRadS>\n"  - Wheel speed command
- *   "S\n"                         - Emergency stop
- *   "R\n"                         - Resume
+ * RX (from ROS2 via ComStack binary):
+ *   CMD 0x10 MOTOR_CMD:  4 bytes — sint16 leftSpeed, sint16 rightSpeed
+ *   CMD 0x11 MOTOR_STOP: 0 bytes — Emergency stop
+ *   CMD 0x01 PING:       0 bytes — Heartbeat / connection check
  *
- * TX Protocol:
- *   "F,<LTicks>,<RTicks>,<Yaw>,<Lat>,<Lon>\n" - Sensor feedback
+ * TX (to ROS2 via ComStack binary):
+ *   CMD 0x23 ENCODER_DATA: sint32 leftTicks, sint32 rightTicks, float32 leftVel, float32 rightVel
+ *   CMD 0x22 IMU_DATA:     float32 ax,ay,az, float32 gx,gy,gz
  *
  * @author Mohamed Yasser
- * @date Jan 08, 2026
- * @version 1.1.0
+ * @date Apr 13, 2026
+ * @version 2.0.0 — Rewritten to use ComStack binary protocol (was ASCII)
  */
 
 #include "../../CONFIG/Std_Types.h"
@@ -23,324 +24,173 @@
 #include "queue.h"
 
 /* Service includes */
-#include "../../MCAL/UART/Uart.h"
 #include "../../SERVICES/COMM/ComStack.h"
 #include "../../SERVICES/RTOS/Tasks_Init.h"
 
-/* Shared types */
+/* ECUAL includes (for sensor data reads) */
+#include "../../ECUAL/ENCODER/Encoder.h"
+#include "../../ECUAL/IMU/IMU.h"
+
+/* APP includes */
 #include "../Common/App_SharedTypes.h"
+#include "../Control/Robot_Control.h"
+
+/* ===================[External Safety API]=================== */
+extern void App_SafetyTask_ReportHeartbeat(void);
 
 /* ===================[Private Variables]=================== */
 static boolean App_CommInitialized = FALSE;
 
-/* RX buffer for line-based parsing */
-#define RX_BUFFER_SIZE  (64u)
-static char App_RxBuffer[RX_BUFFER_SIZE];
-static uint8 App_RxIndex = 0u;
-
 /* Queue handle cache */
 static QueueHandle_t App_WheelCmdQueue = NULL;
-static QueueHandle_t App_FeedbackQueue = NULL;
+
+/* Received packet buffer */
+static ComStack_PacketType App_RxPacket;
+
+/* TX statistics */
+static uint32 App_TxCount = 0u;
+static uint32 App_RxCmdCount = 0u;
 
 /* ===================[Private Functions]=================== */
 
 /**
- * @brief Parse a float from string
- * @param[in]  str    Input string
- * @param[out] endPtr Pointer to next character after number
- * @return Parsed float value
+ * @brief Process a received motor command packet (CMD 0x10)
+ * @details Converts signed speed (-100..+100) to WheelSpeedCmdType
+ *          for the Control Task queue. Uses differential drive inverse
+ *          kinematics to convert wheel speeds to rad/s.
+ *
+ * @param[in] pkt Pointer to received packet
  */
-static float32 App_ParseFloat(const char* str, char** endPtr)
+static void App_ProcessMotorCommand(const ComStack_PacketType* pkt)
 {
-    float32 result = 0.0f;
-    float32 fraction = 0.0f;
-    float32 divisor = 1.0f;
-    boolean negative = FALSE;
-    boolean inFraction = FALSE;
-    const char* p = str;
-    
-    /* Skip whitespace */
-    while (*p == ' ') p++;
-    
-    /* Handle sign */
-    if (*p == '-')
-    {
-        negative = TRUE;
-        p++;
-    }
-    else if (*p == '+')
-    {
-        p++;
-    }
-    
-    /* Parse digits */
-    while ((*p >= '0' && *p <= '9') || *p == '.')
-    {
-        if (*p == '.')
-        {
-            inFraction = TRUE;
-        }
-        else
-        {
-            if (inFraction)
-            {
-                divisor *= 10.0f;
-                fraction += (float32)(*p - '0') / divisor;
-            }
-            else
-            {
-                result = result * 10.0f + (float32)(*p - '0');
-            }
-        }
-        p++;
-    }
-    
-    result += fraction;
-    if (negative) result = -result;
-    
-    if (endPtr != NULL)
-    {
-        *endPtr = (char*)p;
-    }
-    
-    return result;
-}
-
-/**
- * @brief Process a complete received line
- * @param[in] line The received line (null-terminated)
- */
-static void App_ProcessReceivedLine(const char* line)
-{
+    sint16 leftSpeed;
+    sint16 rightSpeed;
     WheelSpeedCmdType cmd;
-    char* parsePtr;
-    
-    if (line[0] == PROTO_CMD_WHEEL && line[1] == PROTO_DELIMITER)
+    float32 leftVel, rightVel;
+
+    if (pkt->Length < 4u)
     {
-        /* Parse wheel speed command: "W,<left>,<right>\n" */
-        cmd.LeftRadPerSec = App_ParseFloat(&line[2], &parsePtr);
-        
-        if (*parsePtr == PROTO_DELIMITER)
-        {
-            parsePtr++;
-            cmd.RightRadPerSec = App_ParseFloat(parsePtr, NULL);
-            cmd.Timestamp = xTaskGetTickCount();
-            cmd.Valid = TRUE;
-            
-            /* Send to Control Task via queue (non-blocking) */
-            if (App_WheelCmdQueue != NULL)
-            {
-                (void)xQueueOverwrite(App_WheelCmdQueue, &cmd);
-            }
-        }
+        return;
     }
-    else if (line[0] == PROTO_CMD_STOP)
+
+    /* Parse: 2 bytes left speed (sint16 LE), 2 bytes right speed (sint16 LE) */
+    leftSpeed = (sint16)(((uint16)pkt->Data[1] << 8u) | (uint16)pkt->Data[0]);
+    rightSpeed = (sint16)(((uint16)pkt->Data[3] << 8u) | (uint16)pkt->Data[2]);
+
+    /* Clamp to -100..+100 */
+    if (leftSpeed > 100) leftSpeed = 100;
+    if (leftSpeed < -100) leftSpeed = -100;
+    if (rightSpeed > 100) rightSpeed = 100;
+    if (rightSpeed < -100) rightSpeed = -100;
+
+    /* Convert percentage (-100..100) to velocity (m/s) */
+    /* Max speed = ROBOT_MAX_LINEAR_VEL (1.0 m/s) */
+    leftVel = ((float32)leftSpeed / 100.0f) * ROBOT_MAX_LINEAR_VEL;
+    rightVel = ((float32)rightSpeed / 100.0f) * ROBOT_MAX_LINEAR_VEL;
+
+    /* Convert wheel velocities to rad/s for the Control Task queue */
+    /* v_wheel (m/s) = omega (rad/s) * wheel_radius (m) */
+    /* omega (rad/s) = v_wheel / wheel_radius */
+    cmd.LeftRadPerSec = leftVel / ROBOT_WHEEL_RADIUS_M;
+    cmd.RightRadPerSec = rightVel / ROBOT_WHEEL_RADIUS_M;
+    cmd.Timestamp = xTaskGetTickCount();
+    cmd.Valid = TRUE;
+
+    /* Send to Control Task via queue (non-blocking, overwrite old commands) */
+    if (App_WheelCmdQueue != NULL)
     {
-        /* Emergency stop - send zero speed */
-        cmd.LeftRadPerSec = 0.0f;
-        cmd.RightRadPerSec = 0.0f;
-        cmd.Timestamp = xTaskGetTickCount();
-        cmd.Valid = TRUE;
-        
-        if (App_WheelCmdQueue != NULL)
-        {
-            (void)xQueueOverwrite(App_WheelCmdQueue, &cmd);
-        }
-        
-        /* Also call direct stop for safety */
-        extern void Robot_EmergencyStop(void);
-        Robot_EmergencyStop();
+        (void)xQueueOverwrite(App_WheelCmdQueue, &cmd);
     }
-    else if (line[0] == PROTO_CMD_RESUME)
-    {
-        /* Resume from e-stop */
-        extern Std_ReturnType Robot_Resume(void);
-        (void)Robot_Resume();
-    }
+
+    App_RxCmdCount++;
 }
 
 /**
- * @brief Process incoming UART bytes
+ * @brief Process all incoming ComStack packets
+ * @details Calls ComStack_MainFunction() to process UART bytes, then
+ *          handles all available received packets.
  */
-static void App_ProcessUartRx(void)
+static void App_ProcessComStackRx(void)
 {
-    uint8 rxByte;
-    
-    /* Poll for received bytes */
-    while (Uart_IsRxDataAvailable(COMSTACK_DEFAULT_UART_MODULE))
+    /* Process incoming UART bytes into ComStack packets */
+    ComStack_MainFunction();
+
+    /* Handle all available received packets */
+    while (ComStack_IsPacketAvailable())
     {
-        if (Uart_ReceiveByte(COMSTACK_DEFAULT_UART_MODULE, &rxByte) == E_OK)
+        if (ComStack_GetPacket(&App_RxPacket) == COMSTACK_RX_OK)
         {
-            if (rxByte == PROTO_TERMINATOR)
+            switch (App_RxPacket.Command)
             {
-                /* End of line - process command */
-                App_RxBuffer[App_RxIndex] = '\0';
-                
-                if (App_RxIndex > 0u)
-                {
-                    App_ProcessReceivedLine(App_RxBuffer);
-                }
-                
-                App_RxIndex = 0u;
-            }
-            else if (rxByte == '\r')
-            {
-                /* Ignore carriage return */
-            }
-            else
-            {
-                /* Add to buffer */
-                if (App_RxIndex < (RX_BUFFER_SIZE - 1u))
-                {
-                    App_RxBuffer[App_RxIndex] = (char)rxByte;
-                    App_RxIndex++;
-                }
-                else
-                {
-                    /* Buffer overflow - reset */
-                    App_RxIndex = 0u;
-                }
+                case COMSTACK_CMD_MOTOR_CMD:
+                    App_ProcessMotorCommand(&App_RxPacket);
+                    /* Motor commands also prove connectivity */
+                    App_SafetyTask_ReportHeartbeat();
+                    break;
+
+                case COMSTACK_CMD_MOTOR_STOP:
+                    Robot_EmergencyStop();
+                    App_RxCmdCount++;
+                    break;
+
+                case COMSTACK_CMD_PING:
+                    /* Heartbeat — ACK the ping and report to Safety Task */
+                    ComStack_SendAck();
+                    App_SafetyTask_ReportHeartbeat();
+                    break;
+
+                default:
+                    /* Unknown command — ignore */
+                    break;
             }
         }
     }
 }
 
 /**
- * @brief Format integer to string
+ * @brief Transmit encoder data via ComStack binary (CMD 0x23)
  */
-static uint8 App_IntToStr(sint32 value, char* buffer)
+static void App_TransmitEncoderData(void)
 {
-    char temp[12];
-    uint8 i = 0u;
-    uint8 len = 0u;
-    boolean negative = FALSE;
-    uint32 uvalue;
-    
-    if (value < 0)
-    {
-        negative = TRUE;
-        uvalue = (uint32)(-value);
-    }
-    else
-    {
-        uvalue = (uint32)value;
-    }
-    
-    if (uvalue == 0u)
-    {
-        buffer[0] = '0';
-        buffer[1] = '\0';
-        return 1u;
-    }
-    
-    while (uvalue > 0u)
-    {
-        temp[i++] = (char)('0' + (uvalue % 10u));
-        uvalue /= 10u;
-    }
-    
-    if (negative)
-    {
-        buffer[len++] = '-';
-    }
-    
-    while (i > 0u)
-    {
-        i--;
-        buffer[len++] = temp[i];
-    }
-    buffer[len] = '\0';
-    
-    return len;
+    Encoder_DataType encoderLeft;
+    Encoder_DataType encoderRight;
+    ComStack_EncoderDataType encData;
+
+    (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &encoderLeft);
+    (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &encoderRight);
+
+    encData.LeftTicks = (sint32)encoderLeft.PositionCounts;
+    encData.RightTicks = (sint32)encoderRight.PositionCounts;
+    encData.LeftVelocity = (sint16)(encoderLeft.VelocityRPM * 100.0f);
+    encData.RightVelocity = (sint16)(encoderRight.VelocityRPM * 100.0f);
+
+    ComStack_SendEncoderData(&encData);
+    App_TxCount++;
 }
 
 /**
- * @brief Format float to string (2 decimal places)
+ * @brief Transmit IMU data via ComStack binary (CMD 0x22)
+ * @details Values are sent as scaled integers (* 100).
  */
-static uint8 App_FloatToStr(float32 value, char* buffer)
+static void App_TransmitImuData(void)
 {
-    sint32 intPart;
-    sint32 fracPart;
-    uint8 len;
-    
-    if (value < 0.0f)
-    {
-        buffer[0] = '-';
-        value = -value;
-        len = 1u;
-    }
-    else
-    {
-        len = 0u;
-    }
-    
-    intPart = (sint32)value;
-    fracPart = (sint32)((value - (float32)intPart) * 100.0f);
-    
-    len += App_IntToStr(intPart, &buffer[len]);
-    buffer[len++] = '.';
-    
-    if (fracPart < 10)
-    {
-        buffer[len++] = '0';
-    }
-    len += App_IntToStr(fracPart, &buffer[len]);
-    
-    return len;
-}
+    IMU_SensorDataType imuRaw;
+    ComStack_ImuDataType imuData;
 
-/**
- * @brief Transmit sensor feedback to ROS2
- */
-static void App_TransmitSensorFeedback(void)
-{
-    SensorFeedbackType feedback;
-    char txBuffer[128];
-    uint8 txLen = 0u;
-    
-    /* Check if feedback data is available */
-    if (App_FeedbackQueue != NULL)
-    {
-        if (xQueueReceive(App_FeedbackQueue, &feedback, 0) == pdTRUE)
-        {
-            if (feedback.Valid)
-            {
-                /* Format: "F,<LTicks>,<RTicks>,<Yaw>,<Lat>,<Lon>\n" */
-                txBuffer[txLen++] = 'F';
-                txBuffer[txLen++] = ',';
-                
-                /* Left encoder ticks */
-                txLen += App_IntToStr(feedback.LeftEncoderTicks, &txBuffer[txLen]);
-                txBuffer[txLen++] = ',';
-                
-                /* Right encoder ticks */
-                txLen += App_IntToStr(feedback.RightEncoderTicks, &txBuffer[txLen]);
-                txBuffer[txLen++] = ',';
-                
-                /* Yaw */
-                txLen += App_FloatToStr(feedback.YawDegrees, &txBuffer[txLen]);
-                txBuffer[txLen++] = ',';
-                
-                /* Latitude */
-                txLen += App_FloatToStr(feedback.Latitude, &txBuffer[txLen]);
-                txBuffer[txLen++] = ',';
-                
-                /* Longitude */
-                txLen += App_FloatToStr(feedback.Longitude, &txBuffer[txLen]);
-                txBuffer[txLen++] = '\n';
-                txBuffer[txLen] = '\0';
-                
-                /* Transmit */
-                {
-                    uint8 txIdx;
-                    for (txIdx = 0u; txIdx < txLen; txIdx++)
-                    {
-                        Uart_SendByte(COMSTACK_DEFAULT_UART_MODULE, (uint8)txBuffer[txIdx]);
-                    }
-                }
-            }
-        }
-    }
+    (void)IMU_ReadRawData(&imuRaw);
+
+    /* Accel: +/-2g range → 16384 LSB/g → m/s² * 100 */
+    imuData.AccelX = (sint16)((((float32)imuRaw.accel.x / 16384.0f) * 9.81f) * 100.0f);
+    imuData.AccelY = (sint16)((((float32)imuRaw.accel.y / 16384.0f) * 9.81f) * 100.0f);
+    imuData.AccelZ = (sint16)((((float32)imuRaw.accel.z / 16384.0f) * 9.81f) * 100.0f);
+
+    /* Gyro: +/-250 deg/s range → 131 LSB/deg/s → rad/s * 100 */
+    imuData.GyroX = (sint16)((((float32)imuRaw.gyro.x / 131.0f) * 0.0174533f) * 100.0f);
+    imuData.GyroY = (sint16)((((float32)imuRaw.gyro.y / 131.0f) * 0.0174533f) * 100.0f);
+    imuData.GyroZ = (sint16)((((float32)imuRaw.gyro.z / 131.0f) * 0.0174533f) * 100.0f);
+
+    ComStack_SendImuData(&imuData);
+    App_TxCount++;
 }
 
 /* ===================[Public Functions]=================== */
@@ -352,14 +202,18 @@ void App_CommTask_Init(void)
 {
     /* Get queue handles */
     App_WheelCmdQueue = Tasks_GetWheelSpeedCmdQueue();
-    App_FeedbackQueue = Tasks_GetSensorFeedbackQueue();
-    
-    App_RxIndex = 0u;
+
+    App_TxCount = 0u;
+    App_RxCmdCount = 0u;
     App_CommInitialized = TRUE;
 }
 
 /**
- * @brief Communication task main function (called by FreeRTOS task)
+ * @brief Communication task main function (called by FreeRTOS task @ 50Hz)
+ * @details
+ *   1. Process incoming ComStack binary packets (motor commands, heartbeat)
+ *   2. Transmit encoder data to ROS2 (binary, 50Hz)
+ *   3. Transmit IMU data to ROS2 (binary, 50Hz)
  */
 void App_CommTask_Run(void)
 {
@@ -367,10 +221,11 @@ void App_CommTask_Run(void)
     {
         App_CommTask_Init();
     }
-    
-    /* 1. Process incoming UART data */
-    App_ProcessUartRx();
-    
-    /* 2. Transmit sensor feedback to ROS2 */
-    App_TransmitSensorFeedback();
+
+    /* 1. Process incoming binary packets from ROS2 */
+    App_ProcessComStackRx();
+
+    /* 2. Transmit sensor data to ROS2 (binary protocol) */
+    App_TransmitEncoderData();
+    App_TransmitImuData();
 }

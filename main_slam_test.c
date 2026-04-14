@@ -18,7 +18,7 @@
  * Hardware:
  * - UART0 (PA0/PA1): Debug @ 115200
  * - UART1 (PB0/PB1): ROS2 RPi @ 115200
- * - I2C0 (PB2/PB3): MPU-9250 IMU
+ * - I2C0 (PB2/PB3): MPU-6050 IMU
  * - QEI0/QEI1: Left/Right Encoders
  * - PWM0: Left/Right Motors
  *
@@ -27,10 +27,10 @@
  * @version 2.0.0 (Robot_Control integration)
  */
 
-#if 0 /* Set to 1 to enable this main file */
+#if 0 /* DISABLED — main_robot.c is the active production entry point */
 
 /* ===================[Includes]=================== */
-#include "MCAL/MCU/Mcu.h"
+#include "MCAL/MCU/Mcu.h"w
 #include "MCAL/GPIO/Gpio.h"
 #include "MCAL/UART/Uart.h"
 #include "MCAL/I2C/I2C.h"
@@ -59,8 +59,8 @@ extern const Motor_ConfigType Motor_Config;
 extern const ComStack_ConfigType ComStack_Config;
 
 /* ===================[Definitions]=================== */
-#define SLAM_LOOP_DELAY         (1600000u)  /* ~20ms at 80MHz -> 50Hz */
-#define DEBUG_PRINT_INTERVAL    (50u)       /* Print debug every 50 loops (~1s) */
+#define SLAM_LOOP_DELAY         (125000u)   /* ~20ms at 80MHz with volatile loop -> ~50Hz */
+#define DEBUG_PRINT_INTERVAL    (50u)       /* Print debug every 50 loops (~1s if at 50Hz) */
 #define CONTROL_DIVIDER         (2u)        /* Run PID at 100Hz (every 2nd loop) */
 
 /* ===================[Helper Functions]=================== */
@@ -191,6 +191,13 @@ static void ProcessMotorCommand(const ComStack_PacketType* pkt)
     leftSpeed = (sint16)(((uint16)pkt->Data[1] << 8u) | (uint16)pkt->Data[0]);
     rightSpeed = (sint16)(((uint16)pkt->Data[3] << 8u) | (uint16)pkt->Data[2]);
     
+    /* Debug: print received motor command */
+    PrintString("[RX-MOT] L:");
+    PrintInt32((sint32)leftSpeed);
+    PrintString(" R:");
+    PrintInt32((sint32)rightSpeed);
+    PrintString("\r\n");
+    
     /* Clamp to -100..+100 */
     if (leftSpeed > 100) leftSpeed = 100;
     if (leftSpeed < -100) leftSpeed = -100;
@@ -309,6 +316,49 @@ int main(void)
     /* ===== Main Super-Loop (50Hz base rate) ===== */
     while (1)
     {
+        /* --- RX: WASD Keyboard Control (UART0) --- */
+        if (Uart_IsRxDataAvailable(UART_MODULE_0))
+        {
+            uint8 key;
+            if (Uart_ReceiveByte(UART_MODULE_0, &key) == E_OK)
+            {
+                Robot_TwistType kbTwist = {0.0f, 0.0f, 0.0f};
+                boolean keyValid = TRUE;
+                
+                switch(key)
+                {
+                    case 'w': case 'W':
+                        kbTwist.LinearX = 0.5f; /* Example: 0.5 m/s forward */
+                        PrintString("\r\n[KB] Forward\r\n");
+                        break;
+                    case 's': case 'S':
+                        kbTwist.LinearX = -0.5f; /* 0.5 m/s backward */
+                        PrintString("\r\n[KB] Backward\r\n");
+                        break;
+                    case 'a': case 'A':
+                        kbTwist.AngularZ = 1.0f; /* 1.0 rad/s spin left */
+                        PrintString("\r\n[KB] Left\r\n");
+                        break;
+                    case 'd': case 'D':
+                        kbTwist.AngularZ = -1.0f; /* 1.0 rad/s spin right */
+                        PrintString("\r\n[KB] Right\r\n");
+                        break;
+                    case ' ': case 'x': case 'X':
+                        /* Stop - twist is already 0.0 */
+                        PrintString("\r\n[KB] Stopped\r\n");
+                        break;
+                    default:
+                        keyValid = FALSE;
+                        break;
+                }
+                
+                if (keyValid)
+                {
+                    (void)Robot_SetVelocity(&kbTwist);
+                }
+            }
+        }
+
         /* --- RX: Process incoming bytes from RPi --- */
         ComStack_MainFunction();
         
@@ -371,20 +421,38 @@ int main(void)
         {
             (void)Robot_GetOdometry(&odometry);
             
+            Motor_DataType mLeft, mRight;
+            (void)Motor_GetData(MOTOR_CHANNEL_LEFT, &mLeft);
+            (void)Motor_GetData(MOTOR_CHANNEL_RIGHT, &mRight);
+
             PrintString("[SLAM] TX:");
             PrintInt32((sint32)txCount);
             PrintString(" RX:");
             PrintInt32((sint32)rxCmdCount);
-            PrintString(" | L:");
+            PrintString(" | L_Enc:");
             PrintInt32((sint32)encoderLeft.PositionCounts);
-            PrintString(" R:");
+            PrintString(" R_Enc:");
             PrintInt32((sint32)encoderRight.PositionCounts);
-            PrintString(" | State:");
-            PrintInt32((sint32)Robot_GetState());
-            PrintString(" OdomX:");
-            PrintInt32((sint32)(odometry.X * 1000.0f)); /* mm */
-            PrintString("mm");
-            PrintString("\r\n");
+            PrintString(" | L_Pwm%:");
+            PrintInt32((sint32)mLeft.SpeedPercent);
+            PrintString(" R_Pwm%:");
+            PrintInt32((sint32)mRight.SpeedPercent);
+            
+            /* Recalculate scaled integer IMU data to match what is sent to RPi */
+            sint16 ax = (sint16)(((float32)imuRaw.accel.x / 16384.0f) * 981.0f);
+            sint16 ay = (sint16)(((float32)imuRaw.accel.y / 16384.0f) * 981.0f);
+            sint16 az = (sint16)(((float32)imuRaw.accel.z / 16384.0f) * 981.0f);
+            sint16 wz = (sint16)(((float32)imuRaw.gyro.z / 131.0f) * 1.745329f);
+            
+            PrintString("\r\n       IMU[ ax:");
+            PrintInt32((sint32)ax);
+            PrintString(" ay:");
+            PrintInt32((sint32)ay);
+            PrintString(" az:");
+            PrintInt32((sint32)az);
+            PrintString(" wz:");
+            PrintInt32((sint32)wz);
+            PrintString(" ]\r\n");
         }
         
         /* --- Loop Delay (~20ms -> 50Hz) --- */

@@ -32,9 +32,9 @@ static PID_StateType Robot_PidLeft;
 static PID_StateType Robot_PidRight;
 
 static const PID_ConfigType Robot_PidConfig = {
-    .Kp = 2.0f,
-    .Ki = 0.5f,
-    .Kd = 0.05f,
+    .Kp = 100.0f,
+    .Ki = 50.0f,
+    .Kd = 0.0f,
     .SampleTimeSec = 0.01f,
     .OutMin = -100.0f,
     .OutMax = 100.0f,
@@ -71,17 +71,11 @@ static void Robot_WheelsToTwist(float32 LeftMps, float32 RightMps, float32* Line
 }
 
 /**
- * @brief Convert wheel velocity (m/s) to motor command (0-100%)
+ * @brief Convert PID output to motor command (0-100%)
  */
-static uint8 Robot_VelToMotorCmd(float32 VelMps)
+static uint8 Robot_VelToMotorCmd(float32 PidOutput)
 {
-    float32 maxWheelVel;
-    float32 percent;
-    
-    /* Max wheel velocity in m/s */
-    maxWheelVel = (ROBOT_MAX_WHEEL_RPM / 60.0f) * (2.0f * 3.14159f * ROBOT_WHEEL_RADIUS_M);
-    
-    percent = (VelMps / maxWheelVel) * 100.0f;
+    float32 percent = PidOutput;
     
     if (percent > 100.0f) percent = 100.0f;
     if (percent < -100.0f) percent = -100.0f;
@@ -330,6 +324,18 @@ void Robot_UpdateControl(void)
                       targetRightMps, Robot_WheelVel.RightMps,
                       &pidOutputRight);
     
+    /* Force instant stop and override output if target is perfectly zero */
+    if (targetLeftMps == 0.0f)
+    {
+        PID_Reset(&Robot_PidLeft);
+        pidOutputLeft = 0.0f;
+    }
+    if (targetRightMps == 0.0f)
+    {
+        PID_Reset(&Robot_PidRight);
+        pidOutputRight = 0.0f;
+    }
+    
     /* Convert to motor commands */
     leftCmd = Robot_VelToMotorCmd(pidOutputLeft);
     rightCmd = Robot_VelToMotorCmd(pidOutputRight);
@@ -337,7 +343,10 @@ void Robot_UpdateControl(void)
     leftDir = (pidOutputLeft >= 0.0f) ? MOTOR_DIRECTION_FORWARD : MOTOR_DIRECTION_REVERSE;
     rightDir = (pidOutputRight >= 0.0f) ? MOTOR_DIRECTION_FORWARD : MOTOR_DIRECTION_REVERSE;
     
-    /* Apply to motors */
+    /* Deadband kick to break static friction */
+    if (leftCmd > 0 && leftCmd < 60) leftCmd = 60;
+    if (rightCmd > 0 && rightCmd < 60) rightCmd = 60;
+    
     (void)Motor_SetDirection(MOTOR_CHANNEL_LEFT, leftDir);
     (void)Motor_SetSpeed(MOTOR_CHANNEL_LEFT, leftCmd);
     (void)Motor_SetDirection(MOTOR_CHANNEL_RIGHT, rightDir);

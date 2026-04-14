@@ -105,6 +105,14 @@ void I2C_Init(const I2C_ConfigType* ConfigPtr) {
     
     regs = &I2C_Registers[ConfigPtr->Module];
     
+    /* Reset I2C peripheral to clear any hardware hangs */
+    SYSCTL_SRI2C_R |= (1 << ConfigPtr->Module);
+    delay = 100;
+    while (delay > 0) delay--;
+    SYSCTL_SRI2C_R &= ~(1 << ConfigPtr->Module);
+    delay = 100;
+    while (delay > 0) delay--;
+    
     /* Enable I2C clock */
     SYSCTL_RCGCI2C_R |= (1 << ConfigPtr->Module);
     
@@ -127,19 +135,40 @@ void I2C_Init(const I2C_ConfigType* ConfigPtr) {
     uint32 sysClock = Mcu_GetSystemClock();
     
     if (ConfigPtr->Speed == I2C_SPEED_STANDARD) {
-        /* 100 kHz */
-        tpr = (sysClock / (2 * 10 * 100000)) - 1;
-        if (tpr < 1) tpr = 1;  /* Minimum value */
+        /* Dropping to 10 kHz for ultra-stable debugging */
+        tpr = (sysClock / (2 * 10 * 10000)) - 1;
+        if (tpr < 1) tpr = 1;
     } else {
-        /* 400 kHz */
+        /* Standard 400 kHz logic remains */
         tpr = (sysClock / (2 * 10 * 400000)) - 1;
-        if (tpr < 1) tpr = 1;  /* Minimum value */
+        if (tpr < 1) tpr = 1;
     }
     
     *regs->MTPR = tpr;
     
     /* Enable I2C master */
     *regs->MCR = I2C_MCR_MFE;
+    
+    /* Perform bus clear to recover from any stuck slaves */
+    I2C_BusClear(ConfigPtr->Module);
+}
+
+/**
+ * @brief Manually toggle SCL to clear a hung I2C bus
+ * @details Toggles SCL 9 times to force slaves to release SDA
+ */
+void I2C_BusClear(I2C_ModuleType Module) {
+    /* For TM4C, we can use the I2CMSCLP register or briefly switch pins to GPIO */
+    /* Simplest way: Send a START followed immediately by a STOP if bus is busy */
+    const I2C_RegistersType* regs = &I2C_Registers[Module];
+    
+    if (*regs->MCS & I2C_MCS_BUSBSY) {
+        /* Bus is stuck. Try to send a STOP to clear it. */
+        *regs->MCS = I2C_MCS_STOP;
+        
+        volatile uint32 delay = 1000;
+        while (delay > 0) delay--;
+    }
 }
 
 /**

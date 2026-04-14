@@ -168,27 +168,30 @@ typedef struct
 #endif
 
 /**
- * @brief IMU data structure (for transmission) — fixed-point ×100
+ * @brief IMU data structure (for transmission)
+ * @details Values are scaled to avoid floating point overhead
+ *          Acceleration: m/s^2 * 100 
+ *          Gyroscope: rad/s * 100
  */
 typedef struct
 {
-    sint16      AccelX;             /**< Acceleration X (m/s² × 100) */
-    sint16      AccelY;             /**< Acceleration Y (m/s² × 100) */
-    sint16      AccelZ;             /**< Acceleration Z (m/s² × 100) */
-    sint16      GyroX;              /**< Angular rate X (rad/s × 100) */
-    sint16      GyroY;              /**< Angular rate Y (rad/s × 100) */
-    sint16      GyroZ;              /**< Angular rate Z (rad/s × 100) */
+    sint16      AccelX;             /**< Acceleration X (scaled x100) */
+    sint16      AccelY;             /**< Acceleration Y (scaled x100) */
+    sint16      AccelZ;             /**< Acceleration Z (scaled x100) */
+    sint16      GyroX;              /**< Angular rate X (scaled x100) */
+    sint16      GyroY;              /**< Angular rate Y (scaled x100) */
+    sint16      GyroZ;              /**< Angular rate Z (scaled x100) */
 } ComStack_ImuDataType;
 
 /**
- * @brief Encoder data structure (for transmission) — fixed-point velocity ×100
+ * @brief Encoder data structure (for transmission)
  */
 typedef struct
 {
     sint32      LeftTicks;          /**< Left encoder ticks */
     sint32      RightTicks;         /**< Right encoder ticks */
-    sint16      LeftVelocity;       /**< Left velocity (RPM × 100) */
-    sint16      RightVelocity;      /**< Right velocity (RPM × 100) */
+    sint16      LeftVelocity;       /**< Left velocity (RPM scaled x100) */
+    sint16      RightVelocity;      /**< Right velocity (RPM scaled x100) */
 } ComStack_EncoderDataType;
 
 /**

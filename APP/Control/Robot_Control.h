@@ -22,7 +22,7 @@
 
 /* ===================[Macros]=================== */
 /** @brief Robot physical parameters */
-#define ROBOT_WHEEL_RADIUS_M        (0.05f)     /**< Wheel radius in meters */
+#define ROBOT_WHEEL_RADIUS_M        (0.065f)    /**< Wheel radius in meters (65mm) */
 #define ROBOT_WHEEL_BASE_M          (0.30f)     /**< Distance between wheels in meters */
 #define ROBOT_ENCODER_CPR           (1440u)     /**< Encoder counts per revolution */
 

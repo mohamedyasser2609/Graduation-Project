@@ -6,7 +6,7 @@
  * This test:
  * 1. Configures GPIO PB2/PB3 directly for I2C0
  * 2. Initializes I2C0 peripheral directly
- * 3. Attempts communication with MPU-9250
+ * 3. Attempts communication with MPU-6050
  * 4. Prints detailed register states for debugging
  *
  * @author Mohamed Yasser / Debug Version
@@ -72,9 +72,9 @@
 #define UART0_LCRH_R            (*((volatile uint32_t *)0x4000C02C))
 #define UART0_CTL_R             (*((volatile uint32_t *)0x4000C030))
 
-/* MPU-9250 */
-#define MPU9250_ADDR            0x68
-#define MPU9250_WHO_AM_I        0x75
+/* MPU-6050 */
+#define MPU6050_ADDR            0x68
+#define MPU6050_WHO_AM_I        0x75
 
 /* ===================[Helper Functions]=================== */
 
@@ -388,15 +388,15 @@ int main(void) {
     UART0_SendString("\r\n\r\n");
     
     /* Try to read WHO_AM_I */
-    UART0_SendString("6. Reading MPU-9250 WHO_AM_I (0x75)...\r\n");
-    whoAmI = I2C0_ReadRegister(MPU9250_ADDR, MPU9250_WHO_AM_I);
+    UART0_SendString("6. Reading MPU-6050 WHO_AM_I (0x75)...\r\n");
+    whoAmI = I2C0_ReadRegister(MPU6050_ADDR, MPU6050_WHO_AM_I);
     
     UART0_SendString("\r\nResult: WHO_AM_I = 0x");
     UART0_SendHex8(whoAmI);
     UART0_SendString("\r\n");
     
     if (whoAmI == 0x71) {
-        UART0_SendString("SUCCESS! MPU-9250 detected.\r\n");
+        UART0_SendString("SUCCESS! MPU-6050 detected.\r\n");
     } else if (whoAmI == 0x73) {
         UART0_SendString("SUCCESS! MPU-9255 detected.\r\n");
     } else if (whoAmI == 0xFF) {
@@ -405,20 +405,20 @@ int main(void) {
         UART0_SendString("UNEXPECTED! Unknown device.\r\n");
     }
     
-    /* Wake up MPU-9250 (clear sleep bit in PWR_MGMT_1) */
-    UART0_SendString("\r\n7. Waking up MPU-9250...\r\n");
+    /* Wake up MPU-6050 (clear sleep bit in PWR_MGMT_1) */
+    UART0_SendString("\r\n7. Waking up MPU-6050...\r\n");
     {
         uint8_t pwrMgmt = 0x00;  /* Clear sleep bit, use internal oscillator */
-        I2C0_WriteRegister(MPU9250_ADDR, 0x6B, pwrMgmt);
+        I2C0_WriteRegister(MPU6050_ADDR, 0x6B, pwrMgmt);
         delay(500000);  /* Wait for wake up */
     }
     
     /* Configure accelerometer and gyroscope */
-    I2C0_WriteRegister(MPU9250_ADDR, 0x1C, 0x00);  /* Accel: +/- 2g */
-    I2C0_WriteRegister(MPU9250_ADDR, 0x1B, 0x00);  /* Gyro: +/- 250 dps */
+    I2C0_WriteRegister(MPU6050_ADDR, 0x1C, 0x00);  /* Accel: +/- 2g */
+    I2C0_WriteRegister(MPU6050_ADDR, 0x1B, 0x00);  /* Gyro: +/- 250 dps */
     delay(100000);
     
-    UART0_SendString("MPU-9250 configured. Reading sensor data...\r\n\r\n");
+    UART0_SendString("MPU-6050 configured. Reading sensor data...\r\n\r\n");
     
     /* Continuous reading loop */
     while (1) {
@@ -429,7 +429,7 @@ int main(void) {
         
         /* Read 14 bytes starting from ACCEL_XOUT_H (0x3B) */
         for (i = 0; i < 14; i++) {
-            data[i] = I2C0_ReadRegister(MPU9250_ADDR, 0x3B + i);
+            data[i] = I2C0_ReadRegister(MPU6050_ADDR, 0x3B + i);
         }
         
         /* Parse accelerometer data */

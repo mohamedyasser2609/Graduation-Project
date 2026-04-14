@@ -152,33 +152,7 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
         .DirectionChangeable = FALSE
     },
     
-    /* PWM Pins for Fans - Port B (PB6=Fan0, PB7=Fan1) */
-    {
-        .Port = GPIO_PORT_B,
-        .Pin = GPIO_PIN_6,
-        .Direction = GPIO_PIN_OUT,
-        .InitialLevel = GPIO_LEVEL_LOW,
-        .Mode = GPIO_MODE_ALT_FUNC,
-        .InternalResistor = GPIO_RESISTOR_OFF,
-        .DriveStrength = GPIO_DRIVE_2MA,
-        .SlewRate = GPIO_SLEW_RATE_NORMAL,
-        .IntTrigger = GPIO_INT_DISABLED,
-        .AlternateFuncNum = 4u,  /* M0PWM0 - Fan 0 PWM */
-        .DirectionChangeable = FALSE
-    },
-    {
-        .Port = GPIO_PORT_B,
-        .Pin = GPIO_PIN_7,
-        .Direction = GPIO_PIN_OUT,
-        .InitialLevel = GPIO_LEVEL_LOW,
-        .Mode = GPIO_MODE_ALT_FUNC,
-        .InternalResistor = GPIO_RESISTOR_OFF,
-        .DriveStrength = GPIO_DRIVE_2MA,
-        .SlewRate = GPIO_SLEW_RATE_NORMAL,
-        .IntTrigger = GPIO_INT_DISABLED,
-        .AlternateFuncNum = 4u,  /* M0PWM1 - Fan 1 PWM */
-        .DirectionChangeable = FALSE
-    },
+    /* PA6/PA7 are used for Motors, PB6/PB7 are used for QEI0. Removing Fan PWM to avoid conflict. */
     
     /* Motor PWM Pins - Port A (PA6=M0PWM0 Left Motor, PA7=M0PWM1 Right Motor) */
     {
@@ -334,33 +308,33 @@ static const Gpio_PinConfigType Gpio_PinConfigurations[] = {
         .DirectionChangeable = TRUE  /* Direction can be changed at runtime */
     },
     
-    /* Motor PWM Pins - PB6 (Left) & PB7 (Right) -> PWM Module 0 */
-        {
-            .Port = GPIO_PORT_B,
-            .Pin = GPIO_PIN_6,
-            .Direction = GPIO_PIN_OUT,
-            .InitialLevel = GPIO_LEVEL_LOW,
-            .Mode = GPIO_MODE_ALT_FUNC,
-            .InternalResistor = GPIO_RESISTOR_OFF,
-            .DriveStrength = GPIO_DRIVE_8MA,
-            .SlewRate = GPIO_SLEW_RATE_NORMAL,
-            .IntTrigger = GPIO_INT_DISABLED,
-            .AlternateFuncNum = 4u, /* CRITICAL: AF 4 connects PB6 to M0PWM0 */
-            .DirectionChangeable = FALSE
-        },
-        {
-            .Port = GPIO_PORT_B,
-            .Pin = GPIO_PIN_7,
-            .Direction = GPIO_PIN_OUT,
-            .InitialLevel = GPIO_LEVEL_LOW,
-            .Mode = GPIO_MODE_ALT_FUNC,
-            .InternalResistor = GPIO_RESISTOR_OFF,
-            .DriveStrength = GPIO_DRIVE_8MA,
-            .SlewRate = GPIO_SLEW_RATE_NORMAL,
-            .IntTrigger = GPIO_INT_DISABLED,
-            .AlternateFuncNum = 4u, /* CRITICAL: AF 4 connects PB7 to M0PWM1 */
-            .DirectionChangeable = FALSE
-        },
+    /* QEI0 Pins - Port B alternate mapping (PB6=PhA, PB7=PhB) */
+    {
+        .Port = GPIO_PORT_B,
+        .Pin = GPIO_PIN_6,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI0 PhA */
+        .DirectionChangeable = FALSE
+    },
+    {
+        .Port = GPIO_PORT_B,
+        .Pin = GPIO_PIN_7,
+        .Direction = GPIO_PIN_IN,
+        .InitialLevel = GPIO_LEVEL_LOW,
+        .Mode = GPIO_MODE_ALT_FUNC,
+        .InternalResistor = GPIO_RESISTOR_PULL_UP,
+        .DriveStrength = GPIO_DRIVE_2MA,
+        .SlewRate = GPIO_SLEW_RATE_NORMAL,
+        .IntTrigger = GPIO_INT_DISABLED,
+        .AlternateFuncNum = 6u,  /* QEI0 PhB */
+        .DirectionChangeable = FALSE
+    },
 
         {
                 .Port = GPIO_PORT_E,

@@ -335,9 +335,18 @@ void Pwm_SetDutyCycle(Pwm_ChannelType ChannelNumber, Pwm_DutyCycleType DutyCycle
     /* DutyCycle: 0x0000 = 0%, 0x8000 = 100% */
     compareValue = (uint32)((DutyCycle * period) / 0x8000UL);
     
-    /* Limit to period */
-    if (compareValue > period) {
-        compareValue = period;
+    /* Hardware Bug Fix: On TM4C, if compareValue == period, the CMPA match   *
+     * occurs directly on LOAD but fails to trigger the 'Down' action. This     *
+     * causes output to stay LOW permanently (0%). We clamp to period - 1 to    *
+     * yield 99.9% duty cycle, ensuring it stays HIGH almost fully. */
+    if (compareValue >= period) {
+        compareValue = period - 1;
+    }
+    
+    /* True 0% duty cycle: If DutyCycle evaluates exactly to 0, we can safely   *
+     * use period + 1. Since it never matches, the output stays LOW forever. */
+    if (DutyCycle == 0u) {
+        compareValue = period + 1;
     }
     
     /* Update compare register */

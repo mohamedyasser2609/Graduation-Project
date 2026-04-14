@@ -85,7 +85,7 @@ typedef struct
 #define PROTO_TERMINATOR    '\n'    /**< Packet terminator */
 
 /* ===================[Conversion Constants]=================== */
-#define WHEEL_RADIUS_M          (0.05f)     /**< Wheel radius in meters */
+#define WHEEL_RADIUS_M          (0.065f)    /**< Wheel radius in meters (65mm) */
 #define RAD_TO_RPM              (9.5493f)   /**< rad/s to RPM = 60/(2*PI) */
 
 #endif /* APP_SHAREDTYPES_H */
