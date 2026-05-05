@@ -21,9 +21,7 @@ const IMU_ConfigType IMU_Config_Default = {
     .I2C_Module = I2C_MODULE_0,
     .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
     .GyroRange = IMU_DEFAULT_GYRO_RANGE,
-    .AccelRange = IMU_DEFAULT_ACCEL_RANGE,
-    .MagMode = IMU_DEFAULT_MAG_MODE,
-    .MagResolution = IMU_DEFAULT_MAG_RESOLUTION
+    .AccelRange = IMU_DEFAULT_ACCEL_RANGE
 };
 
 /**
@@ -34,9 +32,7 @@ const IMU_ConfigType IMU_Config_HighSensitivity = {
     .I2C_Module = I2C_MODULE_0,
     .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
     .GyroRange = MPU9250_GYRO_FS_250DPS,
-    .AccelRange = MPU9250_ACCEL_FS_2G,
-    .MagMode = AK8963_MODE_CONT_100HZ,
-    .MagResolution = AK8963_BIT_16
+    .AccelRange = MPU9250_ACCEL_FS_2G
 };
 
 /**
@@ -47,9 +43,7 @@ const IMU_ConfigType IMU_Config_HighRange = {
     .I2C_Module = I2C_MODULE_0,
     .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
     .GyroRange = MPU9250_GYRO_FS_2000DPS,
-    .AccelRange = MPU9250_ACCEL_FS_16G,
-    .MagMode = AK8963_MODE_CONT_100HZ,
-    .MagResolution = AK8963_BIT_16
+    .AccelRange = MPU9250_ACCEL_FS_16G
 };
 
 /**
@@ -60,9 +54,7 @@ const IMU_ConfigType IMU_Config_Balanced = {
     .I2C_Module = I2C_MODULE_0,
     .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
     .GyroRange = MPU9250_GYRO_FS_500DPS,
-    .AccelRange = MPU9250_ACCEL_FS_4G,
-    .MagMode = AK8963_MODE_CONT_100HZ,
-    .MagResolution = AK8963_BIT_16
+    .AccelRange = MPU9250_ACCEL_FS_4G
 };
 
 /**
@@ -73,9 +65,7 @@ const IMU_ConfigType IMU_Config_Drone = {
     .I2C_Module = I2C_MODULE_0,
     .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
     .GyroRange = MPU9250_GYRO_FS_1000DPS,
-    .AccelRange = MPU9250_ACCEL_FS_8G,
-    .MagMode = AK8963_MODE_CONT_100HZ,
-    .MagResolution = AK8963_BIT_16
+    .AccelRange = MPU9250_ACCEL_FS_8G
 };
 
 /**
@@ -86,9 +76,7 @@ const IMU_ConfigType IMU_Config_LowPower = {
     .I2C_Module = I2C_MODULE_0,
     .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
     .GyroRange = MPU9250_GYRO_FS_250DPS,
-    .AccelRange = MPU9250_ACCEL_FS_2G,
-    .MagMode = AK8963_MODE_CONT_8HZ,
-    .MagResolution = AK8963_BIT_14
+    .AccelRange = MPU9250_ACCEL_FS_2G
 };
 
 /**
@@ -98,9 +86,7 @@ const IMU_ConfigType IMU_Config_I2C1 = {
     .I2C_Module = I2C_MODULE_1,
     .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
     .GyroRange = IMU_DEFAULT_GYRO_RANGE,
-    .AccelRange = IMU_DEFAULT_ACCEL_RANGE,
-    .MagMode = IMU_DEFAULT_MAG_MODE,
-    .MagResolution = IMU_DEFAULT_MAG_RESOLUTION
+    .AccelRange = IMU_DEFAULT_ACCEL_RANGE
 };
 
 /**
@@ -110,9 +96,7 @@ const IMU_ConfigType IMU_Config_AltAddress = {
     .I2C_Module = I2C_MODULE_0,
     .DeviceAddress = MPU9250_I2C_ADDR_AD0_HIGH,
     .GyroRange = IMU_DEFAULT_GYRO_RANGE,
-    .AccelRange = IMU_DEFAULT_ACCEL_RANGE,
-    .MagMode = IMU_DEFAULT_MAG_MODE,
-    .MagResolution = IMU_DEFAULT_MAG_RESOLUTION
+    .AccelRange = IMU_DEFAULT_ACCEL_RANGE
 };
 
 /**

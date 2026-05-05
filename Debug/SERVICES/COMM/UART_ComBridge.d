@@ -1,6 +1,0 @@
-# FIXED
-
-SERVICES/COMM/UART_ComBridge.obj: ../SERVICES/COMM/UART_ComBridge.c
-
-../SERVICES/COMM/UART_ComBridge.c:
-

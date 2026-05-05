@@ -44,8 +44,15 @@ static uint32 Qei_GetBaseAddress(Qei_ModuleType module)
 
 static void Qei_EnableClock(Qei_ModuleType module)
 {
+    /* Enable QEI peripheral clock */
     SYSCTL_RCGCQEI_R |= QEI_CLOCK_BIT(module);
-    (void)SYSCTL_RCGCQEI_R; /* Dummy read to ensure clock is enabled */
+    
+    /* Wait for peripheral to be ready (at least 3 clock cycles) */
+    /* The PRQEI register provides a guaranteed way to wait for stabilization */
+    while ((SYSCTL_PRQEI_R & QEI_CLOCK_BIT(module)) == 0)
+    {
+        /* Wait */
+    }
 }
 
 static void Qei_DisableModule(uint32 baseAddr)

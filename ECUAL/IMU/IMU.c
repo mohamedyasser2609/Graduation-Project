@@ -25,7 +25,7 @@ static IMU_AxisDataType IMU_GyroOffset = {0, 0, 0};
 /* Scale factors */
 static float32 IMU_AccelScale = 1.0f;
 static float32 IMU_GyroScale = 1.0f;
-static float32 IMU_MagScale = 1.0f;
+
 
 /* ===================[Private Function Prototypes]=================== */
 
@@ -33,7 +33,7 @@ static Std_ReturnType IMU_WriteRegister(uint8 RegAddr, uint8 Data);
 static Std_ReturnType IMU_ReadRegister(uint8 RegAddr, uint8* Data);
 static Std_ReturnType IMU_ReadRegisters(uint8 RegAddr, uint8* Data, uint8 Length);
 static void IMU_CalculateScaleFactors(void);
-static Std_ReturnType IMU_ConfigureMagnetometer(void);
+
 
 /* ===================[Function Implementations]=================== */
 
@@ -57,7 +57,7 @@ Std_ReturnType IMU_Init(const IMU_ConfigType* ConfigPtr) {
         return E_NOT_OK;
     }
     
-    if (whoAmI != MPU9250_DEVICE_ID && whoAmI != MPU9255_DEVICE_ID) {
+    if (whoAmI != MPU9250_DEVICE_ID) {
         IMU_Status = IMU_STATUS_DEVICE_NOT_FOUND;
         return E_NOT_OK;
     }
@@ -83,20 +83,7 @@ Std_ReturnType IMU_Init(const IMU_ConfigType* ConfigPtr) {
     /* Configure DLPF */
     IMU_WriteRegister(MPU9250_CONFIG, 0x03);  /* 41Hz bandwidth */
     
-    /* Enable I2C master mode for magnetometer */
-    IMU_WriteRegister(MPU9250_USER_CTRL, 0x20);
-    IMU_WriteRegister(MPU9250_I2C_MST_CTRL, 0x0D);  /* 400kHz I2C */
-    
-    /* Enable bypass for direct magnetometer access */
-    IMU_WriteRegister(MPU9250_INT_PIN_CFG, 0x02);
-    for(i = 0; i < 10000; i++);
-    
-    /* Configure magnetometer */
-    if (IMU_ConfigureMagnetometer() != E_OK) {
-        IMU_Status = IMU_STATUS_ERROR;
-        return E_NOT_OK;
-    }
-    
+
     /* Calculate scale factors */
     IMU_CalculateScaleFactors();
     
@@ -125,12 +112,24 @@ Std_ReturnType IMU_DeInit(void) {
 Std_ReturnType IMU_ReadRawData(IMU_SensorDataType* Data) {
     uint8 buffer[14];
     
-    if (!IMU_Initialized || Data == NULL_PTR) {
+    if (Data == NULL_PTR) {
+        return E_NOT_OK;
+    }
+
+    if (!IMU_Initialized) {
+        /* Clear data so stale values aren't broadcast on failure */
+        Data->accel.x = 0; Data->accel.y = 0; Data->accel.z = 0;
+        Data->gyro.x = 0; Data->gyro.y = 0; Data->gyro.z = 0;
+        Data->temperature = 0;
         return E_NOT_OK;
     }
     
     /* Read all sensor data in one burst */
     if (IMU_ReadRegisters(MPU9250_ACCEL_XOUT_H, buffer, 14) != E_OK) {
+        /* Clear data so stale values aren't broadcast on failure */
+        Data->accel.x = 0; Data->accel.y = 0; Data->accel.z = 0;
+        Data->gyro.x = 0; Data->gyro.y = 0; Data->gyro.z = 0;
+        Data->temperature = 0;
         return E_NOT_OK;
     }
     
@@ -146,9 +145,6 @@ Std_ReturnType IMU_ReadRawData(IMU_SensorDataType* Data) {
     Data->gyro.x = (sint16)((buffer[8] << 8) | buffer[9]);
     Data->gyro.y = (sint16)((buffer[10] << 8) | buffer[11]);
     Data->gyro.z = (sint16)((buffer[12] << 8) | buffer[13]);
-    
-    /* Read magnetometer data */
-    IMU_ReadMag(&Data->mag);
     
     return E_OK;
 }
@@ -178,10 +174,7 @@ Std_ReturnType IMU_ReadCalibratedData(IMU_CalibratedDataType* Data) {
     Data->gyro.y = (rawData.gyro.y - IMU_GyroOffset.y) * IMU_GyroScale;
     Data->gyro.z = (rawData.gyro.z - IMU_GyroOffset.z) * IMU_GyroScale;
     
-    /* Apply scaling to magnetometer */
-    Data->mag.x = rawData.mag.x * IMU_MagScale;
-    Data->mag.y = rawData.mag.y * IMU_MagScale;
-    Data->mag.z = rawData.mag.z * IMU_MagScale;
+
     
     /* Convert temperature to Celsius */
     Data->temperature = (rawData.temperature / 333.87f) + 21.0f;
@@ -231,43 +224,6 @@ Std_ReturnType IMU_ReadGyro(IMU_AxisDataType* Data) {
     return E_OK;
 }
 
-/**
- * @brief Read magnetometer only
- */
-Std_ReturnType IMU_ReadMag(IMU_AxisDataType* Data) {
-    uint8 buffer[7];
-    uint8 status;
-    
-    if (!IMU_Initialized || Data == NULL_PTR) {
-        return E_NOT_OK;
-    }
-    
-    /* Read magnetometer via I2C bypass */
-    if (I2C_ReadRegister(IMU_Config.I2C_Module, AK8963_I2C_ADDR, AK8963_ST1, &status, 1) != E_OK) {
-        return E_NOT_OK;
-    }
-    
-    /* Check if data is ready */
-    if ((status & 0x01) == 0) {
-        return E_NOT_OK;
-    }
-    
-    /* Read magnetometer data */
-    if (I2C_ReadRegister(IMU_Config.I2C_Module, AK8963_I2C_ADDR, AK8963_XOUT_L, buffer, 7) != E_OK) {
-        return E_NOT_OK;
-    }
-    
-    /* Check overflow */
-    if (buffer[6] & 0x08) {
-        return E_NOT_OK;
-    }
-    
-    Data->x = (sint16)((buffer[1] << 8) | buffer[0]);
-    Data->y = (sint16)((buffer[3] << 8) | buffer[2]);
-    Data->z = (sint16)((buffer[5] << 8) | buffer[4]);
-    
-    return E_OK;
-}
 
 /**
  * @brief Read temperature
@@ -348,7 +304,7 @@ Std_ReturnType IMU_SelfTest(void) {
         return E_NOT_OK;
     }
     
-    if (whoAmI != MPU9250_DEVICE_ID && whoAmI != MPU9255_DEVICE_ID) {
+    if (whoAmI != MPU9250_DEVICE_ID) {
         return E_NOT_OK;
     }
     
@@ -390,7 +346,7 @@ boolean IMU_IsDevicePresent(void) {
         return FALSE;
     }
     
-    return (whoAmI == MPU9250_DEVICE_ID || whoAmI == MPU9255_DEVICE_ID);
+    return (whoAmI == MPU9250_DEVICE_ID);
 }
 
 /* ===================[Private Functions]=================== */
@@ -458,39 +414,6 @@ static void IMU_CalculateScaleFactors(void) {
             break;
     }
     
-    /* Magnetometer scale factor (µT) */
-    if (IMU_Config.MagResolution == AK8963_BIT_16) {
-        IMU_MagScale = 4912.0f / 32760.0f;  /* 16-bit: 0.15 µT/LSB */
-    } else {
-        IMU_MagScale = 4912.0f / 8190.0f;   /* 14-bit: 0.6 µT/LSB */
-    }
+
 }
 
-/**
- * @brief Configure magnetometer
- */
-static Std_ReturnType IMU_ConfigureMagnetometer(void) {
-    uint8 data;
-    volatile uint32 i;
-    
-    /* Check magnetometer ID */
-    if (I2C_ReadRegister(IMU_Config.I2C_Module, AK8963_I2C_ADDR, AK8963_WHO_AM_I, &data, 1) != E_OK) {
-        return E_NOT_OK;
-    }
-    
-    if (data != AK8963_DEVICE_ID) {
-        return E_NOT_OK;
-    }
-    
-    /* Power down magnetometer */
-    data = AK8963_MODE_POWER_DOWN;
-    I2C_WriteRegister(IMU_Config.I2C_Module, AK8963_I2C_ADDR, AK8963_CNTL1, &data, 1);
-    for(i = 0; i < 10000; i++);
-    
-    /* Set magnetometer mode and resolution */
-    data = IMU_Config.MagMode | IMU_Config.MagResolution;
-    I2C_WriteRegister(IMU_Config.I2C_Module, AK8963_I2C_ADDR, AK8963_CNTL1, &data, 1);
-    for(i = 0; i < 10000; i++);
-    
-    return E_OK;
-}

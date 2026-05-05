@@ -25,10 +25,6 @@
 #define MPU9250_I2C_ADDR_AD0_HIGH       0x69u    /**< AD0 pin connected to VDD */
 #define MPU9250_I2C_ADDR_DEFAULT        MPU9250_I2C_ADDR_AD0_LOW
 
-/**
- * @brief AK8963 Magnetometer I2C address (internal to MPU-9250)
- */
-#define AK8963_I2C_ADDR                 0x0Cu    /**< Magnetometer address */
 
 /* ===================[MPU-9250 Register Map]=================== */
 
@@ -161,33 +157,10 @@
 #define MPU9250_ZA_OFFSET_H             0x7Du    /**< Accel offset Z high byte */
 #define MPU9250_ZA_OFFSET_L             0x7Eu    /**< Accel offset Z low byte */
 
-/* ===================[AK8963 Magnetometer Register Map]=================== */
-
-#define AK8963_WHO_AM_I                 0x00u    /**< Device ID */
-#define AK8963_INFO                     0x01u    /**< Information */
-#define AK8963_ST1                      0x02u    /**< Status 1 */
-#define AK8963_XOUT_L                   0x03u    /**< X-axis low byte */
-#define AK8963_XOUT_H                   0x04u    /**< X-axis high byte */
-#define AK8963_YOUT_L                   0x05u    /**< Y-axis low byte */
-#define AK8963_YOUT_H                   0x06u    /**< Y-axis high byte */
-#define AK8963_ZOUT_L                   0x07u    /**< Z-axis low byte */
-#define AK8963_ZOUT_H                   0x08u    /**< Z-axis high byte */
-#define AK8963_ST2                      0x09u    /**< Status 2 */
-#define AK8963_CNTL1                    0x0Au    /**< Control 1 */
-#define AK8963_CNTL2                    0x0Bu    /**< Control 2 */
-#define AK8963_ASTC                     0x0Cu    /**< Self-test */
-#define AK8963_TS1                      0x0Du    /**< Test 1 */
-#define AK8963_TS2                      0x0Eu    /**< Test 2 */
-#define AK8963_I2CDIS                   0x0Fu    /**< I2C disable */
-#define AK8963_ASAX                     0x10u    /**< X-axis sensitivity adjustment */
-#define AK8963_ASAY                     0x11u    /**< Y-axis sensitivity adjustment */
-#define AK8963_ASAZ                     0x12u    /**< Z-axis sensitivity adjustment */
 
 /* ===================[Device ID Values]=================== */
 
-#define MPU9250_DEVICE_ID               0x71u    /**< Expected WHO_AM_I value for MPU-9250 */
-#define MPU9255_DEVICE_ID               0x73u    /**< Expected WHO_AM_I value for MPU-9255 */
-#define AK8963_DEVICE_ID                0x48u    /**< Expected WHO_AM_I value for AK8963 */
+#define MPU9250_DEVICE_ID               0x70u    /**< Expected WHO_AM_I value for MPU-9250/6500 */
 
 /* ===================[Configuration Values]=================== */
 
@@ -203,22 +176,10 @@
 #define MPU9250_ACCEL_FS_8G             0x10u    /**< ±8g */
 #define MPU9250_ACCEL_FS_16G            0x18u    /**< ±16g */
 
-/* Magnetometer Mode */
-#define AK8963_MODE_POWER_DOWN          0x00u    /**< Power down */
-#define AK8963_MODE_SINGLE              0x01u    /**< Single measurement */
-#define AK8963_MODE_CONT_8HZ            0x02u    /**< Continuous 8Hz */
-#define AK8963_MODE_CONT_100HZ          0x06u    /**< Continuous 100Hz */
-#define AK8963_MODE_FUSE_ROM            0x0Fu    /**< Fuse ROM access */
-
-/* Magnetometer Resolution */
-#define AK8963_BIT_14                   0x00u    /**< 14-bit output */
-#define AK8963_BIT_16                   0x10u    /**< 16-bit output */
 
 /* ===================[Default Configuration]=================== */
 
 #define IMU_DEFAULT_GYRO_RANGE          MPU9250_GYRO_FS_250DPS
 #define IMU_DEFAULT_ACCEL_RANGE         MPU9250_ACCEL_FS_2G
-#define IMU_DEFAULT_MAG_MODE            AK8963_MODE_CONT_100HZ
-#define IMU_DEFAULT_MAG_RESOLUTION      AK8963_BIT_16
 
 #endif /* ECUAL_IMU_IMU_CFG_H_ */

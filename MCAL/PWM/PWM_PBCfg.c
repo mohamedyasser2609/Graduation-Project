@@ -39,6 +39,8 @@
 #define PWM_CHANNEL_GREEN       (2u)    /* Green LED PWM channel */
 #define PWM_CHANNEL_MOTOR_LEFT  (3u)    /* Left motor PWM channel */
 #define PWM_CHANNEL_MOTOR_RIGHT (4u)    /* Right motor PWM channel */
+#define PWM_CHANNEL_FAN_MAIN    (5u)    /* Fan 0 PWM channel */
+#define PWM_CHANNEL_FAN_EXHAUST (6u)    /* Fan 1 PWM channel */
 
 /* ===================[PWM Configuration Array]=================== */
 
@@ -82,10 +84,10 @@ static const Pwm_ConfigChannelType Pwm_Channels[] = {
         .DefaultDutyCycle = 0x0000,
         .NotificationPtr = NULL_PTR
     },
-    {   /* Left Motor - 20 kHz for motor control */
+    {   /* Left Motor - PA6 (M1PWM2) */
         .Channel = PWM_CHANNEL_MOTOR_LEFT,
-        .Module = PWM_MODULE_0,
-        .Generator = PWM_GEN_0,
+        .Module = PWM_MODULE_1,
+        .Generator = PWM_GEN_1,
         .Output = PWM_OUT_A,
         .ChannelClass = PWM_FIXED_PERIOD,
         .Polarity = PWM_HIGH_POLARITY,
@@ -94,8 +96,32 @@ static const Pwm_ConfigChannelType Pwm_Channels[] = {
         .DefaultDutyCycle = 0x0000,    /* 0% - motor stopped */
         .NotificationPtr = NULL_PTR
     },
-    {   /* Right Motor - 20 kHz for motor control */
+    {   /* Right Motor - PA7 (M1PWM3) */
         .Channel = PWM_CHANNEL_MOTOR_RIGHT,
+        .Module = PWM_MODULE_1,
+        .Generator = PWM_GEN_1,
+        .Output = PWM_OUT_B,
+        .ChannelClass = PWM_FIXED_PERIOD,
+        .Polarity = PWM_HIGH_POLARITY,
+        .IdleState = PWM_IDLE_LOW,
+        .DefaultPeriod = 400u,         /* 8 MHz / 20 kHz = 400 ticks */
+        .DefaultDutyCycle = 0x0000,     /* 0% - motor stopped */
+        .NotificationPtr = NULL_PTR
+    },
+    {   /* Fan 0 Main - PB6 (M0PWM0) */
+        .Channel = PWM_CHANNEL_FAN_MAIN,
+        .Module = PWM_MODULE_0,
+        .Generator = PWM_GEN_0,
+        .Output = PWM_OUT_A,
+        .ChannelClass = PWM_FIXED_PERIOD,
+        .Polarity = PWM_HIGH_POLARITY,
+        .IdleState = PWM_IDLE_LOW,
+        .DefaultPeriod = 400u,         /* 8 MHz / 20 kHz = 400 ticks */
+        .DefaultDutyCycle = 0x0000,
+        .NotificationPtr = NULL_PTR
+    },
+    {   /* Fan 1 Exhaust - PB7 (M0PWM1) */
+        .Channel = PWM_CHANNEL_FAN_EXHAUST,
         .Module = PWM_MODULE_0,
         .Generator = PWM_GEN_0,
         .Output = PWM_OUT_B,
@@ -103,7 +129,7 @@ static const Pwm_ConfigChannelType Pwm_Channels[] = {
         .Polarity = PWM_HIGH_POLARITY,
         .IdleState = PWM_IDLE_LOW,
         .DefaultPeriod = 400u,         /* 8 MHz / 20 kHz = 400 ticks */
-        .DefaultDutyCycle = 0x0000,     /* 0% - motor stopped */
+        .DefaultDutyCycle = 0x0000,
         .NotificationPtr = NULL_PTR
     }
 };
@@ -114,5 +140,5 @@ static const Pwm_ConfigChannelType Pwm_Channels[] = {
  */
 const Pwm_ConfigType Pwm_Configuration = {
     Pwm_Channels,
-    5u  /* Updated to include 2 motor channels */
+    7u  /* Updated to include 2 motor and 2 fan channels */
 };

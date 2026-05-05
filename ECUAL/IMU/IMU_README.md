@@ -202,7 +202,7 @@ Temperature: 24.50 °C
 **WHO_AM_I values:**
 - **0x71** = MPU-9250 ✅
 - **0x73** = MPU-9255 ✅
-- **0x68** = MPU-6050 (no magnetometer)
+- **0x68** = MPU-9250 (no magnetometer)
 - **Other** = Wrong device or communication error
 
 ### **Problem: All readings are zero**
@@ -345,7 +345,7 @@ angle = alpha * (angle + gyroX_dps * dt) + (1 - alpha) * accel_angle;
 | TEMP_OUT_H | 0x41 | Temperature high byte |
 | GYRO_XOUT_H | 0x43 | Gyro X high byte |
 
-**Full datasheet:** [MPU-9250 Product Specification](https://invensense.tdk.com/products/motion-tracking/9-axis/mpu-9250/)
+**Full datasheet:** [MPU-9250 Product Specification](https://invensense.tdk.com/products/motion-tracking/9-axis/MPU-9250/)
 
 ---
 

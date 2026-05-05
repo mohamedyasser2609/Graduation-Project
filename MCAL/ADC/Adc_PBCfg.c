@@ -1,7 +1,7 @@
 #include "Adc.h"
 
 static const Adc_ChannelType Adc_Group0_Channels[] = { ADC_CHANNEL_AIN0 };
-static const Adc_ChannelType Adc_Group1_Channels[] = { ADC_CHANNEL_TEMP };
+static const Adc_ChannelType Adc_Group1_Channels[] = { ADC_CHANNEL_AIN1 };
 
 static const Adc_GroupConfigType Adc_Groups[ADC_CONFIGURED_GROUPS] = {
     {

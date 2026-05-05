@@ -41,7 +41,7 @@ typedef struct {
 typedef struct {
     IMU_AxisDataType accel;    /**< Accelerometer data (raw) */
     IMU_AxisDataType gyro;     /**< Gyroscope data (raw) */
-    IMU_AxisDataType mag;      /**< Magnetometer data (raw) */
+
     sint16 temperature;        /**< Temperature (raw) */
 } IMU_SensorDataType;
 
@@ -60,7 +60,7 @@ typedef struct {
 typedef struct {
     IMU_AxisDataFloatType accel;    /**< Accelerometer (g) */
     IMU_AxisDataFloatType gyro;     /**< Gyroscope (°/s) */
-    IMU_AxisDataFloatType mag;      /**< Magnetometer (µT) */
+
     float32 temperature;            /**< Temperature (°C) */
 } IMU_CalibratedDataType;
 
@@ -72,8 +72,6 @@ typedef struct {
     uint8 DeviceAddress;                /**< MPU-9250 I2C address */
     uint8 GyroRange;                    /**< Gyroscope range */
     uint8 AccelRange;                   /**< Accelerometer range */
-    uint8 MagMode;                      /**< Magnetometer mode */
-    uint8 MagResolution;                /**< Magnetometer resolution */
 } IMU_ConfigType;
 
 /**
@@ -130,12 +128,7 @@ Std_ReturnType IMU_ReadAccel(IMU_AxisDataType* Data);
  */
 Std_ReturnType IMU_ReadGyro(IMU_AxisDataType* Data);
 
-/**
- * @brief Read magnetometer data only
- * @param Data Pointer to store magnetometer data
- * @return E_OK if successful, E_NOT_OK otherwise
- */
-Std_ReturnType IMU_ReadMag(IMU_AxisDataType* Data);
+
 
 /**
  * @brief Read temperature

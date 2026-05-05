@@ -25,8 +25,8 @@
 /* configCPU_CLOCK_HZ must be set to the frequency of the clock that drives 
  * the peripheral used to generate the kernels periodic tick interrupt.
  * This is very often, but not always, equal to the main system clock frequency.
- * Default frequency in Tiva-C Micro-controllers is 16Mhz */
-#define configCPU_CLOCK_HZ                    (( unsigned long )16000000)
+ * TM4C123GH6PM running at 80MHz using PLL */
+#define configCPU_CLOCK_HZ                    (( unsigned long )80000000)
 
 /* configTICK_RATE_HZ sets frequency of the tick interrupt in Hz, so
  * in our case Tick time will be 10ms */
@@ -56,8 +56,17 @@
 /* Sets the total size of the FreeRTOS heap, in bytes, when heap_1.c, heap_2.c
  * or heap_4.c are included in the build. This value is defaulted to 4096 bytes but
  * it must be tailored to each application. Note the heap will appear in the .bss
- * section. */
-#define configTOTAL_HEAP_SIZE                 ((size_t)(4096))
+ * section. Increased for robot controller application with multiple tasks. */
+#define configTOTAL_HEAP_SIZE                 ((size_t)(16384))
+
+/* Support for dynamic allocation (required for mutexes and queues) */
+#define configSUPPORT_DYNAMIC_ALLOCATION      1
+
+/* Mutex support (required for ResourceMap encoder access) */
+#define configUSE_MUTEXES                     1
+
+/* Queue support */
+#define configUSE_QUEUE_SETS                  0
 
 /******************************************************************************/
 /* Hook and callback function related definitions. ****************************/
@@ -69,6 +78,8 @@
  * for any set to 1. */
 #define configUSE_IDLE_HOOK                   0
 #define configUSE_TICK_HOOK                   0
+#define configUSE_MALLOC_FAILED_HOOK          1
+#define configCHECK_FOR_STACK_OVERFLOW        2
 
 /******************************************************************************/
 /* ARM Cortex-M Specific Definitions. *****************************************/
@@ -101,5 +112,9 @@ PRIORITY THAN THIS! (higher priorities are lower numeric values. */
 
 /* Normal assert() semantics without relying on the provision of an assert.h header file. */
 #define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ;; ); }
+
+/* API Include Configurations */
+#define INCLUDE_xTaskDelayUntil               1
+#define INCLUDE_vTaskDelay                    1
 
 #endif /* FREERTOS_CONFIG_H */
