@@ -14,8 +14,8 @@
 /* ===================[Encoder Configuration]=================== */
 /**
  * @note Velocity Timer Calculation:
- *       QEI VelocityTimerLoad = 160000 @ 80 MHz -> 2000 us window.
- *       QEI speed register reports counts per 2000 us.
+ *       QEI VelocityTimerLoad = 4000000 @ 80 MHz -> 50000 us (50ms) window.
+ *       QEI speed register reports counts per 50 ms.
  *       Driver scales to counts/second and applies EMA filtering.
  */
 const Encoder_ChannelConfigType Encoder_ChannelConfigs[ENCODER_MAX_CHANNELS] = {
@@ -26,13 +26,13 @@ const Encoder_ChannelConfigType Encoder_ChannelConfigs[ENCODER_MAX_CHANNELS] = {
         .QeiConfigPtr = &Qei_ChannelConfigs[0],
         .PulsesPerRevolution = 245u,
         .QuadratureCountsPerRev = 980u,
-        .VelocityTimerPeriodUs = 2000u,
+        .VelocityTimerPeriodUs = 50000u,
         .MaxPosition = 0xFFFFFFFFu,
         .ReverseDirection = FALSE,
         .EnableVelocityFilter = TRUE,
         .FilterCfg = {
             .DeadbandCountsPerSec = 30u,
-            .SpikeThresholdCountsPerSec = 800u,
+            .SpikeThresholdCountsPerSec = 10000u,
             .Alpha = 200u,                /* ~78% new, 22% old */
             .DefaultAlpha = 128u
         }
@@ -44,13 +44,13 @@ const Encoder_ChannelConfigType Encoder_ChannelConfigs[ENCODER_MAX_CHANNELS] = {
         .QeiConfigPtr = &Qei_ChannelConfigs[1],
         .PulsesPerRevolution = 245u,
         .QuadratureCountsPerRev = 980u,
-        .VelocityTimerPeriodUs = 2000u,
+        .VelocityTimerPeriodUs = 50000u,
         .MaxPosition = 0xFFFFFFFFu,
         .ReverseDirection = FALSE,        /* Toggled: new board wiring */
         .EnableVelocityFilter = TRUE,
         .FilterCfg = {
             .DeadbandCountsPerSec = 30u,
-            .SpikeThresholdCountsPerSec = 800u,
+            .SpikeThresholdCountsPerSec = 10000u,
             .Alpha = 200u,
             .DefaultAlpha = 128u
         }

@@ -153,7 +153,29 @@ void Diag_Init(const Diag_ConfigType* ConfigPtr)
     
     /* Log startup event */
     Diag_LogEvent(DIAG_SRC_SYSTEM, 0x0001u, DIAG_SEVERITY_INFO, NULL_PTR);
+    
+    /* Debug: Print internal pointer address */
+    {
+        volatile uint32* dr = (volatile uint32*)0x4000C000;
+        volatile uint32* fr = (volatile uint32*)0x4000C018;
+        const char* msg = "[DIAG] ConfigPtr initialized at: 0x";
+        int i;
+        while(*msg) { 
+            while((*fr) & 0x20);
+            *dr = *msg++; 
+        }
+        uint32 ptrVal = (uint32)Diag_ConfigPtr;
+        for(i=7; i>=0; i--) {
+            uint32 nibble = (ptrVal >> (i*4)) & 0xF;
+            while((*fr) & 0x20);
+            *dr = (nibble < 10) ? (nibble + '0') : (nibble - 10 + 'A');
+        }
+        while((*fr) & 0x20); *dr = '\r'; 
+        while((*fr) & 0x20); *dr = '\n';
+    }
 }
+
+
 
 /**
  * @brief De-initialize the Diagnostics service
@@ -441,15 +463,23 @@ uint8 Diag_GetRecentEvents(Diag_EventType* EventArray, uint8 MaxCount)
  */
 void Diag_DebugPrint(const char* Message)
 {
-    if (Diag_ModuleStatus == DIAG_STATUS_UNINIT)
+    if ((Diag_ConfigPtr == NULL_PTR) || (Diag_ModuleStatus == DIAG_STATUS_UNINIT))
     {
         return;
     }
     
-    if ((Diag_ConfigPtr == NULL_PTR) || (!Diag_ConfigPtr->DebugEnabled))
+    /* Sanity check on pointer: must be in Flash (0-256KB) or RAM (0x20000000-0x20008000) */
+    if (!(((uint32)Diag_ConfigPtr < 0x00040000u) || 
+          (((uint32)Diag_ConfigPtr >= 0x20000000u) && ((uint32)Diag_ConfigPtr < 0x20008000u))))
     {
         return;
     }
+
+    if (!Diag_ConfigPtr->DebugEnabled)
+    {
+        return;
+    }
+
     
     if (Message != NULL_PTR)
     {

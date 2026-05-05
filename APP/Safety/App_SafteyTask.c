@@ -32,6 +32,7 @@
 #include "../../ECUAL/MOTOR/Motor.h"
 #include "../../SERVICES/THERMAL/ThermalMgmt.h"
 #include "../../SERVICES/DIAG/Diagnostics.h"
+#include "../../CONFIG/System_FeatureFlags.h"
 
 /* Safe state manager */
 #include "App_SafeState.h"
@@ -50,7 +51,12 @@ static boolean App_Health_CommOk = TRUE;
 
 /* Heartbeat tracking */
 static uint32 App_LastHeartbeatTime = 0u;
-#define HEARTBEAT_TIMEOUT_TICKS     (200u)  /* 2 seconds at 100Hz tick */
+#define HEARTBEAT_TIMEOUT_TICKS     (500u)  /* 5 seconds at 100Hz tick */
+
+/* Boot grace period: always feed WDG for the first N ticks after boot
+ * to prevent reset loop when no ROS2 bridge is connected yet. */
+#define BOOT_GRACE_TICKS            (500u)  /* 5 seconds grace period */
+static boolean App_BootGraceActive = TRUE;
 
 /* ===================[Private Functions]=================== */
 
@@ -60,8 +66,14 @@ static uint32 App_LastHeartbeatTime = 0u;
  */
 static boolean App_Safety_CheckMotorCurrent(void)
 {
+#if (FEATURE_CURRENT_ENABLED == 0u)
+    /* Current sensors not connected — skip check */
+    return TRUE;
+#else
     ACS712_DataType currentData;
     boolean allOk = TRUE;
+    static boolean prevLeftOverload = FALSE;
+    static boolean prevRightOverload = FALSE;
     
     /* Check left motor overload */
     if (ACS712_ReadCurrent(0u, &currentData) == E_OK)
@@ -70,8 +82,16 @@ static boolean App_Safety_CheckMotorCurrent(void)
         {
             SafeState_SetFault(FAULT_FLAG_MOTOR_L_OVERLOAD);
             SafeState_Enter(SAFESTATE_REASON_MOTOR_LEFT_OVERLOAD);
-            Diag_ReportDtc(DIAG_DTC_MOTOR_OVERLOAD, TRUE);
+            if (!prevLeftOverload)
+            {
+                Diag_ReportDtc(DIAG_DTC_MOTOR_OVERLOAD, TRUE);
+            }
+            prevLeftOverload = TRUE;
             allOk = FALSE;
+        }
+        else
+        {
+            prevLeftOverload = FALSE;
         }
     }
     
@@ -82,12 +102,21 @@ static boolean App_Safety_CheckMotorCurrent(void)
         {
             SafeState_SetFault(FAULT_FLAG_MOTOR_R_OVERLOAD);
             SafeState_Enter(SAFESTATE_REASON_MOTOR_RIGHT_OVERLOAD);
-            Diag_ReportDtc(DIAG_DTC_MOTOR_OVERLOAD, TRUE);
+            if (!prevRightOverload)
+            {
+                Diag_ReportDtc(DIAG_DTC_MOTOR_OVERLOAD, TRUE);
+            }
+            prevRightOverload = TRUE;
             allOk = FALSE;
+        }
+        else
+        {
+            prevRightOverload = FALSE;
         }
     }
     
     return allOk;
+#endif
 }
 
 /**
@@ -96,15 +125,23 @@ static boolean App_Safety_CheckMotorCurrent(void)
  */
 static boolean App_Safety_CheckThermal(void)
 {
+#if (FEATURE_TEMP_ENABLED == 0u)
+    /* Temp sensors not connected — skip check */
+    return TRUE;
+#else
     ThermalMgmt_StatusType thermalStatus;
     boolean allOk = TRUE;
+    static ThermalMgmt_StatusType prevThermalStatus = THERMALMGMT_STATUS_NORMAL;
     
     thermalStatus = ThermalMgmt_GetStatus();
     
     if (thermalStatus == THERMALMGMT_STATUS_CRITICAL)
     {
         SafeState_SetFault(FAULT_FLAG_ENCLOSURE_THERMAL);
-        Diag_ReportDtc(DIAG_DTC_THERMAL_CRITICAL, TRUE);
+        if (prevThermalStatus != THERMALMGMT_STATUS_CRITICAL)
+        {
+            Diag_ReportDtc(DIAG_DTC_THERMAL_CRITICAL, TRUE);
+        }
         allOk = FALSE;
         
         /* Force maximum cooling */
@@ -114,11 +151,16 @@ static boolean App_Safety_CheckThermal(void)
     if (ThermalMgmt_IsShutdownRequired() == TRUE)
     {
         SafeState_Enter(SAFESTATE_REASON_ENCLOSURE_THERMAL);
-        Diag_ReportDtc(DIAG_DTC_THERMAL_SHUTDOWN, TRUE);
+        if (prevThermalStatus != THERMALMGMT_STATUS_SHUTDOWN)
+        {
+            Diag_ReportDtc(DIAG_DTC_THERMAL_SHUTDOWN, TRUE);
+        }
         allOk = FALSE;
     }
     
+    prevThermalStatus = thermalStatus;
     return allOk;
+#endif
 }
 
 /**
@@ -128,14 +170,29 @@ static boolean App_Safety_CheckThermal(void)
 static boolean App_Safety_CheckHeartbeat(void)
 {
     uint32 currentTick = xTaskGetTickCount();
-    
+
+    /* Skip heartbeat check during boot grace period — bridge isn't connected yet */
+    if (App_BootGraceActive)
+    {
+        if (currentTick < BOOT_GRACE_TICKS)
+        {
+            return TRUE;  /* Pretend heartbeat is OK during grace */
+        }
+        else
+        {
+            App_BootGraceActive = FALSE;
+            /* Reset heartbeat time to NOW so the timeout starts fresh */
+            App_LastHeartbeatTime = currentTick;
+        }
+    }
+
     if ((currentTick - App_LastHeartbeatTime) > HEARTBEAT_TIMEOUT_TICKS)
     {
         SafeState_SetFault(FAULT_FLAG_HEARTBEAT_TIMEOUT);
         SafeState_Enter(SAFESTATE_REASON_HEARTBEAT_TIMEOUT);
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -186,18 +243,26 @@ void App_SafetyTask_Run(void)
     
     App_SafetyCycleCount++;
     
+    /* During boot grace: feed WDG FIRST before any checks.
+     * This ensures the system doesn't reset even if a health-check crashes. */
+    if (App_BootGraceActive)
+    {
+        Wdg_Service();
+    }
+    
     /* 1. Evaluate all subsystem health */
     systemHealthy = App_Safety_EvaluateHealth();
     
     /* 2. Update safe state manager */
     SafeState_Update();
     
-    /* 3. CRITICAL: Feed watchdog ONLY if system is healthy */
-    if (systemHealthy && (SafeState_GetStatus() <= SAFESTATE_WARNING))
-    {
-        Wdg_Service();
-    }
-    /* If NOT fed, WDG will timeout in 500ms → MCU reset → motors off */
+    /* 3. CRITICAL: Feed watchdog */
+    /* As long as the FreeRTOS Safety task is executing, we feed the watchdog.
+     * Functional faults (thermal, motor overload, heartbeat) are handled by 
+     * the SafeState manager which explicitly disables PWM/motors.
+     * We DO NOT want to stop feeding the WDG on functional faults, otherwise
+     * the MCU boot-loops and we lose telemetry to ROS. */
+    Wdg_Service();
     
     /* 4. Handle motor enable requests */
     if (systemHealthy)

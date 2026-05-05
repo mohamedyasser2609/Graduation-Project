@@ -27,10 +27,10 @@
  * @version 2.0.0 (Robot_Control integration)
  */
 
-#if 0 /* DISABLED — main_robot.c is the active production entry point */
+#if 0 /* SLAM TEST ACTIVE */
 
 /* ===================[Includes]=================== */
-#include "MCAL/MCU/Mcu.h"w
+#include "MCAL/MCU/Mcu.h"
 #include "MCAL/GPIO/Gpio.h"
 #include "MCAL/UART/Uart.h"
 #include "MCAL/I2C/I2C.h"
@@ -45,6 +45,7 @@
 #include "APP/Control/Robot_Control.h"
 
 #include "CONFIG/Std_Types.h"
+#include "tm4c123gh6pm.h"
 
 /* ===================[External Configurations]=================== */
 extern const Mcu_ConfigType* Mcu_ConfigPtr;
@@ -65,15 +66,32 @@ extern const ComStack_ConfigType ComStack_Config;
 
 /* ===================[Helper Functions]=================== */
 
-static void SimpleDelay(uint32 count)
+static void SimpleDelay(volatile uint32 count)
 {
-    volatile uint32 i;
-    for (i = 0; i < count; i++);
+    while (count > 0)
+    {
+        /* Ensure the loop is not optimized away and provides consistent timing */
+        __asm("  nop");
+        count--;
+    }
 }
 
 static void PrintString(const char* str)
 {
     Uart_SendString(UART_MODULE_0, (const uint8*)str);
+}
+
+static void PrintResetCause(void)
+{
+    uint32 cause = *((volatile uint32*)(0x400FE05C)); /* RESC register */
+    PrintString("[SYS] Reset Cause: ");
+    if (cause & 0x01) PrintString("External ");
+    if (cause & 0x02) PrintString("Power-On ");
+    if (cause & 0x04) PrintString("Brown-Out ");
+    if (cause & 0x08) PrintString("Watchdog ");
+    if (cause & 0x10) PrintString("Software ");
+    PrintString("\r\n");
+    *((volatile uint32*)(0x400FE05C)) = 0x1F; /* Clear all */
 }
 
 static void PrintInt32(sint32 val)
@@ -168,12 +186,59 @@ static void SendImuPacket(void)
     txCount++;
 }
 
-/* ===================[Motor Command Processing]=================== */
+/* ===================[Velocity Command Processing]=================== */
 
 /**
- * @brief Process received motor commands from ROS2
- * @details Converts signed speed (-100 to +100) to Robot_TwistType
- *          using differential drive inverse kinematics.
+ * @brief Process received twist command from ROS2 (CMD 0x12) — PREFERRED
+ * @details Receives linear velocity (v) and angular velocity (ω) directly
+ *          as fixed-point ×1000 sint16 values.  The TM4C applies the
+ *          differential drive equation internally via Robot_SetVelocity().
+ *
+ *  Differential drive equations (applied inside Robot_Control):
+ *    v_left  = v - (ω × L / 2)
+ *    v_right = v + (ω × L / 2)
+ *
+ *  Wire format (4 bytes, little-endian):
+ *    [0-1] sint16  linear velocity   (mm/s  = m/s × 1000)
+ *    [2-3] sint16  angular velocity  (mrad/s = rad/s × 1000)
+ */
+static void ProcessTwistCommand(const ComStack_PacketType* pkt)
+{
+    sint16 linearMmps;
+    sint16 angularMrads;
+    Robot_TwistType twist;
+
+    if (pkt->Length < 4u)
+    {
+        return;
+    }
+
+    /* Parse fixed-point ×1000 values (little-endian sint16) */
+    linearMmps  = (sint16)(((uint16)pkt->Data[1] << 8u) | (uint16)pkt->Data[0]);
+    angularMrads = (sint16)(((uint16)pkt->Data[3] << 8u) | (uint16)pkt->Data[2]);
+
+    /* Convert from fixed-point to float */
+    twist.LinearX  = (float32)linearMmps  / 1000.0f;   /* mm/s → m/s  */
+    twist.LinearY  = 0.0f;
+    twist.AngularZ = (float32)angularMrads / 1000.0f;   /* mrad/s → rad/s */
+
+    /* Debug */
+    PrintString("[RX-TWIST] v:");
+    PrintInt32((sint32)linearMmps);
+    PrintString("mm/s w:");
+    PrintInt32((sint32)angularMrads);
+    PrintString("mrad/s\r\n");
+
+    /* Apply via Robot_Control — clamping + diff-drive kinematics inside */
+    (void)Robot_SetVelocity(&twist);
+
+    rxCmdCount++;
+}
+
+/**
+ * @brief Process received motor command from ROS2 (CMD 0x10) — LEGACY
+ * @details Left/right wheel speed as signed percentage (-100..+100).
+ *          Kept for backward compatibility.
  */
 static void ProcessMotorCommand(const ComStack_PacketType* pkt)
 {
@@ -181,45 +246,84 @@ static void ProcessMotorCommand(const ComStack_PacketType* pkt)
     sint16 rightSpeed;
     Robot_TwistType twist;
     float32 leftVel, rightVel;
-    
+
     if (pkt->Length < 4u)
     {
         return;
     }
-    
+
     /* Parse: 2 bytes left speed (signed), 2 bytes right speed (signed) */
     leftSpeed = (sint16)(((uint16)pkt->Data[1] << 8u) | (uint16)pkt->Data[0]);
     rightSpeed = (sint16)(((uint16)pkt->Data[3] << 8u) | (uint16)pkt->Data[2]);
-    
+
     /* Debug: print received motor command */
     PrintString("[RX-MOT] L:");
     PrintInt32((sint32)leftSpeed);
     PrintString(" R:");
     PrintInt32((sint32)rightSpeed);
     PrintString("\r\n");
-    
+
     /* Clamp to -100..+100 */
     if (leftSpeed > 100) leftSpeed = 100;
     if (leftSpeed < -100) leftSpeed = -100;
     if (rightSpeed > 100) rightSpeed = 100;
     if (rightSpeed < -100) rightSpeed = -100;
-    
+
     /* Convert percentage (-100..100) to velocity (m/s) */
-    /* Max speed = ROBOT_MAX_LINEAR_VEL (1.0 m/s) */
     leftVel = ((float32)leftSpeed / 100.0f) * ROBOT_MAX_LINEAR_VEL;
     rightVel = ((float32)rightSpeed / 100.0f) * ROBOT_MAX_LINEAR_VEL;
-    
+
     /* Convert wheel velocities to Twist (linear.x + angular.z) */
-    /* v = (v_l + v_r) / 2 */
-    /* w = (v_r - v_l) / L */
     twist.LinearX = (leftVel + rightVel) / 2.0f;
     twist.LinearY = 0.0f;
     twist.AngularZ = (rightVel - leftVel) / ROBOT_WHEEL_BASE_M;
-    
+
     /* Apply via Robot_Control (clamping + state checks built in) */
     (void)Robot_SetVelocity(&twist);
-    
+
     rxCmdCount++;
+}
+
+static void I2C_BusClear(void)
+{
+    volatile uint32 bb;
+    uint8 clk;
+    
+    /* Set PB2 (SCL) and PB3 (SDA) as GPIO outputs temporarily */
+    GPIO_PORTB_AFSEL_R &= ~((1u << 2) | (1u << 3)); /* Disable AF */
+    GPIO_PORTB_ODR_R   |= (1u << 3);                  /* SDA Open Drain */
+    GPIO_PORTB_PUR_R   |= (1u << 2) | (1u << 3);      /* Enable Pull-ups */
+    GPIO_PORTB_DIR_R   |= (1u << 2) | (1u << 3);      /* Set as output */
+    GPIO_PORTB_DEN_R   |= (1u << 2) | (1u << 3);      /* Digital enable */
+    
+    /* 1. Ensure SDA is high (let go) */
+    GPIO_PORTB_DATA_R |= (1u << 3); 
+    SimpleDelay(1000);
+    
+    /* 2. Clock SCL 9 times or until SDA is released */
+    GPIO_PORTB_DIR_R |= (1u << 2);   /* SCL Out */
+    GPIO_PORTB_DIR_R &= ~(1u << 3);  /* SDA In to check status */
+    
+    for (clk = 0; clk < 10; clk++) {
+        if (GPIO_PORTB_DATA_R & (1u << 3)) break; /* SDA is HIGH, slave released it */
+        
+        GPIO_PORTB_DATA_R &= ~(1u << 2);  /* SCL LOW */
+        SimpleDelay(2000);
+        GPIO_PORTB_DATA_R |= (1u << 2);   /* SCL HIGH */
+        SimpleDelay(2000);
+    }
+    
+    /* 3. Send STOP equivalent (SDA Low while SCL High, then SDA High) */
+    GPIO_PORTB_DIR_R |= (1u << 3);     /* SDA Out */
+    GPIO_PORTB_DATA_R &= ~(1u << 3);   /* SDA Low */
+    SimpleDelay(2000);
+    GPIO_PORTB_DATA_R |= (1u << 3);    /* SDA High (STOP) */
+    SimpleDelay(2000);
+    
+    /* Restore settings - Drive Strength 8mA for noise protection */
+    GPIO_PORTB_DR8R_R |= (1u << 2) | (1u << 3);
+    GPIO_PORTB_SLR_R  |= (1u << 2) | (1u << 3);
+    GPIO_PORTB_AFSEL_R |= (1u << 2) | (1u << 3); /* Restore AF */
 }
 
 /* ===================[Main Function]=================== */
@@ -227,6 +331,11 @@ static void ProcessMotorCommand(const ComStack_PacketType* pkt)
 int main(void)
 {
     Std_ReturnType initResult;
+    const I2C_ConfigType I2C0_Slow = {
+        .Module = I2C_MODULE_0,
+        .Mode = I2C_MODE_MASTER,
+        .Speed = 50000u
+    };
     
     /* ===== 1. MCU Init (80MHz PLL) ===== */
     Mcu_Init(Mcu_ConfigPtr);
@@ -243,6 +352,7 @@ int main(void)
     SimpleDelay(50000);
     
     PrintString("\r\n");
+    PrintResetCause();
     PrintString("========================================\r\n");
     PrintString(" SLAM Test Application v2.0\r\n");
     PrintString(" Robot Control + Encoder + IMU -> ROS2\r\n");
@@ -250,29 +360,53 @@ int main(void)
     PrintString(" GPS: Excluded (wired to RPi)\r\n");
     PrintString("========================================\r\n");
     
+#if 0 /* IMU ENABLED - Temporarily disabled for hardware debugging */
     /* ===== 4. I2C (for IMU) ===== */
     PrintString("[INIT] I2C...\r\n");
-    I2C_Init(&I2C0_Master_100kHz);
-    SimpleDelay(50000);
     
-    /* ===== 5. PWM (for motors) ===== */
-    PrintString("[INIT] PWM...\r\n");
-    Pwm_Init(&Pwm_Configuration);
+    /* Enable I2C0 clock and reset module to clear hardware lockups */
+    *((volatile uint32*)(0x400FE620)) |= (1u << 0); /* RCGC I2C0 */
+    SimpleDelay(10000);
+    I2C_Reset(I2C_MODULE_0);
+    SimpleDelay(100000);
     
-    /* ===== 6. QEI (for encoders) ===== */
-    PrintString("[INIT] QEI...\r\n");
-    Qei_Init(&Qei_Config);
+    /* Strong I2C Bus Recovery */
+    I2C_BusClear();
     
-    /* ===== 7. ECUAL Drivers ===== */
+    /* Slow down I2C to 50kHz for noise immunity */
+    I2C_Init(&I2C0_Slow);
+    *((volatile uint32*)(0x40020020)) |= (1u << 4); /* Glitch Filter */
+    SimpleDelay(100000);
     
-    /* IMU */
+    /* ===== 5. IMU (init BEFORE PWM to avoid electrical noise) ===== */
     PrintString("[INIT] IMU...");
-    initResult = IMU_Init(&IMU_Config_Default);
+    {
+        uint8 imuRetry;
+        initResult = E_NOT_OK;
+        for (imuRetry = 0; imuRetry < 3u; imuRetry++) {
+            initResult = IMU_Init(&IMU_Config_Default);
+            if (initResult == E_OK) {
+                break;
+            }
+            /* Reset I2C bus and try again */
+            I2C_Reset(I2C_MODULE_0);
+            SimpleDelay(100000);
+        }
+    }
     if (initResult == E_OK) {
         PrintString(" OK\r\n");
     } else {
         PrintString(" FAIL (continuing without IMU)\r\n");
     }
+#endif /* IMU ENABLED */
+    
+    /* ===== 6. PWM (for motors) - AFTER IMU is safely initialized ===== */
+    PrintString("[INIT] PWM...\r\n");
+    Pwm_Init(&Pwm_Configuration);
+    
+    /* ===== 7. QEI (for encoders) ===== */
+    PrintString("[INIT] QEI...\r\n");
+    Qei_Init(&Qei_Config);
     
     /* Encoders */
     PrintString("[INIT] Encoders...\r\n");
@@ -369,6 +503,10 @@ int main(void)
             {
                 switch (rxPacket.Command)
                 {
+                    case COMSTACK_CMD_TWIST_CMD:
+                        ProcessTwistCommand(&rxPacket);
+                        break;
+
                     case COMSTACK_CMD_MOTOR_CMD:
                         ProcessMotorCommand(&rxPacket);
                         break;
@@ -391,7 +529,61 @@ int main(void)
         /* --- Sensor Reads (every loop = 50Hz) --- */
         
         /* Read IMU (raw) */
-        (void)IMU_ReadRawData(&imuRaw);
+#if 0 /* Read IMU data */
+        Std_ReturnType imuRet = IMU_ReadRawData(&imuRaw);
+        
+        /* If SDA is stubbornly stuck low, it simulates valid 0x00 data bytes with valid ACKs.
+         * The only way to detect this "silent" lockup is if accel reads exactly 0x0000 on all axes (impossible due to gravity). */
+        boolean isDeadZero = (imuRaw.accel.x == 0 && imuRaw.accel.y == 0 && imuRaw.accel.z == 0);
+        /* Heuristic: detect garbage data (usually repetitive bytes from framing errors or locked buffers) */
+        boolean isGarbage = (imuRaw.accel.x != 0) && (imuRaw.accel.x == imuRaw.accel.y) && (imuRaw.accel.y == imuRaw.accel.z);
+        
+        if (imuRet != E_OK || isDeadZero || isGarbage) {
+            /* I2C bus may be hung - full recovery sequence */
+            PrintString("\r\n[WARN] IMU Data Issue. Suppressing motors for recovery...\r\n");
+            
+            /* Stop motors during recovery to eliminate EMI */
+            (void)Motor_SetSpeed(MOTOR_CHANNEL_LEFT, 0);
+            (void)Motor_SetSpeed(MOTOR_CHANNEL_RIGHT, 0);
+            SimpleDelay(400000); 
+            
+            I2C_BusClear();
+            I2C_Reset(I2C_MODULE_0);
+            SimpleDelay(80000); 
+            
+            I2C_Init(&I2C0_Slow);
+            *((volatile uint32*)(0x40020020)) |= (1u << 4); /* Glitch Filter */
+            SimpleDelay(80000);
+            
+            /* Blind Soft-Reset MPU6050 */
+            uint8 rst = 0x80;
+            (void)I2C_WriteRegister(I2C_MODULE_0, 0x68, 0x6B, &rst, 1);
+            (void)I2C_WriteRegister(I2C_MODULE_0, 0x69, 0x6B, &rst, 1);
+            SimpleDelay(400000);
+            
+            /* SigPath Reset */
+            uint8 sRst = 0x07;
+            (void)I2C_WriteRegister(I2C_MODULE_0, 0x68, 0x68, &sRst, 1);
+            (void)I2C_WriteRegister(I2C_MODULE_0, 0x69, 0x68, &sRst, 1);
+            
+            /* Stabilization Delay (100ms) */
+            SimpleDelay(8000000); 
+            
+            if (IMU_Init(&IMU_Config_Default) != E_OK) {
+                PrintString("[ERROR] IMU Recovery Failed!\r\n");
+            } else {
+                PrintString("[INFO] IMU Recovery Successful. Restoring control.\r\n");
+            }
+        }
+#else
+        /* Virtual Dummy IMU Data for ROS2 (Raw values) */
+        imuRaw.accel.x = 200;      /* Slight tilt simulator */
+        imuRaw.accel.y = 100;
+        imuRaw.accel.z = 16384;    /* ~1.0g (assuming 2g range) */
+        imuRaw.gyro.x  = 0;
+        imuRaw.gyro.y  = 0;
+        imuRaw.gyro.z  = -10;      /* Constant slight drift simulator */
+#endif /* IMU Read */
         
         /* Read Encoders */
         Encoder_UpdateAll();

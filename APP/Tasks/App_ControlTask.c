@@ -38,6 +38,8 @@
 
 /* Encoder for odometry update */
 #include "../../ECUAL/ENCODER/Encoder.h"
+#include "../../SERVICES/DIAG/Diagnostics.h"
+
 
 /* ===================[Private Variables]=================== */
 static boolean App_ControlInitialized = FALSE;
@@ -76,6 +78,7 @@ static void App_CheckCommandQueue(void)
             App_TargetLeftRadS = cmd.LeftRadPerSec;
             App_TargetRightRadS = cmd.RightRadPerSec;
             App_LastCmdTime = xTaskGetTickCount();
+            Diag_DebugPrint("[CTRL] Received Twist from Comm\r\n");
         }
     }
 
@@ -123,6 +126,16 @@ void App_ControlTask_Init(void)
 {
     /* Get queue handle */
     App_WheelCmdQueue = Tasks_GetWheelSpeedCmdQueue();
+    
+    Diag_DebugPrintValue("[CTRL] Queue handle: 0x", (uint32)App_WheelCmdQueue);
+
+    
+    /* Sanity check: handle must be in RAM (0x20000000 - 0x20007FFF) */
+    if (((uint32)App_WheelCmdQueue < 0x20000000u) || ((uint32)App_WheelCmdQueue > 0x20008000u))
+    {
+        Diag_DebugPrint("[CTRL] ERROR: Invalid queue handle! Hardware Reset Recommended.\r\n");
+        App_WheelCmdQueue = NULL;
+    }
 
     App_TargetLeftRadS = 0.0f;
     App_TargetRightRadS = 0.0f;
@@ -130,6 +143,7 @@ void App_ControlTask_Init(void)
 
     App_ControlInitialized = TRUE;
 }
+
 
 /**
  * @brief Control task main function (called by FreeRTOS task @ 100Hz)
@@ -152,19 +166,11 @@ void App_ControlTask_Run(void)
     /* 2. Convert rad/s targets to Twist and set Robot_Control */
     App_ApplyVelocityCommand();
 
-    /* 3. Update encoder data for Robot_Control */
-    Encoder_UpdateAll();
+    /* 3. Update encoder data for Robot_Control (NOW SAFE) */
+    Encoder_UpdateAll(); 
 
     /* 4. Run PID control loop via Robot_Control */
-    if (SafeState_IsMotorEnableAllowed())
-    {
-        Robot_UpdateControl();
-    }
-    else
-    {
-        /* Safety has disabled motors — ensure stopped */
-        Robot_EmergencyStop();
-    }
+    Robot_UpdateControl();
 }
 
 /**

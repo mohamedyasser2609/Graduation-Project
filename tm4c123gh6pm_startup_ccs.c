@@ -56,8 +56,6 @@ extern uint32_t __STACK_TOP;
 //*****************************************************************************
 // Timer interrupt handler for auto-cycling
 extern void Timer2A_Handler(void);
-// QEI interrupt handler (disabled - see main_qei_test.c)
-// extern void QEI0_Handler(void);
 // ADC interrupt handlers
 extern void Adc_ADC0SS0_ISR(void);
 extern void Adc_ADC0SS1_ISR(void);
@@ -69,6 +67,24 @@ extern void Adc_ADC1SS2_ISR(void);
 extern void Adc_ADC1SS3_ISR(void);
 // MPU MemManage fault handler
 extern void MemManage_Handler(void);
+// Bus fault handler
+static void BusFault_Handler(void);
+// Usage fault handler
+static void UsageFault_Handler(void);
+// Watchdog interrupt handler
+
+extern void Wdg_Watchdog0Handler(void);
+
+//*****************************************************************************
+//
+// FreeRTOS Cortex-M4 port handlers.
+// These MUST be in the vector table for FreeRTOS context switching to work.
+// Without them, the first vTaskStartScheduler() call triggers a HardFault.
+//
+//*****************************************************************************
+extern void vPortSVCHandler(void);
+extern void xPortPendSVHandler(void);
+extern void xPortSysTickHandler(void);
 
 //*****************************************************************************
 //
@@ -80,23 +96,24 @@ extern void MemManage_Handler(void);
 #pragma DATA_SECTION(g_pfnVectors, ".intvecs")
 void (* const g_pfnVectors[])(void) =
 {
-    (void (*)(void))((uint32_t)&__STACK_TOP),
-                                            // The initial stack pointer
+    (void (*)(void))0x20008000,             // The initial stack pointer (Hard-coded for 32KB RAM)
     ResetISR,                               // The reset handler
+
     NmiSR,                                  // The NMI handler
     FaultISR,                               // The hard fault handler
     MemManage_Handler,                      // The MPU fault handler
-    IntDefaultHandler,                      // The bus fault handler
-    IntDefaultHandler,                      // The usage fault handler
+    BusFault_Handler,                       // The bus fault handler
+    UsageFault_Handler,                     // The usage fault handler
+
     0,                                      // Reserved
     0,                                      // Reserved
     0,                                      // Reserved
     0,                                      // Reserved
-    IntDefaultHandler,                      // SVCall handler
+    vPortSVCHandler,                        // SVCall handler — FreeRTOS
     IntDefaultHandler,                      // Debug monitor handler
     0,                                      // Reserved
-    IntDefaultHandler,                      // The PendSV handler
-    IntDefaultHandler,                      // The SysTick handler
+    xPortPendSVHandler,                     // The PendSV handler — FreeRTOS
+    xPortSysTickHandler,                    // The SysTick handler — FreeRTOS
     IntDefaultHandler,                      // GPIO Port A
     IntDefaultHandler,                      // GPIO Port B
     IntDefaultHandler,                      // GPIO Port C
@@ -110,12 +127,12 @@ void (* const g_pfnVectors[])(void) =
     IntDefaultHandler,                      // PWM Generator 0
     IntDefaultHandler,                      // PWM Generator 1
     IntDefaultHandler,                      // PWM Generator 2
-    IntDefaultHandler,                      // Quadrature Encoder 0 (QEI0_Handler - disabled)
+    IntDefaultHandler,                      // Quadrature Encoder 0
     Adc_ADC0SS0_ISR,                        // ADC Sequence 0
     Adc_ADC0SS1_ISR,                        // ADC Sequence 1
     Adc_ADC0SS2_ISR,                        // ADC Sequence 2
     Adc_ADC0SS3_ISR,                        // ADC Sequence 3
-    IntDefaultHandler,                      // Watchdog timer
+    Wdg_Watchdog0Handler,                   // Watchdog timer
     IntDefaultHandler,                      // Timer 0 subtimer A
     IntDefaultHandler,                      // Timer 0 subtimer B
     IntDefaultHandler,                      // Timer 1 subtimer A
@@ -266,6 +283,10 @@ ResetISR(void)
 // by a debugger.
 //
 //*****************************************************************************
+#include "../../APP/Common/App_ResourceMap.h"
+#include "../../MCAL/UART/Uart.h"
+#include "../../SERVICES/DIAG/Diagnostics.h"
+#include "Tasks_Init.h"
 static void
 NmiSR(void)
 {
@@ -279,36 +300,103 @@ NmiSR(void)
 
 //*****************************************************************************
 //
-// This is the code that gets called when the processor receives a fault
-// interrupt.  This simply enters an infinite loop, preserving the system state
-// for examination by a debugger.
+// Raw UART0 print for crash diagnostics (no driver dependency)
 //
 //*****************************************************************************
-static void
-FaultISR(void)
+static volatile uint32_t* const UART0_DR = (volatile uint32_t*)0x4000C000;
+static volatile uint32_t* const UART0_FR = (volatile uint32_t*)0x4000C018;
+
+static void CrashPrint(const char* msg)
 {
-    //
-    // Enter an infinite loop.
-    //
-    while(1)
+    while (*msg != '\0')
+
     {
+        while ((*UART0_FR) & 0x20) {}  // Wait until TX FIFO not full
+        *UART0_DR = (uint32_t)*msg;
+        msg++;
     }
 }
 
-//*****************************************************************************
-//
-// This is the code that gets called when the processor receives an unexpected
-// interrupt.  This simply enters an infinite loop, preserving the system state
-// for examination by a debugger.
-//
-//*****************************************************************************
+
+__attribute__((used))
+static void
+DumpFaultRegisters(uint32_t *stacked_regs)
+{
+    uint32_t cfsr = *((volatile uint32_t*)0xE000ED28);
+    uint32_t bfar = *((volatile uint32_t*)0xE000ED38);
+    
+    uint32_t pc = stacked_regs[6];
+    uint32_t lr = stacked_regs[5];
+    int i;
+    
+    CrashPrint("\r\n--- Fault Context ---\r\n");
+    CrashPrint("PC:   0x");
+    for(i=7; i>=0; i--) {
+        uint32_t nibble = (pc >> (i*4)) & 0xF;
+        while ((*UART0_FR) & 0x20);
+        *UART0_DR = (nibble < 10) ? (nibble + '0') : (nibble - 10 + 'A');
+    }
+    CrashPrint("\r\nLR:   0x");
+    for(i=7; i>=0; i--) {
+        uint32_t nibble = (lr >> (i*4)) & 0xF;
+        while ((*UART0_FR) & 0x20);
+        *UART0_DR = (nibble < 10) ? (nibble + '0') : (nibble - 10 + 'A');
+    }
+    CrashPrint("\r\nBFAR: 0x");
+    for(i=7; i>=0; i--) {
+        uint32_t nibble = (bfar >> (i*4)) & 0xF;
+        while ((*UART0_FR) & 0x20);
+        *UART0_DR = (nibble < 10) ? (nibble + '0') : (nibble - 10 + 'A');
+    }
+    CrashPrint("\r\nCFSR: 0x");
+    for(i=7; i>=0; i--) {
+        uint32_t nibble = (cfsr >> (i*4)) & 0xF;
+        while ((*UART0_FR) & 0x20);
+        *UART0_DR = (nibble < 10) ? (nibble + '0') : (nibble - 10 + 'A');
+    }
+    CrashPrint("\r\n--------------------\r\n");
+    while(1);
+}
+
+void FaultISR(void)
+{
+    __asm("    tst lr, #4\n"
+          "    mrs r0, msp\n"
+          "    beq _skip_psp_1\n"
+          "    mrs r0, psp\n"
+          "_skip_psp_1:\n"
+          "    b DumpFaultRegisters");
+}
+
+void BusFault_Handler(void)
+{
+    __asm("    tst lr, #4\n"
+          "    mrs r0, msp\n"
+          "    beq _skip_psp_2\n"
+          "    mrs r0, psp\n"
+          "_skip_psp_2:\n"
+          "    b DumpFaultRegisters");
+}
+
+void UsageFault_Handler(void)
+{
+    __asm("    tst lr, #4\n"
+          "    mrs r0, msp\n"
+          "    beq _skip_psp_3\n"
+          "    mrs r0, psp\n"
+          "_skip_psp_3:\n"
+          "    b DumpFaultRegisters");
+}
+
+
+
+
+
+
 static void
 IntDefaultHandler(void)
 {
-    //
-    // Go into an infinite loop.
-    //
-    while(1)
-    {
-    }
+    CrashPrint("\r\n[FAULT] Unexpected IRQ!\r\n");
+    while(1) {}
 }
+

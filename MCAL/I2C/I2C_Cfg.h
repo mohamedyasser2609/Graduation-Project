@@ -113,8 +113,8 @@
 /* ===================[Common I2C Device Addresses]=================== */
 
 /* Accelerometer/Gyroscope Sensors */
-#define I2C_ADDR_MPU6050                       (0x68u)    /**< MPU6050 IMU default address */
-#define I2C_ADDR_MPU6050_ALT                   (0x69u)    /**< MPU6050 IMU alternate address */
+#define I2C_ADDR_MPU9250                       (0x68u)    /**< MPU9250 IMU default address */
+#define I2C_ADDR_MPU9250_ALT                   (0x69u)    /**< MPU9250 IMU alternate address */
 #define I2C_ADDR_ADXL345                       (0x53u)    /**< ADXL345 Accelerometer */
 
 /* Pressure/Temperature Sensors */

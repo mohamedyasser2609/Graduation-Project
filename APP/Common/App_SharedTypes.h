@@ -73,8 +73,8 @@ typedef struct
 } ImuFeedbackType;
 
 /* ===================[Queue Size Definitions]=================== */
-#define QUEUE_CMD_SIZE      (4u)    /**< Command queue depth */
-#define QUEUE_FEEDBACK_SIZE (4u)    /**< Feedback queue depth */
+#define QUEUE_CMD_SIZE      (1u)    /**< Command queue depth — MUST be 1 for xQueueOverwrite */
+#define QUEUE_FEEDBACK_SIZE (1u)    /**< Feedback queue depth — MUST be 1 for xQueueOverwrite */
 
 /* ===================[Protocol Constants]=================== */
 #define PROTO_CMD_WHEEL     'W'     /**< Wheel speed command prefix */

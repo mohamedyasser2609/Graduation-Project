@@ -21,7 +21,7 @@
  * @version 1.0.0
  */
 
-#if 0  /* Production main — set to 0 to disable */
+#if 1  /* Production main — FreeRTOS ACTIVE */
 
 /* ===================[Includes]=================== */
 #include "MCAL/MCU/Mcu.h"

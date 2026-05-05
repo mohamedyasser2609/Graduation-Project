@@ -61,6 +61,7 @@
 #define COMSTACK_CMD_NACK               (0x03u)
 #define COMSTACK_CMD_MOTOR_CMD          (0x10u)
 #define COMSTACK_CMD_MOTOR_STOP         (0x11u)
+#define COMSTACK_CMD_TWIST_CMD          (0x12u)  /**< Twist velocity (v, ω) */
 #define COMSTACK_CMD_SENSOR_DATA        (0x20u)
 #if (FEATURE_GPS_ENABLED == 1u)
 #define COMSTACK_CMD_GPS_DATA           (0x21u)  /* GPS wired to RPi — excluded */
@@ -72,9 +73,20 @@
 #define COMSTACK_CMD_STATUS             (0x30u)
 #define COMSTACK_CMD_CONFIG             (0x31u)
 #define COMSTACK_CMD_CALIBRATE          (0x32u)
+#define COMSTACK_CMD_TIME_SYNC          (0x05u)
 #define COMSTACK_CMD_ERROR              (0xFFu)
 
 /* ===================[Type Definitions]=================== */
+
+/**
+ * @brief Time synchronization structure (CMD 0x05)
+ * @details Received from ROS2 to sync wall time
+ */
+typedef struct
+{
+    uint32      Seconds;            /**< Unix Epoch seconds */
+    uint32      Nanoseconds;        /**< Nanoseconds part */
+} ComStack_TimeSyncType;
 
 /**
  * @brief Command ID type
@@ -152,6 +164,24 @@ typedef struct
     sint16      RightSpeed;         /**< Right wheel speed (-100 to +100) */
 } ComStack_MotorCmdType;
 
+/**
+ * @brief Twist velocity command (from ROS2 /cmd_vel)
+ * @details Linear and angular velocities as fixed-point × 1000
+ *          This is the PREFERRED command — differential drive math
+ *          is applied on the TM4C side, not the bridge.
+ *
+ *  Wire format (4 bytes, little-endian):
+ *    [0-1] sint16  linear velocity   (mm/s,  real_m_per_s × 1000)
+ *    [2-3] sint16  angular velocity  (mrad/s, real_rad_per_s × 1000)
+ *
+ *  Example: v=0.5 m/s, ω=1.0 rad/s  →  0x01F4, 0x03E8  (500, 1000)
+ */
+typedef struct
+{
+    sint16      LinearVelMmps;      /**< Linear velocity (mm/s = m/s × 1000) */
+    sint16      AngularVelMrads;    /**< Angular velocity (mrad/s = rad/s × 1000) */
+} ComStack_TwistCmdType;
+
 #if (FEATURE_GPS_ENABLED == 1u)
 /**
  * @brief GPS data structure (for transmission)
@@ -195,14 +225,37 @@ typedef struct
 } ComStack_EncoderDataType;
 
 /**
- * @brief System status structure
+ * @brief System telemetry / status structure (CMD 0x30)
+ * @details All values are fixed-point integers for wire efficiency.
+ *
+ *  Wire format (20 bytes, little-endian):
+ *    [0]     uint8   SystemState        (Robot_StateType enum)
+ *    [1]     uint8   ErrorFlags         (fault bitmap)
+ *    [2-3]   sint16  BatteryVoltage     (mV = V × 1000)
+ *    [4]     uint8   BatteryPercent     (0-100%)
+ *    [5-6]   sint16  LeftMotorCurrent   (mA = A × 1000)
+ *    [7-8]   sint16  RightMotorCurrent  (mA = A × 1000)
+ *    [9-10]  sint16  TempMotors         (°C × 10)
+ *    [11-12] sint16  TempMCU            (°C × 10)
+ *    [13-14] sint16  TempBattery        (°C × 10)
+ *    [15]    uint8   FanSpeed           (0-100%)
+ *    [16-17] sint16  LinearVel          (mm/s = m/s × 1000)
+ *    [18-19] sint16  AngularVel         (mrad/s = rad/s × 1000)
  */
 typedef struct
 {
     uint8       SystemState;        /**< Overall system state */
     uint8       ErrorFlags;         /**< Error flags bitmap */
-    float32     BatteryVoltage;     /**< Battery voltage */
-    float32     MaxTemperature;     /**< Maximum temperature */
+    sint16      BatteryVoltageMv;   /**< Battery voltage (mV) */
+    uint8       BatteryPercent;     /**< Battery SOC (0-100%) */
+    sint16      LeftCurrentMa;      /**< Left motor current (mA) */
+    sint16      RightCurrentMa;     /**< Right motor current (mA) */
+    sint16      TempMotors;         /**< Motor zone temp (°C × 10) */
+    sint16      TempMCU;            /**< MCU zone temp (°C × 10) */
+    sint16      TempBattery;        /**< Battery zone temp (°C × 10) */
+    uint8       FanSpeedPercent;    /**< Fan speed (0-100%) */
+    sint16      LinearVelMmps;      /**< Current linear vel (mm/s) */
+    sint16      AngularVelMrads;    /**< Current angular vel (mrad/s) */
 } ComStack_StatusDataType;
 
 /**

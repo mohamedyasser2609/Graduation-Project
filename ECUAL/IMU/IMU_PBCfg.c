@@ -1,6 +1,6 @@
 /**
  * @file IMU_PBCfg.c
- * @brief IMU Post-Build Configuration for MPU-6050
+ * @brief IMU Post-Build Configuration for MPU-9250
  * @details Pre-configured IMU setups for common use cases
  *
  * @author Mohamed Yasser
@@ -19,7 +19,7 @@
  */
 const IMU_ConfigType IMU_Config_Default = {
     .I2C_Module = I2C_MODULE_0,
-    .DeviceAddress = MPU6050_I2C_ADDR_DEFAULT,
+    .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
     .GyroRange = IMU_DEFAULT_GYRO_RANGE,
     .AccelRange = IMU_DEFAULT_ACCEL_RANGE
 };
@@ -30,9 +30,9 @@ const IMU_ConfigType IMU_Config_Default = {
  */
 const IMU_ConfigType IMU_Config_HighSensitivity = {
     .I2C_Module = I2C_MODULE_0,
-    .DeviceAddress = MPU6050_I2C_ADDR_DEFAULT,
-    .GyroRange = MPU6050_GYRO_FS_250DPS,
-    .AccelRange = MPU6050_ACCEL_FS_2G
+    .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
+    .GyroRange = MPU9250_GYRO_FS_250DPS,
+    .AccelRange = MPU9250_ACCEL_FS_2G
 };
 
 /**
@@ -41,9 +41,9 @@ const IMU_ConfigType IMU_Config_HighSensitivity = {
  */
 const IMU_ConfigType IMU_Config_HighRange = {
     .I2C_Module = I2C_MODULE_0,
-    .DeviceAddress = MPU6050_I2C_ADDR_DEFAULT,
-    .GyroRange = MPU6050_GYRO_FS_2000DPS,
-    .AccelRange = MPU6050_ACCEL_FS_16G
+    .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
+    .GyroRange = MPU9250_GYRO_FS_2000DPS,
+    .AccelRange = MPU9250_ACCEL_FS_16G
 };
 
 /**
@@ -52,9 +52,9 @@ const IMU_ConfigType IMU_Config_HighRange = {
  */
 const IMU_ConfigType IMU_Config_Balanced = {
     .I2C_Module = I2C_MODULE_0,
-    .DeviceAddress = MPU6050_I2C_ADDR_DEFAULT,
-    .GyroRange = MPU6050_GYRO_FS_500DPS,
-    .AccelRange = MPU6050_ACCEL_FS_4G
+    .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
+    .GyroRange = MPU9250_GYRO_FS_500DPS,
+    .AccelRange = MPU9250_ACCEL_FS_4G
 };
 
 /**
@@ -63,9 +63,9 @@ const IMU_ConfigType IMU_Config_Balanced = {
  */
 const IMU_ConfigType IMU_Config_Drone = {
     .I2C_Module = I2C_MODULE_0,
-    .DeviceAddress = MPU6050_I2C_ADDR_DEFAULT,
-    .GyroRange = MPU6050_GYRO_FS_1000DPS,
-    .AccelRange = MPU6050_ACCEL_FS_8G
+    .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
+    .GyroRange = MPU9250_GYRO_FS_1000DPS,
+    .AccelRange = MPU9250_ACCEL_FS_8G
 };
 
 /**
@@ -74,9 +74,9 @@ const IMU_ConfigType IMU_Config_Drone = {
  */
 const IMU_ConfigType IMU_Config_LowPower = {
     .I2C_Module = I2C_MODULE_0,
-    .DeviceAddress = MPU6050_I2C_ADDR_DEFAULT,
-    .GyroRange = MPU6050_GYRO_FS_250DPS,
-    .AccelRange = MPU6050_ACCEL_FS_2G
+    .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
+    .GyroRange = MPU9250_GYRO_FS_250DPS,
+    .AccelRange = MPU9250_ACCEL_FS_2G
 };
 
 /**
@@ -84,7 +84,7 @@ const IMU_ConfigType IMU_Config_LowPower = {
  */
 const IMU_ConfigType IMU_Config_I2C1 = {
     .I2C_Module = I2C_MODULE_1,
-    .DeviceAddress = MPU6050_I2C_ADDR_DEFAULT,
+    .DeviceAddress = MPU9250_I2C_ADDR_DEFAULT,
     .GyroRange = IMU_DEFAULT_GYRO_RANGE,
     .AccelRange = IMU_DEFAULT_ACCEL_RANGE
 };
@@ -94,7 +94,7 @@ const IMU_ConfigType IMU_Config_I2C1 = {
  */
 const IMU_ConfigType IMU_Config_AltAddress = {
     .I2C_Module = I2C_MODULE_0,
-    .DeviceAddress = MPU6050_I2C_ADDR_AD0_HIGH,
+    .DeviceAddress = MPU9250_I2C_ADDR_AD0_HIGH,
     .GyroRange = IMU_DEFAULT_GYRO_RANGE,
     .AccelRange = IMU_DEFAULT_ACCEL_RANGE
 };

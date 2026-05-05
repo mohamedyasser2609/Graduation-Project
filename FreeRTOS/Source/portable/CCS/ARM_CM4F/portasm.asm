@@ -36,6 +36,7 @@
 	.def ulPortGetIPSR
 	.def vPortSVCHandler
 	.def vPortStartFirstTask
+	.def vPortEnableVFP
 
 NVICOffsetConst:					.word 	0xE000ED08
 CPACRConst:							.word 	0xE000ED88
@@ -70,13 +71,18 @@ xPortPendSVHandler: .asmfunc
 	ldr	r3, pxCurrentTCBConst
 	ldr	r2, [r3]
 
+	;/* Is the task using the FPU context?  If so, push high vfp registers. */
+	tst r14, #0x10
+	it eq
+	vstmdbeq r0!, {s16-s31}
+
 	;/* Save the core registers. */
-	stmdb r0!, {r4-r11}
+	stmdb r0!, {r4-r11, r14}
 
 	;/* Save the new top of stack into the first member of the TCB. */
 	str r0, [r2]
 
-	stmdb sp!, {r3, r14}
+	stmdb sp!, {r0, r3}
 	ldr r0, ulMaxSyscallInterruptPriorityConst
 	ldr r1, [r0]
 	msr basepri, r1
@@ -85,14 +91,20 @@ xPortPendSVHandler: .asmfunc
 	bl vTaskSwitchContext
 	mov r0, #0
 	msr basepri, r0
-	ldmia sp!, {r3, r14}
+	ldmia sp!, {r0, r3}
 
 	;/* The first item in pxCurrentTCB is the task top of stack. */
 	ldr r1, [r3]
 	ldr r0, [r1]
 
 	;/* Pop the core registers. */
-	ldmia r0!, {r4-r11}
+	ldmia r0!, {r4-r11, r14}
+
+	;/* Is the task using the FPU context?  If so, pop the high vfp registers
+	;too. */
+	tst r14, #0x10
+	it eq
+	vldmiaeq r0!, {s16-s31}
 
 	msr psp, r0
 	isb
@@ -108,12 +120,11 @@ vPortSVCHandler: .asmfunc
 	ldr r1, [r3]
 	ldr r0, [r1]
 	;/* Pop the core registers. */
-	ldmia r0!, {r4-r11}
+	ldmia r0!, {r4-r11, r14}
 	msr psp, r0
 	isb
 	mov r0, #0
 	msr	basepri, r0
-	orr r14, #0xd
 	bx r14
 	.endasmfunc
 
@@ -140,6 +151,22 @@ vPortStartFirstTask: .asmfunc
 	isb
 	svc #0
 	.endasmfunc
+
+; -----------------------------------------------------------
+
+	.align 4
+vPortEnableVFP: .asmfunc
+	;/* The FPU enable bits are in the CPACR. */
+	ldr.w r0, CPACRConst
+	ldr	r1, [r0]
+
+	;/* Enable CP10 and CP11 coprocessors, then save back. */
+	orr	r1, r1, #( 0xf << 20 )
+	str r1, [r0]
+	bx	r14
+	.endasmfunc
+
+	.end
 
 ; -----------------------------------------------------------
 

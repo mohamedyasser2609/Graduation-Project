@@ -583,24 +583,41 @@ ComStack_TxResultType ComStack_SendEncoderData(const ComStack_EncoderDataType* E
 }
 
 /**
- * @brief Send system status
+ * @brief Send system telemetry/status (CMD 0x30) — 20 bytes
+ * @details Packs all telemetry fields as fixed-point integers.
  */
 ComStack_TxResultType ComStack_SendStatus(const ComStack_StatusDataType* StatusData)
 {
-    uint8 data[10];
+    uint8 data[20];
     
     if (StatusData == NULL_PTR)
     {
         return COMSTACK_TX_ERROR;
     }
     
-    /* Pack status data */
-    data[0] = StatusData->SystemState;
-    data[1] = StatusData->ErrorFlags;
-    (void)memcpy(&data[2], &StatusData->BatteryVoltage, 4u);
-    (void)memcpy(&data[6], &StatusData->MaxTemperature, 4u);
+    /* Pack telemetry — all little-endian */
+    data[0]  = StatusData->SystemState;
+    data[1]  = StatusData->ErrorFlags;
+    data[2]  = (uint8)(StatusData->BatteryVoltageMv & 0xFFu);
+    data[3]  = (uint8)((StatusData->BatteryVoltageMv >> 8u) & 0xFFu);
+    data[4]  = StatusData->BatteryPercent;
+    data[5]  = (uint8)(StatusData->LeftCurrentMa & 0xFFu);
+    data[6]  = (uint8)((StatusData->LeftCurrentMa >> 8u) & 0xFFu);
+    data[7]  = (uint8)(StatusData->RightCurrentMa & 0xFFu);
+    data[8]  = (uint8)((StatusData->RightCurrentMa >> 8u) & 0xFFu);
+    data[9]  = (uint8)(StatusData->TempMotors & 0xFFu);
+    data[10] = (uint8)((StatusData->TempMotors >> 8u) & 0xFFu);
+    data[11] = (uint8)(StatusData->TempMCU & 0xFFu);
+    data[12] = (uint8)((StatusData->TempMCU >> 8u) & 0xFFu);
+    data[13] = (uint8)(StatusData->TempBattery & 0xFFu);
+    data[14] = (uint8)((StatusData->TempBattery >> 8u) & 0xFFu);
+    data[15] = StatusData->FanSpeedPercent;
+    data[16] = (uint8)(StatusData->LinearVelMmps & 0xFFu);
+    data[17] = (uint8)((StatusData->LinearVelMmps >> 8u) & 0xFFu);
+    data[18] = (uint8)(StatusData->AngularVelMrads & 0xFFu);
+    data[19] = (uint8)((StatusData->AngularVelMrads >> 8u) & 0xFFu);
     
-    return ComStack_SendPacket(COMSTACK_CMD_STATUS, data, 10u);
+    return ComStack_SendPacket(COMSTACK_CMD_STATUS, data, 20u);
 }
 
 /**

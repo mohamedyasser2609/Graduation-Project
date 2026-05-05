@@ -1,7 +1,7 @@
 /**
  * @file IMU.c
- * @brief IMU Driver Implementation for MPU-6050
- * @details Complete implementation of MPU-6050 9-axis IMU driver
+ * @brief IMU Driver Implementation for MPU-9250
+ * @details Complete implementation of MPU-9250 9-axis IMU driver
  *
  * @author Mohamed Yasser
  * @date Nov 7, 2025
@@ -52,36 +52,36 @@ Std_ReturnType IMU_Init(const IMU_ConfigType* ConfigPtr) {
     IMU_Config = *ConfigPtr;
     
     /* Check device ID */
-    if (IMU_ReadRegister(MPU6050_WHO_AM_I, &whoAmI) != E_OK) {
+    if (IMU_ReadRegister(MPU9250_WHO_AM_I, &whoAmI) != E_OK) {
         IMU_Status = IMU_STATUS_DEVICE_NOT_FOUND;
         return E_NOT_OK;
     }
     
-    if (whoAmI != MPU6050_DEVICE_ID) {
+    if (whoAmI != MPU9250_DEVICE_ID) {
         IMU_Status = IMU_STATUS_DEVICE_NOT_FOUND;
         return E_NOT_OK;
     }
     
     /* Reset device */
-    IMU_WriteRegister(MPU6050_PWR_MGMT_1, 0x80);
+    IMU_WriteRegister(MPU9250_PWR_MGMT_1, 0x80);
     for(i = 0; i < 100000; i++);  /* Delay */
     
     /* Wake up device */
-    IMU_WriteRegister(MPU6050_PWR_MGMT_1, 0x01);  /* Auto select clock source */
+    IMU_WriteRegister(MPU9250_PWR_MGMT_1, 0x01);  /* Auto select clock source */
     for(i = 0; i < 10000; i++);
     
     /* Configure gyroscope */
-    IMU_WriteRegister(MPU6050_GYRO_CONFIG, IMU_Config.GyroRange);
+    IMU_WriteRegister(MPU9250_GYRO_CONFIG, IMU_Config.GyroRange);
     
     /* Configure accelerometer */
-    IMU_WriteRegister(MPU6050_ACCEL_CONFIG, IMU_Config.AccelRange);
-    IMU_WriteRegister(MPU6050_ACCEL_CONFIG2, 0x00);  /* No DLPF */
+    IMU_WriteRegister(MPU9250_ACCEL_CONFIG, IMU_Config.AccelRange);
+    IMU_WriteRegister(MPU9250_ACCEL_CONFIG2, 0x00);  /* No DLPF */
     
     /* Configure sample rate (1kHz) */
-    IMU_WriteRegister(MPU6050_SMPLRT_DIV, 0x00);
+    IMU_WriteRegister(MPU9250_SMPLRT_DIV, 0x00);
     
     /* Configure DLPF */
-    IMU_WriteRegister(MPU6050_CONFIG, 0x03);  /* 41Hz bandwidth */
+    IMU_WriteRegister(MPU9250_CONFIG, 0x03);  /* 41Hz bandwidth */
     
 
     /* Calculate scale factors */
@@ -98,7 +98,7 @@ Std_ReturnType IMU_Init(const IMU_ConfigType* ConfigPtr) {
  */
 Std_ReturnType IMU_DeInit(void) {
     /* Put device in sleep mode */
-    IMU_WriteRegister(MPU6050_PWR_MGMT_1, 0x40);
+    IMU_WriteRegister(MPU9250_PWR_MGMT_1, 0x40);
     
     IMU_Initialized = FALSE;
     IMU_Status = IMU_STATUS_NOT_INITIALIZED;
@@ -112,12 +112,24 @@ Std_ReturnType IMU_DeInit(void) {
 Std_ReturnType IMU_ReadRawData(IMU_SensorDataType* Data) {
     uint8 buffer[14];
     
-    if (!IMU_Initialized || Data == NULL_PTR) {
+    if (Data == NULL_PTR) {
+        return E_NOT_OK;
+    }
+
+    if (!IMU_Initialized) {
+        /* Clear data so stale values aren't broadcast on failure */
+        Data->accel.x = 0; Data->accel.y = 0; Data->accel.z = 0;
+        Data->gyro.x = 0; Data->gyro.y = 0; Data->gyro.z = 0;
+        Data->temperature = 0;
         return E_NOT_OK;
     }
     
     /* Read all sensor data in one burst */
-    if (IMU_ReadRegisters(MPU6050_ACCEL_XOUT_H, buffer, 14) != E_OK) {
+    if (IMU_ReadRegisters(MPU9250_ACCEL_XOUT_H, buffer, 14) != E_OK) {
+        /* Clear data so stale values aren't broadcast on failure */
+        Data->accel.x = 0; Data->accel.y = 0; Data->accel.z = 0;
+        Data->gyro.x = 0; Data->gyro.y = 0; Data->gyro.z = 0;
+        Data->temperature = 0;
         return E_NOT_OK;
     }
     
@@ -133,8 +145,6 @@ Std_ReturnType IMU_ReadRawData(IMU_SensorDataType* Data) {
     Data->gyro.x = (sint16)((buffer[8] << 8) | buffer[9]);
     Data->gyro.y = (sint16)((buffer[10] << 8) | buffer[11]);
     Data->gyro.z = (sint16)((buffer[12] << 8) | buffer[13]);
-    
-
     
     return E_OK;
 }
@@ -182,7 +192,7 @@ Std_ReturnType IMU_ReadAccel(IMU_AxisDataType* Data) {
         return E_NOT_OK;
     }
     
-    if (IMU_ReadRegisters(MPU6050_ACCEL_XOUT_H, buffer, 6) != E_OK) {
+    if (IMU_ReadRegisters(MPU9250_ACCEL_XOUT_H, buffer, 6) != E_OK) {
         return E_NOT_OK;
     }
     
@@ -203,7 +213,7 @@ Std_ReturnType IMU_ReadGyro(IMU_AxisDataType* Data) {
         return E_NOT_OK;
     }
     
-    if (IMU_ReadRegisters(MPU6050_GYRO_XOUT_H, buffer, 6) != E_OK) {
+    if (IMU_ReadRegisters(MPU9250_GYRO_XOUT_H, buffer, 6) != E_OK) {
         return E_NOT_OK;
     }
     
@@ -226,7 +236,7 @@ Std_ReturnType IMU_ReadTemperature(float32* Temperature) {
         return E_NOT_OK;
     }
     
-    if (IMU_ReadRegisters(MPU6050_TEMP_OUT_H, buffer, 2) != E_OK) {
+    if (IMU_ReadRegisters(MPU9250_TEMP_OUT_H, buffer, 2) != E_OK) {
         return E_NOT_OK;
     }
     
@@ -290,11 +300,11 @@ Std_ReturnType IMU_SelfTest(void) {
     }
     
     /* Check device ID */
-    if (IMU_ReadRegister(MPU6050_WHO_AM_I, &whoAmI) != E_OK) {
+    if (IMU_ReadRegister(MPU9250_WHO_AM_I, &whoAmI) != E_OK) {
         return E_NOT_OK;
     }
     
-    if (whoAmI != MPU6050_DEVICE_ID) {
+    if (whoAmI != MPU9250_DEVICE_ID) {
         return E_NOT_OK;
     }
     
@@ -319,7 +329,7 @@ Std_ReturnType IMU_Reset(void) {
     }
     
     /* Software reset */
-    IMU_WriteRegister(MPU6050_PWR_MGMT_1, 0x80);
+    IMU_WriteRegister(MPU9250_PWR_MGMT_1, 0x80);
     for(i = 0; i < 100000; i++);
     
     /* Re-initialize */
@@ -332,11 +342,11 @@ Std_ReturnType IMU_Reset(void) {
 boolean IMU_IsDevicePresent(void) {
     uint8 whoAmI;
     
-    if (IMU_ReadRegister(MPU6050_WHO_AM_I, &whoAmI) != E_OK) {
+    if (IMU_ReadRegister(MPU9250_WHO_AM_I, &whoAmI) != E_OK) {
         return FALSE;
     }
     
-    return (whoAmI == MPU6050_DEVICE_ID);
+    return (whoAmI == MPU9250_DEVICE_ID);
 }
 
 /* ===================[Private Functions]=================== */
@@ -368,16 +378,16 @@ static Std_ReturnType IMU_ReadRegisters(uint8 RegAddr, uint8* Data, uint8 Length
 static void IMU_CalculateScaleFactors(void) {
     /* Accelerometer scale factor (g) */
     switch (IMU_Config.AccelRange) {
-        case MPU6050_ACCEL_FS_2G:
+        case MPU9250_ACCEL_FS_2G:
             IMU_AccelScale = 2.0f / 32768.0f;
             break;
-        case MPU6050_ACCEL_FS_4G:
+        case MPU9250_ACCEL_FS_4G:
             IMU_AccelScale = 4.0f / 32768.0f;
             break;
-        case MPU6050_ACCEL_FS_8G:
+        case MPU9250_ACCEL_FS_8G:
             IMU_AccelScale = 8.0f / 32768.0f;
             break;
-        case MPU6050_ACCEL_FS_16G:
+        case MPU9250_ACCEL_FS_16G:
             IMU_AccelScale = 16.0f / 32768.0f;
             break;
         default:
@@ -387,16 +397,16 @@ static void IMU_CalculateScaleFactors(void) {
     
     /* Gyroscope scale factor (°/s) */
     switch (IMU_Config.GyroRange) {
-        case MPU6050_GYRO_FS_250DPS:
+        case MPU9250_GYRO_FS_250DPS:
             IMU_GyroScale = 250.0f / 32768.0f;
             break;
-        case MPU6050_GYRO_FS_500DPS:
+        case MPU9250_GYRO_FS_500DPS:
             IMU_GyroScale = 500.0f / 32768.0f;
             break;
-        case MPU6050_GYRO_FS_1000DPS:
+        case MPU9250_GYRO_FS_1000DPS:
             IMU_GyroScale = 1000.0f / 32768.0f;
             break;
-        case MPU6050_GYRO_FS_2000DPS:
+        case MPU9250_GYRO_FS_2000DPS:
             IMU_GyroScale = 2000.0f / 32768.0f;
             break;
         default:

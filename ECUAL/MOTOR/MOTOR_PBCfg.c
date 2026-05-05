@@ -44,7 +44,7 @@
  * @details Direction control pins for each motor
  */
 #define GPIO_CHANNEL_MOTOR_LEFT_DIR    GPIO_CHANNEL(GPIO_PORT_E, GPIO_PIN_1)  /* PE1 - Left motor direction */
-#define GPIO_CHANNEL_MOTOR_RIGHT_DIR   GPIO_CHANNEL(GPIO_PORT_E, GPIO_PIN_2)  /* PE2 - Right motor direction */
+#define GPIO_CHANNEL_MOTOR_RIGHT_DIR   GPIO_CHANNEL(GPIO_PORT_E, GPIO_PIN_4)  /* PE4 - Right motor direction */
 
 /* ===================[Motor Channel Configurations]=================== */
 
@@ -57,7 +57,7 @@ static const Motor_ChannelConfigType Motor_ChannelConfigs[] = {
         .ChannelId = MOTOR_CHANNEL_LEFT,
         .PwmChannel = PWM_CHANNEL_MOTOR_LEFT,
         .DirectionPin = GPIO_CHANNEL_MOTOR_LEFT_DIR,
-        .InvertDirection = FALSE,              /* Set to TRUE if motor direction is reversed */
+        .InvertDirection = FALSE,              /* Standard forward logic */
         .MaxSpeedPercent = 100u,               /* Maximum speed: 100% */
         .MinSpeedPercent = 0u                  /* Minimum speed: 0% (no deadband) */
     },

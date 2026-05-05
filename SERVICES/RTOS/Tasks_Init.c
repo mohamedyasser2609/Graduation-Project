@@ -28,7 +28,10 @@
 #include "../../CONFIG/Std_Types.h"
 #include "../../APP/Common/App_SharedTypes.h"
 #include "../../APP/Common/App_ResourceMap.h"
+#include "../../MCAL/UART/Uart.h"
+#include "../../SERVICES/DIAG/Diagnostics.h"
 #include "Tasks_Init.h"
+
 
 /* ===================[Task Priorities]=================== */
 #define TASK_PRIORITY_SAFETY        (4u)
@@ -38,11 +41,12 @@
 #define TASK_PRIORITY_THERMAL       (1u)
 
 /* ===================[Task Stack Sizes]=================== */
-#define TASK_STACK_SAFETY           (128u)
+#define TASK_STACK_SAFETY           (256u)
 #define TASK_STACK_CONTROL          (256u)
 #define TASK_STACK_SENSOR           (256u)
 #define TASK_STACK_COMM             (256u)
-#define TASK_STACK_THERMAL          (128u)
+#define TASK_STACK_THERMAL          (192u)
+
 
 /* ===================[Task Periods (ms)]=================== */
 #define TASK_PERIOD_SAFETY_MS       (10u)
@@ -239,7 +243,18 @@ void Tasks_Init(void)
         for (;;) { }  /* Task creation failed */
     }
     
+    /* Debug: Print function addresses for PC tracking */
+    Diag_DebugPrintValue("[MAP] Uart_SendByte: ", (uint32)Uart_SendByte);
+    Diag_DebugPrintValue("[MAP] Diag_DebugPrint: ", (uint32)Diag_DebugPrint);
+
+    /* Debug: Print the hardware's initial MSP value from address 0 */
+    uint32 hardware_msp = *((volatile uint32*)0x00000000);
+    Diag_DebugPrintValue("[BOOT] Vector Table [0] (MSP): ", hardware_msp);
+
     vTaskStartScheduler();
+
+
+
     
     for (;;) { }  /* Should never reach here */
 }
@@ -256,18 +271,33 @@ QueueHandle_t Tasks_GetSensorFeedbackQueue(void)
     return Queue_SensorFeedback;
 }
 
+/* ===================[Diagnostic UART helper]=================== */
+#include "../../MCAL/UART/Uart.h"
+
+static void Hook_PrintString(const char* str)
+{
+    while (*str != '\0')
+    {
+        Uart_SendByte(UART_MODULE_0, (uint8)*str);
+        str++;
+    }
+}
+
 /* ===================[Hook Functions]=================== */
 
 void vApplicationStackOverflowHook(TaskHandle_t xTask, char* pcTaskName)
 {
     (void)xTask;
-    (void)pcTaskName;
+    Hook_PrintString("\r\n[FATAL] Stack overflow in: ");
+    Hook_PrintString(pcTaskName);
+    Hook_PrintString("\r\n");
     taskDISABLE_INTERRUPTS();
     for (;;) { }
 }
 
 void vApplicationMallocFailedHook(void)
 {
+    Hook_PrintString("\r\n[FATAL] FreeRTOS malloc failed!\r\n");
     taskDISABLE_INTERRUPTS();
     for (;;) { }
 }

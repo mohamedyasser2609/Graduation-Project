@@ -1,7 +1,7 @@
 /**
  * @file IMU.h
- * @brief IMU Driver for MPU-6050 9-Axis Motion Sensor
- * @details AUTOSAR-compliant driver for MPU-6050 (Accelerometer + Gyroscope + Magnetometer)
+ * @brief IMU Driver for MPU-9250 9-Axis Motion Sensor
+ * @details AUTOSAR-compliant driver for MPU-9250 (Accelerometer + Gyroscope + Magnetometer)
  *
  * Features:
  * - 3-axis accelerometer (±2g, ±4g, ±8g, ±16g)
@@ -69,7 +69,7 @@ typedef struct {
  */
 typedef struct {
     I2C_ModuleType I2C_Module;          /**< I2C module to use */
-    uint8 DeviceAddress;                /**< MPU-6050 I2C address */
+    uint8 DeviceAddress;                /**< MPU-9250 I2C address */
     uint8 GyroRange;                    /**< Gyroscope range */
     uint8 AccelRange;                   /**< Accelerometer range */
 } IMU_ConfigType;

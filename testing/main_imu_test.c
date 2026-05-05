@@ -22,7 +22,7 @@
  * @version 1.0.0
  */
 
-#if 1 /* Set to 1 to enable this test */
+#if 0 /* Set to 1 to enable this test */
 
 
 #include "MCAL/MCU/Mcu.h"
@@ -187,7 +187,7 @@ void Test_IMU_WhoAmI(void)
     Std_ReturnType result;
     
     Uart_SendString(UART_MODULE_0, (const uint8*)"Testing WHO_AM_I register...\r\n");
-    Uart_SendString(UART_MODULE_0, (const uint8*)"Expected: 0x71 (MPU-6050) or 0x73 (MPU-9255)\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"Expected: 0x70 (MPU-9250/6500)\r\n");
     
     /* Try to read WHO_AM_I register directly via I2C */
     result = I2C_ReadRegister(I2C_MODULE_0, 0x68, 0x75, &whoAmI, 1);
@@ -203,13 +203,9 @@ void Test_IMU_WhoAmI(void)
         }
         Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n");
         
-        if (whoAmI == 0x71)
+        if (whoAmI == 0x70)
         {
-            Uart_SendString(UART_MODULE_0, (const uint8*)"Device identified as MPU-6050!\r\n");
-        }
-        else if (whoAmI == 0x73)
-        {
-            Uart_SendString(UART_MODULE_0, (const uint8*)"Device identified as MPU-9255!\r\n");
+            Uart_SendString(UART_MODULE_0, (const uint8*)"Device identified as MPU-9250 (MPU-6500 core)!\r\n");
         }
         else
         {
@@ -249,7 +245,7 @@ boolean Test_IMU_Init(void)
         /* Check device presence */
         if (IMU_IsDevicePresent() == TRUE)
         {
-            Uart_SendString(UART_MODULE_0, (const uint8*)"MPU-6050 device detected!\r\n");
+            Uart_SendString(UART_MODULE_0, (const uint8*)"MPU-9250 device detected!\r\n");
         }
         else
         {
@@ -358,22 +354,22 @@ void Test_IMU_CalibratedData(void)
     
     if (IMU_ReadCalibratedData(&calData) == E_OK)
     {
-        Uart_SendString(UART_MODULE_0, (const uint8*)"Accelerometer (ax, ay, az in g):\r\n");
+        Uart_SendString(UART_MODULE_0, (const uint8*)"Accelerometer (x100, 100=1g):\r\n");
         Uart_SendString(UART_MODULE_0, (const uint8*)"  ax: ");
-        Uart_SendInt(UART_MODULE_0, (sint32)calData.accel.x);
+        Uart_SendInt(UART_MODULE_0, (sint32)(calData.accel.x * 100.0f));
         Uart_SendString(UART_MODULE_0, (const uint8*)"  ay: ");
-        Uart_SendInt(UART_MODULE_0, (sint32)calData.accel.y);
+        Uart_SendInt(UART_MODULE_0, (sint32)(calData.accel.y * 100.0f));
         Uart_SendString(UART_MODULE_0, (const uint8*)"  az: ");
-        Uart_SendInt(UART_MODULE_0, (sint32)calData.accel.z);
+        Uart_SendInt(UART_MODULE_0, (sint32)(calData.accel.z * 100.0f));
         Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n");
         
-        Uart_SendString(UART_MODULE_0, (const uint8*)"Gyroscope (wx, wy, wz in deg/s):\r\n");
+        Uart_SendString(UART_MODULE_0, (const uint8*)"Gyroscope (x100, 100=1deg/s):\r\n");
         Uart_SendString(UART_MODULE_0, (const uint8*)"  wx: ");
-        Uart_SendInt(UART_MODULE_0, (sint32)calData.gyro.x);
+        Uart_SendInt(UART_MODULE_0, (sint32)(calData.gyro.x * 100.0f));
         Uart_SendString(UART_MODULE_0, (const uint8*)"  wy: ");
-        Uart_SendInt(UART_MODULE_0, (sint32)calData.gyro.y);
+        Uart_SendInt(UART_MODULE_0, (sint32)(calData.gyro.y * 100.0f));
         Uart_SendString(UART_MODULE_0, (const uint8*)"  wz: ");
-        Uart_SendInt(UART_MODULE_0, (sint32)calData.gyro.z);
+        Uart_SendInt(UART_MODULE_0, (sint32)(calData.gyro.z * 100.0f));
         Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n");
         
 
@@ -398,27 +394,27 @@ void Test_IMU_ContinuousStream(void)
     
     PrintHeader("Continuous Data Stream");
     Uart_SendString(UART_MODULE_0, (const uint8*)"Streaming data (press reset to stop)...\r\n");
-    Uart_SendString(UART_MODULE_0, (const uint8*)"Format: ax ay az wx wy wz\r\n");
+    Uart_SendString(UART_MODULE_0, (const uint8*)"Format: ax ay az wx wy wz (all x100)\r\n");
     Uart_SendString(UART_MODULE_0, (const uint8*)"------------------------------------------------------------\r\n");
     
     while (1)
     {
         if (IMU_ReadCalibratedData(&calData) == E_OK)
         {
-            /* Print ax ay az */
-            Uart_SendInt(UART_MODULE_0, (sint32)calData.accel.x);
+            /* Print ax ay az (x100: 100 = 1g) */
+            Uart_SendInt(UART_MODULE_0, (sint32)(calData.accel.x * 100.0f));
             Uart_SendString(UART_MODULE_0, (const uint8*)" ");
-            Uart_SendInt(UART_MODULE_0, (sint32)calData.accel.y);
+            Uart_SendInt(UART_MODULE_0, (sint32)(calData.accel.y * 100.0f));
             Uart_SendString(UART_MODULE_0, (const uint8*)" ");
-            Uart_SendInt(UART_MODULE_0, (sint32)calData.accel.z);
+            Uart_SendInt(UART_MODULE_0, (sint32)(calData.accel.z * 100.0f));
             Uart_SendString(UART_MODULE_0, (const uint8*)" ");
             
-            /* Print wx wy wz */
-            Uart_SendInt(UART_MODULE_0, (sint32)calData.gyro.x);
+            /* Print wx wy wz (x100: 100 = 1 deg/s) */
+            Uart_SendInt(UART_MODULE_0, (sint32)(calData.gyro.x * 100.0f));
             Uart_SendString(UART_MODULE_0, (const uint8*)" ");
-            Uart_SendInt(UART_MODULE_0, (sint32)calData.gyro.y);
+            Uart_SendInt(UART_MODULE_0, (sint32)(calData.gyro.y * 100.0f));
             Uart_SendString(UART_MODULE_0, (const uint8*)" ");
-            Uart_SendInt(UART_MODULE_0, (sint32)calData.gyro.z);
+            Uart_SendInt(UART_MODULE_0, (sint32)(calData.gyro.z * 100.0f));
             Uart_SendString(UART_MODULE_0, (const uint8*)"\r\n");
         }
         else
@@ -502,7 +498,7 @@ int main(void)
     if (Test_IMU_Init() == FALSE)
     {
         Uart_SendString(UART_MODULE_0, (const uint8*)"\r\nIMU initialization failed. Check connections!\r\n");
-        Uart_SendString(UART_MODULE_0, (const uint8*)"Expected: MPU-6050 at address 0x68\r\n");
+        Uart_SendString(UART_MODULE_0, (const uint8*)"Expected: MPU-9250 at address 0x68\r\n");
         while (1);  /* Halt */
     }
     

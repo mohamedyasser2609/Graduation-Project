@@ -27,9 +27,12 @@
 #include "../../ECUAL/CURRENT_SENSOR/ACS712.h"
 #include "../../ECUAL/TEMP_SENSOR/AM2320.h"
 #include "../../SERVICES/RTOS/Tasks_Init.h"
+#include "../../SERVICES/DIAG/Diagnostics.h"
+
 
 /* Shared types */
 #include "../Common/App_SharedTypes.h"
+#include "../Control/Robot_Control.h"
 
 /* ===================[Private Variables]=================== */
 static boolean App_SensorInitialized = FALSE;
@@ -124,24 +127,19 @@ void App_SensorTask_Run(void)
         App_SensorTask_Init();
     }
     
-    /* 1. Read IMU data */
+    /* 1. Read IMU Data (if IMU enabled) */
+    #if (ROBOT_IMU_ENABLED == STD_ON)
     (void)IMU_ReadCalibratedData(&App_ImuData);
+    #endif
     
-#if (FEATURE_GPS_ENABLED == 1u)
-    /* 2. Read GPS data */
-    (void)GPS_GetData(&App_GpsData);
-#endif
-    
-    /* 3. Read encoder data */
-    Encoder_UpdateAll();  /* Update velocity calculations */
+    /* 2. Read Encoders (already updated by Control Task, just get data) */
     (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &App_EncoderData[0]);
     (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &App_EncoderData[1]);
     
-    /* 4. Read motor current */
-    (void)ACS712_ReadCurrent(0u, &App_MotorCurrent[0]);
-    (void)ACS712_ReadCurrent(1u, &App_MotorCurrent[1]);
+    /* 3. Update odometry from encoder deltas (dead-reckoning) */
+    Robot_UpdateOdometry();
     
-    /* 5. Publish feedback at reduced rate */
+    /* 4. Send feedback via existing function (handles publishing rate) */
     App_FeedbackCounter++;
     if (App_FeedbackCounter >= FEEDBACK_PUBLISH_RATE)
     {
@@ -160,7 +158,10 @@ Std_ReturnType App_SensorTask_GetImuData(IMU_CalibratedDataType* DataPtr)
         return E_NOT_OK;
     }
     
+    taskENTER_CRITICAL();
     *DataPtr = App_ImuData;
+    taskEXIT_CRITICAL();
+    
     return E_OK;
 }
 

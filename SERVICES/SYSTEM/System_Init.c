@@ -15,6 +15,7 @@
  */
 
 #include "System_Services.h"
+#include "../../CONFIG/System_FeatureFlags.h"
 
 /* ===================[MCAL Includes]=================== */
 #include "../../MCAL/GPIO/Gpio.h"
@@ -44,6 +45,7 @@
 #include "../THERMAL/ThermalMgmt.h"
 #include "../DIAG/Diagnostics.h"
 #include "../PID/PID.h"
+#include "../TIME/TimeSync.h"
 
 /* ===================[APP Includes]=================== */
 #include "../../APP/Control/Robot_Control.h"
@@ -78,24 +80,41 @@ extern const Diag_ConfigType Diag_Config;
  */
 void System_Init(void)
 {
-    /* ===== Phase 0: MPU Configuration (FIRST - before any peripheral access) ===== */
+    /* ===== Phase 0: MPU Configuration (DISABLED FOR DEBUG) ===== */
     /*
-     * SAFETY CRITICAL:
-     * Configure MPU to protect WDT and PWM registers
-     * Any unprivileged access will trigger MemManage fault
+     * TEMPORARILY DISABLED: MPU was causing silent resets.
+     * Re-enable after system is stable.
      */
-    MPU_Init();
+    /* MPU_Init(); */
     
     /* ===== Phase 1: MCAL Layer ===== */
     
-    /* Initialize GPIO */
-    Gpio_Init(&Gpio_Configuration);
+    /* GPIO and UART0 already initialized by main_robot.c before System_Init() */
+    /* Gpio_Init(&Gpio_Configuration); */
+    /* Uart_Init(&Uart0_Config_115200); */
     
-    /* Initialize UART (for debug and ROS2 communication) */
-    Uart_Init(&Uart0_Config_115200);
+    /* Initialize UART1 (ROS2 communication via ComStack) */
+    {
+        const Uart_ConfigType Uart1_ROS2_Config = {
+            .Module          = UART_MODULE_1,
+            .BaudRate        = UART_BAUD_115200,
+            .DataBits        = UART_DATA_BITS_8,
+            .Parity          = UART_PARITY_NONE,
+            .StopBits        = UART_STOP_BITS_1,
+            .FlowControl     = UART_FLOW_CONTROL_NONE,
+            .FifoEnable      = TRUE,
+            .RxInterruptEnable = FALSE,
+            .TxInterruptEnable = FALSE,
+            .RxCallback      = NULL_PTR,
+            .TxCallback      = NULL_PTR
+        };
+        Uart_Init(&Uart1_ROS2_Config);
+    }
     
     /* Initialize ADC (for current sensors) */
+#if (FEATURE_CURRENT_ENABLED == 1u)
     Adc_Init(&Adc_Config);
+#endif
     
     /* Initialize I2C (for IMU and temperature sensors) */
     I2C_Init(&I2C0_Master_100kHz);
@@ -108,6 +127,7 @@ void System_Init(void)
     
     /* ===== Phase 2: Diagnostics (early for logging) ===== */
     Diag_Init(&Diag_Config);
+    TimeSync_Init();
     Diag_LogEvent(DIAG_SRC_SYSTEM, 0x0010u, DIAG_SEVERITY_INFO, NULL_PTR);
     
     /* ===== Phase 3: ECUAL Layer ===== */
@@ -125,13 +145,19 @@ void System_Init(void)
     Motor_Init(&Motor_Config);
     
     /* Initialize Current sensors */
+#if (FEATURE_CURRENT_ENABLED == 1u)
     ACS712_Init(&ACS712_Config);
+#endif
     
     /* Initialize Temperature sensors */
+#if (FEATURE_TEMP_ENABLED == 1u)
     AM2320_Init(&AM2320_Config);
+#endif
     
     /* Initialize Fan control */
+#if (FEATURE_FAN_ENABLED == 1u)
     Fan_Init(&Fan_Config);
+#endif
     
     /* ===== Phase 4: SERVICES Layer ===== */
     
@@ -139,7 +165,9 @@ void System_Init(void)
     ComStack_Init(&ComStack_Config);
     
     /* Initialize Thermal Management */
+#if (FEATURE_TEMP_ENABLED == 1u)
     ThermalMgmt_Init(&ThermalMgmt_Config);
+#endif
     
     /* ===== Phase 5: APP Layer ===== */
     
@@ -155,8 +183,12 @@ void System_Init(void)
      */
     Wdg_Init(&Wdg_Config);
     
+    /* Enable Usage, Bus, and MemManage faults in SHCSR */
+    *((volatile uint32*)0xE000ED24) |= 0x00070000;
+    
     Diag_LogEvent(DIAG_SRC_SYSTEM, 0x0011u, DIAG_SEVERITY_INFO, NULL_PTR);
     Diag_DebugPrint("[SYS] Initialization complete - WDG active\r\n");
+    Diag_DebugPrint("[BOOT] System_Init() complete\r\n");
 }
 
 /**

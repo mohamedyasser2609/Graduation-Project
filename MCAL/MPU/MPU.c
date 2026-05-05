@@ -232,6 +232,19 @@ void MPU_MemManageFaultHandler(void)
 {
     uint32 cfsr = SCB_CFSR_R;
     
+    /* ===== DIAGNOSTIC: Print to UART0 directly (no driver dependency) ===== */
+    {
+        volatile uint32* UART0_DR = (volatile uint32*)0x4000C000u;
+        volatile uint32* UART0_FR = (volatile uint32*)0x4000C018u;
+        const char* msg = "\r\n[FAULT] MemManage MPU Violation!\r\n";
+        while (*msg != '\0')
+        {
+            while ((*UART0_FR) & 0x20u) {}  /* Wait TX FIFO not full */
+            *UART0_DR = (uint32)*msg;
+            msg++;
+        }
+    }
+    
     /* Record fault information */
     MPU_LastFault.FaultCount++;
     MPU_LastFault.IsValid = TRUE;

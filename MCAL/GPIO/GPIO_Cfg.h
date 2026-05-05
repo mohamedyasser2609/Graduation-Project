@@ -211,7 +211,9 @@
  * @brief GPIO Lock Key Value
  * @details Magic value to unlock GPIO commit register (0x4C4F434B = "LOCK")
  */
+#ifndef GPIO_LOCK_KEY
 #define GPIO_LOCK_KEY                         (0x4C4F434Bu)
+#endif
 
 /**
  * @brief System Clock Frequency (Hz)

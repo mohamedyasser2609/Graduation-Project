@@ -25,7 +25,7 @@ SemaphoreHandle_t Mutex_I2C0 = NULL;
 QueueHandle_t Queue_SafetyStatus = NULL;
 
 /* ===================[Queue Sizes]=================== */
-#define QUEUE_SAFETY_STATUS_SIZE    (2u)
+#define QUEUE_SAFETY_STATUS_SIZE    (1u)  /* MUST be 1 for xQueueOverwrite */
 
 /* ===================[Resource Ownership Table]=================== */
 static const ResourceOwnerType ResourceOwners[RESOURCE_COUNT] = {

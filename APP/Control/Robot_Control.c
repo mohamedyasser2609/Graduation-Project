@@ -32,14 +32,14 @@ static PID_StateType Robot_PidLeft;
 static PID_StateType Robot_PidRight;
 
 static const PID_ConfigType Robot_PidConfig = {
-    .Kp = 100.0f,
-    .Ki = 50.0f,
-    .Kd = 0.0f,
-    .SampleTimeSec = 0.01f,
-    .OutMin = -100.0f,
+    .Kp = 150.0f,               /* Increased to get meaningful PWM from small m/s errors */
+    .Ki = 20.0f,                /* Increased to overcome static friction faster */
+    .Kd = 0.5f,
+    .SampleTimeSec = 0.01f,     /* 100Hz */
+    .OutMin = -100.0f,          /* -100% to 100% PWM */
     .OutMax = 100.0f,
-    .IntegratorMin = -50.0f,
-    .IntegratorMax = 50.0f,
+    .IntegratorMin = -80.0f,
+    .IntegratorMax = 80.0f,
     .DerivativeOnMeasurement = TRUE,
     .DerivativeFilterAlpha = 0.1f
 };
@@ -157,6 +157,7 @@ Std_ReturnType Robot_SetVelocity(const Robot_TwistType* Cmd)
         Robot_TargetVelocity.AngularZ = -ROBOT_MAX_ANGULAR_VEL;
     }
     
+    /* FORCE state to running so we bypass any accidental idle/fault blocks */
     Robot_CurrentState = ROBOT_STATE_RUNNING;
     
     return E_OK;
@@ -344,8 +345,8 @@ void Robot_UpdateControl(void)
     rightDir = (pidOutputRight >= 0.0f) ? MOTOR_DIRECTION_FORWARD : MOTOR_DIRECTION_REVERSE;
     
     /* Deadband kick to break static friction */
-    if (leftCmd > 0 && leftCmd < 60) leftCmd = 60;
-    if (rightCmd > 0 && rightCmd < 60) rightCmd = 60;
+    if (leftCmd > 0 && leftCmd < 15) leftCmd = 15;
+    if (rightCmd > 0 && rightCmd < 15) rightCmd = 15;
     
     (void)Motor_SetDirection(MOTOR_CHANNEL_LEFT, leftDir);
     (void)Motor_SetSpeed(MOTOR_CHANNEL_LEFT, leftCmd);

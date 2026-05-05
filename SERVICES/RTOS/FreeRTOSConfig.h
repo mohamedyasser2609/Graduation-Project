@@ -57,7 +57,7 @@
  * or heap_4.c are included in the build. This value is defaulted to 4096 bytes but
  * it must be tailored to each application. Note the heap will appear in the .bss
  * section. Increased for robot controller application with multiple tasks. */
-#define configTOTAL_HEAP_SIZE                 ((size_t)(8192))
+#define configTOTAL_HEAP_SIZE                 ((size_t)(16384))
 
 /* Support for dynamic allocation (required for mutexes and queues) */
 #define configSUPPORT_DYNAMIC_ALLOCATION      1
@@ -78,6 +78,8 @@
  * for any set to 1. */
 #define configUSE_IDLE_HOOK                   0
 #define configUSE_TICK_HOOK                   0
+#define configUSE_MALLOC_FAILED_HOOK          1
+#define configCHECK_FOR_STACK_OVERFLOW        2
 
 /******************************************************************************/
 /* ARM Cortex-M Specific Definitions. *****************************************/

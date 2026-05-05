@@ -135,11 +135,11 @@ void I2C_Init(const I2C_ConfigType* ConfigPtr) {
     uint32 sysClock = Mcu_GetSystemClock();
     
     if (ConfigPtr->Speed == I2C_SPEED_STANDARD) {
-        /* Dropping to 10 kHz for ultra-stable debugging */
-        tpr = (sysClock / (2 * 10 * 10000)) - 1;
+        /* 100 kHz */
+        tpr = (sysClock / (2 * 10 * 100000)) - 1;
         if (tpr < 1) tpr = 1;
     } else {
-        /* Standard 400 kHz logic remains */
+        /* 400 kHz */
         tpr = (sysClock / (2 * 10 * 400000)) - 1;
         if (tpr < 1) tpr = 1;
     }
@@ -520,15 +520,22 @@ void I2C_Reset(I2C_ModuleType Module) {
     
     regs = &I2C_Registers[Module];
     
-    /* Disable and re-enable I2C master */
+    /* Disable I2C master */
     *regs->MCR = 0;
     
-    /* Small delay */
+    /* Hard hardware reset of the I2C peripheral */
+    SYSCTL_SRI2C_R |= (1 << Module);
+    {
+        volatile uint32 delay = 100;
+        while (delay > 0) delay--;
+    }
+    SYSCTL_SRI2C_R &= ~(1 << Module);
     {
         volatile uint32 delay = 100;
         while (delay > 0) delay--;
     }
     
+    /* Re-enable I2C master */
     *regs->MCR = I2C_MCR_MFE;
 }
 
