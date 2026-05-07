@@ -82,7 +82,7 @@
  * @brief Time synchronization structure (CMD 0x05)
  * @details Received from ROS2 to sync wall time
  */
-typedef struct
+typedef struct __attribute__((packed))
 {
     uint32      Seconds;            /**< Unix Epoch seconds */
     uint32      Nanoseconds;        /**< Nanoseconds part */
@@ -158,7 +158,7 @@ typedef struct
 /**
  * @brief Motor command data structure
  */
-typedef struct
+typedef struct __attribute__((packed))
 {
     sint16      LeftSpeed;          /**< Left wheel speed (-100 to +100) */
     sint16      RightSpeed;         /**< Right wheel speed (-100 to +100) */
@@ -176,7 +176,7 @@ typedef struct
  *
  *  Example: v=0.5 m/s, ω=1.0 rad/s  →  0x01F4, 0x03E8  (500, 1000)
  */
-typedef struct
+typedef struct __attribute__((packed))
 {
     sint16      LinearVelMmps;      /**< Linear velocity (mm/s = m/s × 1000) */
     sint16      AngularVelMrads;    /**< Angular velocity (mrad/s = rad/s × 1000) */
@@ -203,8 +203,10 @@ typedef struct
  *          Acceleration: m/s^2 * 100 
  *          Gyroscope: rad/s * 100
  */
-typedef struct
+typedef struct __attribute__((packed))
 {
+    uint32      TimestampSec;       /**< Synchronized ROS seconds */
+    uint32      TimestampNsec;      /**< Synchronized ROS nanoseconds */
     sint16      AccelX;             /**< Acceleration X (scaled x100) */
     sint16      AccelY;             /**< Acceleration Y (scaled x100) */
     sint16      AccelZ;             /**< Acceleration Z (scaled x100) */
@@ -216,8 +218,10 @@ typedef struct
 /**
  * @brief Encoder data structure (for transmission)
  */
-typedef struct
+typedef struct __attribute__((packed))
 {
+    uint32      TimestampSec;       /**< Synchronized ROS seconds */
+    uint32      TimestampNsec;      /**< Synchronized ROS nanoseconds */
     sint32      LeftTicks;          /**< Left encoder ticks */
     sint32      RightTicks;         /**< Right encoder ticks */
     sint16      LeftVelocity;       /**< Left velocity (RPM scaled x100) */
@@ -242,7 +246,7 @@ typedef struct
  *    [16-17] sint16  LinearVel          (mm/s = m/s × 1000)
  *    [18-19] sint16  AngularVel         (mrad/s = rad/s × 1000)
  */
-typedef struct
+typedef struct __attribute__((packed))
 {
     uint8       SystemState;        /**< Overall system state */
     uint8       ErrorFlags;         /**< Error flags bitmap */

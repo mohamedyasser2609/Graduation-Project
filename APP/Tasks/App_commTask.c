@@ -249,10 +249,21 @@ static void App_TransmitEncoderData(void)
     (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &encoderLeft);
     (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &encoderRight);
 
+    TimeSync_TimeType now;
+    TimeSync_GetTime(&now);
+    
+    encData.TimestampSec = now.Seconds;
+    encData.TimestampNsec = now.Nanoseconds;
     encData.LeftTicks = (sint32)encoderLeft.PositionCounts;
     encData.RightTicks = (sint32)encoderRight.PositionCounts;
     encData.LeftVelocity = (sint16)(encoderLeft.VelocityRPM * 100.0f);
     encData.RightVelocity = (sint16)(encoderRight.VelocityRPM * 100.0f);
+
+    /* DEBUG: See if Tiva is reading hardware */
+    if (App_TxCount % 50 == 0) {
+        Diag_DebugPrintValue("[COMM] Hardware Read - L_Ticks: ", (uint32)encData.LeftTicks);
+        Diag_DebugPrintValue("[COMM] Hardware Read - R_Ticks: ", (uint32)encData.RightTicks);
+    }
 
     ComStack_SendEncoderData(&encData);
     App_TxCount++;
@@ -271,20 +282,32 @@ static void App_TransmitImuData(void)
     /* Get calibrated data from SensorTask cache (avoids I2C bus collision) */
     if (App_SensorTask_GetImuData(&imuCal) == E_OK)
     {
+        TimeSync_TimeType now;
+        TimeSync_GetTime(&now);
+
+        imuData.TimestampSec = now.Seconds;
+        imuData.TimestampNsec = now.Nanoseconds;
         /* Accel: g → m/s² * 100 */
         imuData.AccelX = (sint16)(imuCal.accel.x * 981.0f);
         imuData.AccelY = (sint16)(imuCal.accel.y * 981.0f);
         imuData.AccelZ = (sint16)(imuCal.accel.z * 981.0f);
 
         /* Gyro: deg/s → rad/s * 100 */
-        /* rad/s = deg/s * (PI/180) ≈ deg/s * 0.0174533 */
-        /* rad/s * 100 ≈ deg/s * 1.74533 */
         imuData.GyroX = (sint16)(imuCal.gyro.x * 1.74533f);
         imuData.GyroY = (sint16)(imuCal.gyro.y * 1.74533f);
         imuData.GyroZ = (sint16)(imuCal.gyro.z * 1.74533f);
 
+        if (App_TxCount % 50 == 0) {
+            Diag_DebugPrint("[COMM] IMU Data Fetched Successfully\r\n");
+        }
+
         ComStack_SendImuData(&imuData);
-        App_TxCount++;
+    }
+    else
+    {
+        if (App_TxCount % 50 == 0) {
+            Diag_DebugPrint("[COMM] ERROR: Failed to fetch IMU data from SensorTask\r\n");
+        }
     }
 }
 
@@ -389,6 +412,16 @@ void App_CommTask_Run(void)
     /* 2. Transmit sensor data to ROS2 (binary protocol, 50Hz) */
     App_TransmitEncoderData();
     App_TransmitImuData();
+
+    /* 3. Debug Heartbeat (1Hz) */
+    if (App_TxCount % 50 == 0)
+    {
+        if (TimeSync_IsSynchronized()) {
+            Diag_DebugPrint("[COMM] Time Sync: OK (ROS Time Active)\r\n");
+        } else {
+            Diag_DebugPrint("[COMM] Time Sync: WAITING (No ROS Handshake Yet)\r\n");
+        }
+    }
 
     /* 3. Transmit telemetry at ~1Hz (every 50th call) */
     App_TelemetryCounter++;

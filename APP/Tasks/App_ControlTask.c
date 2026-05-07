@@ -49,7 +49,7 @@ static float32 App_TargetLeftRadS = 0.0f;
 static float32 App_TargetRightRadS = 0.0f;
 
 /* Command timeout (ticks) */
-#define CMD_TIMEOUT_TICKS   (100u)  /* ~1 second at 100Hz tick rate */
+#define CMD_TIMEOUT_TICKS   (500u)  /* ~0.5 seconds at 1000Hz tick rate */
 static uint32 App_LastCmdTime = 0u;
 
 /* Queue handle */

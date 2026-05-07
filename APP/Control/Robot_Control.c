@@ -297,9 +297,15 @@ void Robot_UpdateControl(void)
     Motor_DirectionType leftDir, rightDir;
     Encoder_DataType encoderLeft, encoderRight;
     
+    static uint32 debugCounter = 0;
+    
     if ((Robot_CurrentState != ROBOT_STATE_RUNNING) && 
         (Robot_CurrentState != ROBOT_STATE_IDLE))
     {
+        if (debugCounter % 100 == 0) {
+            Diag_DebugPrintValue("[CTRL] Blocked! Current State: ", (uint32)Robot_CurrentState);
+        }
+        debugCounter++;
         return;
     }
     
@@ -352,6 +358,14 @@ void Robot_UpdateControl(void)
     (void)Motor_SetSpeed(MOTOR_CHANNEL_LEFT, leftCmd);
     (void)Motor_SetDirection(MOTOR_CHANNEL_RIGHT, rightDir);
     (void)Motor_SetSpeed(MOTOR_CHANNEL_RIGHT, rightCmd);
+
+    /* Log every ~1 second (100Hz / 100 = 1Hz) */
+    if (debugCounter % 100 == 0) {
+        Diag_DebugPrintValue("[CTRL] Target (mm/s): ", (uint32)(targetLeftMps * 1000.0f));
+        Diag_DebugPrintValue("[CTRL] Actual (mm/s): ", (uint32)(Robot_WheelVel.LeftMps * 1000.0f));
+        Diag_DebugPrintValue("[CTRL] PWM Output: ", (uint32)leftCmd);
+    }
+    debugCounter++;
 }
 
 /**
