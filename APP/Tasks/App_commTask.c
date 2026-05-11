@@ -108,6 +108,17 @@ static void App_ProcessTwistCommand(const ComStack_PacketType* pkt)
         (void)xQueueOverwrite(App_WheelCmdQueue, &cmd);
     }
 
+    /* Debug: print speeds at ~1Hz (every 10th command at 10Hz pub rate) */
+    static uint32 twistDbgCount = 0u;
+    twistDbgCount++;
+    if (twistDbgCount % 10u == 0u)
+    {
+        Diag_DebugPrintValue("[TWIST] Linear  (mm/s): ", (uint32)linearMmps);
+        Diag_DebugPrintValue("[TWIST] Angular (mrad/s): ", (uint32)angularMrads);
+        Diag_DebugPrintValue("[TWIST] L Wheel (mrad/s): ", (uint32)(cmd.LeftRadPerSec * 1000.0f));
+        Diag_DebugPrintValue("[TWIST] R Wheel (mrad/s): ", (uint32)(cmd.RightRadPerSec * 1000.0f));
+    }
+
     App_RxCmdCount++;
 }
 
@@ -199,7 +210,7 @@ static void App_ProcessComStackRx(void)
     {
         if (ComStack_GetPacket(&App_RxPacket) == COMSTACK_RX_OK)
         {
-            Diag_DebugPrintValue("[COMM] RX CMD (Decimal): ", App_RxPacket.Command);
+            /* Handle packet silently — no per-packet debug prints */
             
             switch (App_RxPacket.Command)
             {
@@ -259,12 +270,6 @@ static void App_TransmitEncoderData(void)
     encData.LeftVelocity = (sint16)(encoderLeft.VelocityRPM * 100.0f);
     encData.RightVelocity = (sint16)(encoderRight.VelocityRPM * 100.0f);
 
-    /* DEBUG: See if Tiva is reading hardware */
-    if (App_TxCount % 50 == 0) {
-        Diag_DebugPrintValue("[COMM] Hardware Read - L_Ticks: ", (uint32)encData.LeftTicks);
-        Diag_DebugPrintValue("[COMM] Hardware Read - R_Ticks: ", (uint32)encData.RightTicks);
-    }
-
     ComStack_SendEncoderData(&encData);
     App_TxCount++;
 }
@@ -297,17 +302,11 @@ static void App_TransmitImuData(void)
         imuData.GyroY = (sint16)(imuCal.gyro.y * 1.74533f);
         imuData.GyroZ = (sint16)(imuCal.gyro.z * 1.74533f);
 
-        if (App_TxCount % 50 == 0) {
-            Diag_DebugPrint("[COMM] IMU Data Fetched Successfully\r\n");
-        }
-
         ComStack_SendImuData(&imuData);
     }
     else
     {
-        if (App_TxCount % 50 == 0) {
-            Diag_DebugPrint("[COMM] ERROR: Failed to fetch IMU data from SensorTask\r\n");
-        }
+        /* IMU fetch failed — no action needed */
     }
 }
 

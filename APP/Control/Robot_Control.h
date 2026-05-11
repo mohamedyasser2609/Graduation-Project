@@ -23,11 +23,11 @@
 /* ===================[Macros]=================== */
 /** @brief Robot physical parameters */
 #define ROBOT_WHEEL_RADIUS_M        (0.065f)    /**< Wheel radius in meters (65mm) */
-#define ROBOT_WHEEL_BASE_M          (0.30f)     /**< Distance between wheels in meters */
+#define ROBOT_WHEEL_BASE_M          (0.50f)     /**< Distance between wheels in meters */
 #define ROBOT_ENCODER_CPR           (980u)      /**< Encoder counts per revolution (245 PPR × 4 quadrature) */
 
 /** @brief Control limits */
-#define ROBOT_MAX_LINEAR_VEL        (1.0f)      /**< Max linear velocity (m/s) */
+#define ROBOT_MAX_LINEAR_VEL        (0.68f)     /**< Max linear velocity (m/s) matches 100 RPM */
 #define ROBOT_MAX_ANGULAR_VEL       (3.14f)     /**< Max angular velocity (rad/s) */
 #define ROBOT_MAX_WHEEL_RPM         (100.0f)    /**< Max wheel RPM */
 

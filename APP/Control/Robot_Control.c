@@ -32,16 +32,16 @@ static PID_StateType Robot_PidLeft;
 static PID_StateType Robot_PidRight;
 
 static const PID_ConfigType Robot_PidConfig = {
-    .Kp = 150.0f,               /* Increased to get meaningful PWM from small m/s errors */
-    .Ki = 20.0f,                /* Increased to overcome static friction faster */
-    .Kd = 0.5f,
-    .SampleTimeSec = 0.01f,     /* 100Hz */
-    .OutMin = -100.0f,          /* -100% to 100% PWM */
-    .OutMax = 100.0f,
-    .IntegratorMin = -80.0f,
-    .IntegratorMax = 80.0f,
+    .Kp = 0.60f,                /* 60% effort for 100% normalized error */
+    .Ki = 0.20f,                /* 20% effort per second of 100% error */
+    .Kd = 0.03f,                /* 3% effort per 100% error/s */
+    .SampleTimeSec = 0.05f,     /* 20Hz — matches control task rate */
+    .OutMin = -1.0f,            /* Normalized output: -1.0 to 1.0 */
+    .OutMax = 1.0f,
+    .IntegratorMin = -0.6f,     /* Anti-windup clamp to 60% */
+    .IntegratorMax = 0.6f,
     .DerivativeOnMeasurement = TRUE,
-    .DerivativeFilterAlpha = 0.1f
+    .DerivativeFilterAlpha = 0.05f
 };
 
 /* Last encoder values for odometry */
@@ -297,15 +297,13 @@ void Robot_UpdateControl(void)
     Motor_DirectionType leftDir, rightDir;
     Encoder_DataType encoderLeft, encoderRight;
     
-    static uint32 debugCounter = 0;
-    
     if ((Robot_CurrentState != ROBOT_STATE_RUNNING) && 
         (Robot_CurrentState != ROBOT_STATE_IDLE))
     {
-        if (debugCounter % 100 == 0) {
-            Diag_DebugPrintValue("[CTRL] Blocked! Current State: ", (uint32)Robot_CurrentState);
+        static uint32 blockDbg = 0u;
+        if (blockDbg++ % 20u == 0u) {
+            Diag_DebugPrintValue("[PID] BLOCKED - State: ", (uint32)Robot_CurrentState);
         }
-        debugCounter++;
         return;
     }
     
@@ -322,26 +320,37 @@ void Robot_UpdateControl(void)
     Robot_WheelVel.LeftMps = (encoderLeft.VelocityRPM / 60.0f) * (2.0f * 3.14159f * ROBOT_WHEEL_RADIUS_M);
     Robot_WheelVel.RightMps = (encoderRight.VelocityRPM / 60.0f) * (2.0f * 3.14159f * ROBOT_WHEEL_RADIUS_M);
     
-    /* Run PID controllers */
+    /* Normalize velocities to [-1.0, 1.0] range based on max feedback (0.68 m/s) */
+    float32 targetLeftNorm = targetLeftMps / ROBOT_MAX_LINEAR_VEL;
+    float32 targetRightNorm = targetRightMps / ROBOT_MAX_LINEAR_VEL;
+    float32 actualLeftNorm = Robot_WheelVel.LeftMps / ROBOT_MAX_LINEAR_VEL;
+    float32 actualRightNorm = Robot_WheelVel.RightMps / ROBOT_MAX_LINEAR_VEL;
+    float32 pidOutputLeftNorm, pidOutputRightNorm;
+
+    /* Run PID controllers on normalized values */
     (void)PID_Compute(&Robot_PidConfig, &Robot_PidLeft,
-                      targetLeftMps, Robot_WheelVel.LeftMps,
-                      &pidOutputLeft);
+                      targetLeftNorm, actualLeftNorm,
+                      &pidOutputLeftNorm);
     
     (void)PID_Compute(&Robot_PidConfig, &Robot_PidRight,
-                      targetRightMps, Robot_WheelVel.RightMps,
-                      &pidOutputRight);
+                      targetRightNorm, actualRightNorm,
+                      &pidOutputRightNorm);
     
     /* Force instant stop and override output if target is perfectly zero */
     if (targetLeftMps == 0.0f)
     {
         PID_Reset(&Robot_PidLeft);
-        pidOutputLeft = 0.0f;
+        pidOutputLeftNorm = 0.0f;
     }
     if (targetRightMps == 0.0f)
     {
         PID_Reset(&Robot_PidRight);
-        pidOutputRight = 0.0f;
+        pidOutputRightNorm = 0.0f;
     }
+    
+    /* Scale normalized PID output [-1.0, 1.0] back to PWM percentage [-100.0, 100.0] */
+    pidOutputLeft = pidOutputLeftNorm * 100.0f;
+    pidOutputRight = pidOutputRightNorm * 100.0f;
     
     /* Convert to motor commands */
     leftCmd = Robot_VelToMotorCmd(pidOutputLeft);
@@ -350,22 +359,35 @@ void Robot_UpdateControl(void)
     leftDir = (pidOutputLeft >= 0.0f) ? MOTOR_DIRECTION_FORWARD : MOTOR_DIRECTION_REVERSE;
     rightDir = (pidOutputRight >= 0.0f) ? MOTOR_DIRECTION_FORWARD : MOTOR_DIRECTION_REVERSE;
     
-    /* Deadband kick to break static friction */
-    if (leftCmd > 0 && leftCmd < 15) leftCmd = 15;
-    if (rightCmd > 0 && rightCmd < 15) rightCmd = 15;
+    /* Smart deadband: only boost PWM when PID agrees with the target direction.
+     * If PID is trying to brake (opposite to target), let it apply gentle force.
+     * This prevents the violent oscillation caused by 50% power in the wrong direction. */
+    {
+        boolean leftSameDir  = (targetLeftMps >= 0.0f) == (pidOutputLeft >= 0.0f);
+        boolean rightSameDir = (targetRightMps >= 0.0f) == (pidOutputRight >= 0.0f);
+        
+        /* Boost only when accelerating in the target direction */
+        if (leftSameDir && leftCmd > 0 && leftCmd < 50)  leftCmd = 50;
+        if (rightSameDir && rightCmd > 0 && rightCmd < 50) rightCmd = 50;
+    }
     
     (void)Motor_SetDirection(MOTOR_CHANNEL_LEFT, leftDir);
     (void)Motor_SetSpeed(MOTOR_CHANNEL_LEFT, leftCmd);
     (void)Motor_SetDirection(MOTOR_CHANNEL_RIGHT, rightDir);
     (void)Motor_SetSpeed(MOTOR_CHANNEL_RIGHT, rightCmd);
 
-    /* Log every ~1 second (100Hz / 100 = 1Hz) */
-    if (debugCounter % 100 == 0) {
-        Diag_DebugPrintValue("[CTRL] Target (mm/s): ", (uint32)(targetLeftMps * 1000.0f));
-        Diag_DebugPrintValue("[CTRL] Actual (mm/s): ", (uint32)(Robot_WheelVel.LeftMps * 1000.0f));
-        Diag_DebugPrintValue("[CTRL] PWM Output: ", (uint32)leftCmd);
+    /* 1Hz debug: show PID output */
+    {
+        static uint32 pidDbg = 0u;
+        pidDbg++;
+        if (pidDbg % 20u == 0u)
+        {
+            Diag_DebugPrintValue("[PID] L_Out: ", (uint32)(pidOutputLeft + 500.0f));  /* +500 offset so negatives are visible */
+            Diag_DebugPrintValue("[PID] R_Out: ", (uint32)(pidOutputRight + 500.0f));
+            Diag_DebugPrintValue("[PID] L_PWM: ", (uint32)leftCmd);
+            Diag_DebugPrintValue("[PID] R_PWM: ", (uint32)rightCmd);
+        }
     }
-    debugCounter++;
 }
 
 /**
