@@ -193,6 +193,9 @@ static void App_ProcessTimeSync(const ComStack_PacketType* pkt)
 
     TimeSync_Update(sec, nsec);
     Diag_DebugPrint("[COMM] Time synchronized with ROS2\r\n");
+    
+    /* Time sync from ROS2 also proves connectivity */
+    App_SafetyTask_ReportHeartbeat();
 }
 
 /**

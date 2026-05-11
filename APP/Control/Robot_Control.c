@@ -126,14 +126,25 @@ Std_ReturnType Robot_SetVelocity(const Robot_TwistType* Cmd)
         return E_NOT_OK;
     }
     
-    if (Robot_CurrentState == ROBOT_STATE_ESTOP)
-    {
-        return E_NOT_OK;  /* Cannot move in e-stop */
-    }
-    
+    /* Check if we can move */
     if (Robot_CurrentState == ROBOT_STATE_FAULT)
     {
-        return E_NOT_OK;  /* Cannot move in fault */
+        return E_NOT_OK;  /* Cannot move in hardware fault */
+    }
+    
+    if (Robot_CurrentState == ROBOT_STATE_ESTOP)
+    {
+        /* Attempt to recover from ESTOP if a new command arrives */
+        /* Only allow if the Safety Task says it's safe to enable motors */
+        if (SafeState_IsMotorEnableAllowed())
+        {
+            Diag_DebugPrint("[CTRL] Recovering from ESTOP state\r\n");
+            /* State will be set to RUNNING below */
+        }
+        else
+        {
+            return E_NOT_OK;  /* Still unsafe */
+        }
     }
     
     /* Clamp velocities to limits */
