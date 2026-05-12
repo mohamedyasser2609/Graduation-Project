@@ -129,12 +129,50 @@ void App_SensorTask_Run(void)
     
     /* 1. Read IMU Data (if IMU enabled) */
     #if (ROBOT_IMU_ENABLED == STD_ON)
-    (void)IMU_ReadCalibratedData(&App_ImuData);
+    if (IMU_ReadCalibratedData(&App_ImuData) == E_OK)
+    {
+        /* 1Hz debug print for IMU verification */
+        static uint32 imuDbgCnt = 0u;
+        if (imuDbgCnt++ % 50u == 0u)  /* 50 cycles @ 20ms = 1 second */
+        {
+            Diag_DebugPrint("[IMU] Accel X:");
+            Diag_DebugPrintValue(" ", (uint32)(sint32)(App_ImuData.accel.x * 100.0f));
+            Diag_DebugPrint(" Y:");
+            Diag_DebugPrintValue(" ", (uint32)(sint32)(App_ImuData.accel.y * 100.0f));
+            Diag_DebugPrint(" Z:");
+            Diag_DebugPrintValue(" ", (uint32)(sint32)(App_ImuData.accel.z * 100.0f));
+            Diag_DebugPrint("\r\n");
+            Diag_DebugPrint("[IMU] Gyro  X:");
+            Diag_DebugPrintValue(" ", (uint32)(sint32)(App_ImuData.gyro.x * 100.0f));
+            Diag_DebugPrint(" Y:");
+            Diag_DebugPrintValue(" ", (uint32)(sint32)(App_ImuData.gyro.y * 100.0f));
+            Diag_DebugPrint(" Z:");
+            Diag_DebugPrintValue(" ", (uint32)(sint32)(App_ImuData.gyro.z * 100.0f));
+            Diag_DebugPrint("\r\n");
+        }
+    }
     #endif
     
     /* 2. Read Encoders (already updated by Control Task, just get data) */
     (void)Encoder_GetData(ENCODER_CHANNEL_LEFT, &App_EncoderData[0]);
     (void)Encoder_GetData(ENCODER_CHANNEL_RIGHT, &App_EncoderData[1]);
+    
+    /* 1Hz encoder debug */
+    {
+        static uint32 encDbgCnt = 0u;
+        if (encDbgCnt++ % 50u == 0u)
+        {
+            Diag_DebugPrint("[ENC] L ticks:");
+            Diag_DebugPrintValue(" ", (uint32)App_EncoderData[0].PositionCounts);
+            Diag_DebugPrint(" RPM:");
+            Diag_DebugPrintValue(" ", (uint32)(sint32)(App_EncoderData[0].VelocityRPM));
+            Diag_DebugPrint(" | R ticks:");
+            Diag_DebugPrintValue(" ", (uint32)App_EncoderData[1].PositionCounts);
+            Diag_DebugPrint(" RPM:");
+            Diag_DebugPrintValue(" ", (uint32)(sint32)(App_EncoderData[1].VelocityRPM));
+            Diag_DebugPrint("\r\n");
+        }
+    }
     
     /* 3. Update odometry from encoder deltas (dead-reckoning) */
     Robot_UpdateOdometry();

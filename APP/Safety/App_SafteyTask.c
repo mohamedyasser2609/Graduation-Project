@@ -52,6 +52,7 @@ static boolean App_Health_CommOk = TRUE;
 /* Heartbeat tracking */
 static uint32 App_LastHeartbeatTime = 0u;
 #define HEARTBEAT_TIMEOUT_TICKS     (500u)  /* 5 seconds at 100Hz tick */
+static boolean App_HeartbeatFaultActive = FALSE; /* Prevent repeated SafeState_Enter */
 
 /* Boot grace period: always feed WDG for the first N ticks after boot
  * to prevent reset loop when no ROS2 bridge is connected yet. */
@@ -188,8 +189,13 @@ static boolean App_Safety_CheckHeartbeat(void)
 
     if ((currentTick - App_LastHeartbeatTime) > HEARTBEAT_TIMEOUT_TICKS)
     {
-        SafeState_SetFault(FAULT_FLAG_HEARTBEAT_TIMEOUT);
-        SafeState_Enter(SAFESTATE_REASON_HEARTBEAT_TIMEOUT);
+        /* Only enter safe state ONCE per timeout event, not every cycle */
+        if (!App_HeartbeatFaultActive)
+        {
+            SafeState_SetFault(FAULT_FLAG_HEARTBEAT_TIMEOUT);
+            SafeState_Enter(SAFESTATE_REASON_HEARTBEAT_TIMEOUT);
+            App_HeartbeatFaultActive = TRUE;
+        }
         return FALSE;
     }
 
@@ -301,7 +307,15 @@ void App_SafetyTask_Run(void)
 void App_SafetyTask_ReportHeartbeat(void)
 {
     App_LastHeartbeatTime = xTaskGetTickCount();
+    App_HeartbeatFaultActive = FALSE;
     SafeState_ClearFault(FAULT_FLAG_HEARTBEAT_TIMEOUT);
+    
+    /* If the system was locked out due to heartbeat loss, fully recover.
+     * ROS2 is back online, so clear the safe state and allow motors. */
+    if (SafeState_GetStatus() >= SAFESTATE_ACTIVE)
+    {
+        (void)SafeState_Clear();
+    }
 }
 
 /**

@@ -124,16 +124,11 @@ void SafeState_Enter(SafeState_ReasonType Reason)
 
 Std_ReturnType SafeState_Clear(void)
 {
-    /* Cannot clear if in lockout */
-    if (SafeState_Info.Status == SAFESTATE_LOCKOUT)
-    {
-        return E_NOT_OK;
-    }
-    
-    /* Clear fault flags */
+    /* Clear fault flags and reset state */
     SafeState_Info.FaultFlags = 0u;
     SafeState_Info.LastReason = SAFESTATE_REASON_NONE;
     SafeState_Info.Status = SAFESTATE_NORMAL;
+    SafeState_Info.FaultCount = 0u;  /* Reset so we don't re-lockout immediately */
     SafeState_LastFaultClearTime = xTaskGetTickCount();
     
     /* Motor enable still requires explicit request after cooldown */

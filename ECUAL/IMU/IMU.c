@@ -133,18 +133,18 @@ Std_ReturnType IMU_ReadRawData(IMU_SensorDataType* Data) {
         return E_NOT_OK;
     }
     
-    /* Parse accelerometer data */
+    /* Parse accelerometer data (Y and Z inverted per hardware mounting) */
     Data->accel.x = (sint16)((buffer[0] << 8) | buffer[1]);
-    Data->accel.y = (sint16)((buffer[2] << 8) | buffer[3]);
-    Data->accel.z = (sint16)((buffer[4] << 8) | buffer[5]);
+    Data->accel.y = -(sint16)((buffer[2] << 8) | buffer[3]);
+    Data->accel.z = -(sint16)((buffer[4] << 8) | buffer[5]);
     
     /* Parse temperature */
     Data->temperature = (sint16)((buffer[6] << 8) | buffer[7]);
     
-    /* Parse gyroscope data */
+    /* Parse gyroscope data (Y and Z inverted per hardware mounting) */
     Data->gyro.x = (sint16)((buffer[8] << 8) | buffer[9]);
-    Data->gyro.y = (sint16)((buffer[10] << 8) | buffer[11]);
-    Data->gyro.z = (sint16)((buffer[12] << 8) | buffer[13]);
+    Data->gyro.y = -(sint16)((buffer[10] << 8) | buffer[11]);
+    Data->gyro.z = -(sint16)((buffer[12] << 8) | buffer[13]);
     
     return E_OK;
 }
@@ -197,8 +197,8 @@ Std_ReturnType IMU_ReadAccel(IMU_AxisDataType* Data) {
     }
     
     Data->x = (sint16)((buffer[0] << 8) | buffer[1]);
-    Data->y = (sint16)((buffer[2] << 8) | buffer[3]);
-    Data->z = (sint16)((buffer[4] << 8) | buffer[5]);
+    Data->y = -(sint16)((buffer[2] << 8) | buffer[3]); /* Inverted */
+    Data->z = -(sint16)((buffer[4] << 8) | buffer[5]); /* Inverted */
     
     return E_OK;
 }
@@ -218,8 +218,8 @@ Std_ReturnType IMU_ReadGyro(IMU_AxisDataType* Data) {
     }
     
     Data->x = (sint16)((buffer[0] << 8) | buffer[1]);
-    Data->y = (sint16)((buffer[2] << 8) | buffer[3]);
-    Data->z = (sint16)((buffer[4] << 8) | buffer[5]);
+    Data->y = -(sint16)((buffer[2] << 8) | buffer[3]); /* Inverted */
+    Data->z = -(sint16)((buffer[4] << 8) | buffer[5]); /* Inverted */
     
     return E_OK;
 }

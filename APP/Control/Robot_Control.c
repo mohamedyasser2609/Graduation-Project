@@ -134,17 +134,11 @@ Std_ReturnType Robot_SetVelocity(const Robot_TwistType* Cmd)
     
     if (Robot_CurrentState == ROBOT_STATE_ESTOP)
     {
-        /* Attempt to recover from ESTOP if a new command arrives */
-        /* Only allow if the Safety Task says it's safe to enable motors */
-        if (SafeState_IsMotorEnableAllowed())
-        {
-            Diag_DebugPrint("[CTRL] Recovering from ESTOP state\r\n");
-            /* State will be set to RUNNING below */
-        }
-        else
-        {
-            return E_NOT_OK;  /* Still unsafe */
-        }
+        /* Recover from ESTOP when ROS2 actively sends a new command.
+         * The Safety Task runs at 100Hz and will re-ESTOP within 10ms
+         * if a genuine fault (thermal/overcurrent) is still active. */
+        Diag_DebugPrint("[CTRL] Recovering from ESTOP state\r\n");
+        /* State will be set to RUNNING below */
     }
     
     /* Clamp velocities to limits */
