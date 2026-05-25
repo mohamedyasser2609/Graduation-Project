@@ -24,7 +24,7 @@
 /* ===================[Motor Driver Limits]=================== */
 #define MOTOR_MAX_CHANNELS                 (2u)        /**< Maximum number of motor channels */
 #define MOTOR_MAX_SPEED_PERCENT            (100u)      /**< Maximum speed percentage */
-#define MOTOR_MIN_SPEED_PERCENT            (0u)         /**< Minimum speed percentage */
+#define MOTOR_MIN_SPEED_PERCENT            (90u)         /**< Minimum speed percentage */
 
 /* ===================[External Configuration]=================== */
 extern const Motor_ConfigType Motor_Config;

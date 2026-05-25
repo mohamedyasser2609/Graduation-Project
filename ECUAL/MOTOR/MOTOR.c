@@ -62,7 +62,7 @@ static Pwm_DutyCycleType Motor_ConvertSpeedToDutyCycle(Motor_SpeedType speedPerc
     {
         speedPercent = MOTOR_MAX_SPEED_PERCENT;
     }
-    if (speedPercent < cfg->MinSpeedPercent)
+    if ((speedPercent > 0u) && (speedPercent < cfg->MinSpeedPercent))
     {
         speedPercent = cfg->MinSpeedPercent;
     }
@@ -217,15 +217,18 @@ Std_ReturnType Motor_SetSpeed(Motor_ChannelType Channel, Motor_SpeedType SpeedPe
     Motor_ChannelStateType* state = Motor_GetState(Channel);
     const Motor_ChannelConfigType* cfg = state->Cfg;
 
-    /* Convert speed to duty cycle */
-    Pwm_DutyCycleType dutyCycle = Motor_ConvertSpeedToDutyCycle(SpeedPercent, cfg);
-
-    /* Apply speed limit */
+    /* Apply speed limits */
     if (SpeedPercent > cfg->MaxSpeedPercent)
     {
         SpeedPercent = cfg->MaxSpeedPercent;
-        dutyCycle = Motor_ConvertSpeedToDutyCycle(SpeedPercent, cfg);
     }
+    else if ((SpeedPercent > 0u) && (SpeedPercent < cfg->MinSpeedPercent))
+    {
+        SpeedPercent = cfg->MinSpeedPercent;
+    }
+
+    /* Convert speed to duty cycle */
+    Pwm_DutyCycleType dutyCycle = Motor_ConvertSpeedToDutyCycle(SpeedPercent, cfg);
 
     /* Set PWM duty cycle */
     Pwm_SetDutyCycle(cfg->PwmChannel, dutyCycle);

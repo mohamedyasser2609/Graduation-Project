@@ -59,7 +59,7 @@ static const Motor_ChannelConfigType Motor_ChannelConfigs[] = {
         .DirectionPin = GPIO_CHANNEL_MOTOR_LEFT_DIR,
         .InvertDirection = FALSE,              /* Standard forward logic */
         .MaxSpeedPercent = 100u,               /* Maximum speed: 100% */
-        .MinSpeedPercent = 0u                  /* Minimum speed: 0% (no deadband) */
+        .MinSpeedPercent = 90u                  /* Minimum speed: 90% (no deadband) */
     },
     {
         /* Right Motor Configuration */
@@ -68,7 +68,7 @@ static const Motor_ChannelConfigType Motor_ChannelConfigs[] = {
         .DirectionPin = GPIO_CHANNEL_MOTOR_RIGHT_DIR,
         .InvertDirection = FALSE,              /* Set to TRUE if motor direction is reversed */
         .MaxSpeedPercent = 100u,               /* Maximum speed: 100% */
-        .MinSpeedPercent = 0u                  /* Minimum speed: 0% (no deadband) */
+        .MinSpeedPercent = 90u                  /* Minimum speed: 90% (no deadband) */
     }
 };
 

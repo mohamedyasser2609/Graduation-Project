@@ -184,6 +184,9 @@ void Uart_Init(const Uart_ConfigType* ConfigPtr) {
         UART_REG(baseAddr, UARTIM_OFFSET) |= UARTIM_TXIM;
     }
     
+    /* Clear any boot-time noise or framing errors */
+    UART_REG(baseAddr, UARTECR_OFFSET) = 0xFFUL;
+
     /* Enable UART, TX, and RX */
     uint32 ctl = UARTCTL_UARTEN | UARTCTL_TXE | UARTCTL_RXE;
     
@@ -300,6 +303,8 @@ Std_ReturnType Uart_ReceiveByte(Uart_ModuleType Module, uint8* DataPtr) {
     
     /* Check for errors */
     if (data & (UARTDR_OE | UARTDR_BE | UARTDR_PE | UARTDR_FE)) {
+        /* Clear the hardware error flag(s) to resume reception */
+        UART_REG(baseAddr, UARTECR_OFFSET) = 0xFFUL;
         return E_NOT_OK;  /* Error occurred */
     }
     

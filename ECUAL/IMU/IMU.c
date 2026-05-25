@@ -26,6 +26,15 @@ static IMU_AxisDataType IMU_GyroOffset = {0, 0, 0};
 static float32 IMU_AccelScale = 1.0f;
 static float32 IMU_GyroScale = 1.0f;
 
+/* ===================[EMA Filter]=================== */
+/* Alpha = 0.3: ~5 sample settling at 50Hz sensor rate (~100ms response) */
+#define IMU_EMA_ALPHA       (0.3f)
+#define IMU_EMA_ONE_MINUS_A (1.0f - IMU_EMA_ALPHA)
+
+static IMU_AxisDataFloatType IMU_FilteredAccel = {0.0f, 0.0f, 0.0f};
+static IMU_AxisDataFloatType IMU_FilteredGyro  = {0.0f, 0.0f, 0.0f};
+static boolean IMU_FilterPrimed = FALSE;  /* First sample seeds the filter */
+
 
 /* ===================[Private Function Prototypes]=================== */
 
@@ -75,7 +84,7 @@ Std_ReturnType IMU_Init(const IMU_ConfigType* ConfigPtr) {
     
     /* Configure accelerometer */
     IMU_WriteRegister(MPU9250_ACCEL_CONFIG, IMU_Config.AccelRange);
-    IMU_WriteRegister(MPU9250_ACCEL_CONFIG2, 0x00);  /* No DLPF */
+    IMU_WriteRegister(MPU9250_ACCEL_CONFIG2, 0x03);  /* DLPF 41Hz (matches gyro) */
     
     /* Configure sample rate (1kHz) */
     IMU_WriteRegister(MPU9250_SMPLRT_DIV, 0x00);
@@ -133,16 +142,16 @@ Std_ReturnType IMU_ReadRawData(IMU_SensorDataType* Data) {
         return E_NOT_OK;
     }
     
-    /* Parse accelerometer data (Y and Z inverted per hardware mounting) */
-    Data->accel.x = (sint16)((buffer[0] << 8) | buffer[1]);
+    /* Parse accelerometer data (X, Y, and Z inverted per hardware mounting) */
+    Data->accel.x = -(sint16)((buffer[0] << 8) | buffer[1]);
     Data->accel.y = -(sint16)((buffer[2] << 8) | buffer[3]);
     Data->accel.z = -(sint16)((buffer[4] << 8) | buffer[5]);
     
     /* Parse temperature */
     Data->temperature = (sint16)((buffer[6] << 8) | buffer[7]);
     
-    /* Parse gyroscope data (Y and Z inverted per hardware mounting) */
-    Data->gyro.x = (sint16)((buffer[8] << 8) | buffer[9]);
+    /* Parse gyroscope data (X, Y, and Z inverted per hardware mounting) */
+    Data->gyro.x = -(sint16)((buffer[8] << 8) | buffer[9]);
     Data->gyro.y = -(sint16)((buffer[10] << 8) | buffer[11]);
     Data->gyro.z = -(sint16)((buffer[12] << 8) | buffer[13]);
     
@@ -165,16 +174,44 @@ Std_ReturnType IMU_ReadCalibratedData(IMU_CalibratedDataType* Data) {
     }
     
     /* Apply calibration and scaling to accelerometer */
-    Data->accel.x = (rawData.accel.x - IMU_AccelOffset.x) * IMU_AccelScale;
-    Data->accel.y = (rawData.accel.y - IMU_AccelOffset.y) * IMU_AccelScale;
-    Data->accel.z = (rawData.accel.z - IMU_AccelOffset.z) * IMU_AccelScale;
+    float32 ax = (rawData.accel.x - IMU_AccelOffset.x) * IMU_AccelScale;
+    float32 ay = (rawData.accel.y - IMU_AccelOffset.y) * IMU_AccelScale;
+    float32 az = (rawData.accel.z - IMU_AccelOffset.z) * IMU_AccelScale;
     
     /* Apply calibration and scaling to gyroscope */
-    Data->gyro.x = (rawData.gyro.x - IMU_GyroOffset.x) * IMU_GyroScale;
-    Data->gyro.y = (rawData.gyro.y - IMU_GyroOffset.y) * IMU_GyroScale;
-    Data->gyro.z = (rawData.gyro.z - IMU_GyroOffset.z) * IMU_GyroScale;
+    float32 gx = (rawData.gyro.x - IMU_GyroOffset.x) * IMU_GyroScale;
+    float32 gy = (rawData.gyro.y - IMU_GyroOffset.y) * IMU_GyroScale;
+    float32 gz = (rawData.gyro.z - IMU_GyroOffset.z) * IMU_GyroScale;
     
-
+    /* EMA low-pass filter: filtered = alpha * new + (1-alpha) * prev */
+    if (!IMU_FilterPrimed)
+    {
+        /* First valid sample seeds the filter — no smoothing on first read */
+        IMU_FilteredAccel.x = ax;
+        IMU_FilteredAccel.y = ay;
+        IMU_FilteredAccel.z = az;
+        IMU_FilteredGyro.x  = gx;
+        IMU_FilteredGyro.y  = gy;
+        IMU_FilteredGyro.z  = gz;
+        IMU_FilterPrimed = TRUE;
+    }
+    else
+    {
+        IMU_FilteredAccel.x = (IMU_EMA_ALPHA * ax) + (IMU_EMA_ONE_MINUS_A * IMU_FilteredAccel.x);
+        IMU_FilteredAccel.y = (IMU_EMA_ALPHA * ay) + (IMU_EMA_ONE_MINUS_A * IMU_FilteredAccel.y);
+        IMU_FilteredAccel.z = (IMU_EMA_ALPHA * az) + (IMU_EMA_ONE_MINUS_A * IMU_FilteredAccel.z);
+        IMU_FilteredGyro.x  = (IMU_EMA_ALPHA * gx) + (IMU_EMA_ONE_MINUS_A * IMU_FilteredGyro.x);
+        IMU_FilteredGyro.y  = (IMU_EMA_ALPHA * gy) + (IMU_EMA_ONE_MINUS_A * IMU_FilteredGyro.y);
+        IMU_FilteredGyro.z  = (IMU_EMA_ALPHA * gz) + (IMU_EMA_ONE_MINUS_A * IMU_FilteredGyro.z);
+    }
+    
+    /* Output filtered values */
+    Data->accel.x = IMU_FilteredAccel.x;
+    Data->accel.y = IMU_FilteredAccel.y;
+    Data->accel.z = IMU_FilteredAccel.z;
+    Data->gyro.x  = IMU_FilteredGyro.x;
+    Data->gyro.y  = IMU_FilteredGyro.y;
+    Data->gyro.z  = IMU_FilteredGyro.z;
     
     /* Convert temperature to Celsius */
     Data->temperature = (rawData.temperature / 333.87f) + 21.0f;
@@ -196,7 +233,7 @@ Std_ReturnType IMU_ReadAccel(IMU_AxisDataType* Data) {
         return E_NOT_OK;
     }
     
-    Data->x = (sint16)((buffer[0] << 8) | buffer[1]);
+    Data->x = -(sint16)((buffer[0] << 8) | buffer[1]); /* Inverted */
     Data->y = -(sint16)((buffer[2] << 8) | buffer[3]); /* Inverted */
     Data->z = -(sint16)((buffer[4] << 8) | buffer[5]); /* Inverted */
     
@@ -217,7 +254,7 @@ Std_ReturnType IMU_ReadGyro(IMU_AxisDataType* Data) {
         return E_NOT_OK;
     }
     
-    Data->x = (sint16)((buffer[0] << 8) | buffer[1]);
+    Data->x = -(sint16)((buffer[0] << 8) | buffer[1]); /* Inverted */
     Data->y = -(sint16)((buffer[2] << 8) | buffer[3]); /* Inverted */
     Data->z = -(sint16)((buffer[4] << 8) | buffer[5]); /* Inverted */
     

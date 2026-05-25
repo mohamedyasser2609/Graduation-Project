@@ -18,6 +18,8 @@
 #include "ComStack.h"
 #include "../../MCAL/UART/Uart.h"
 #include <string.h>
+#include "FreeRTOS.h"
+#include "task.h"
 
 #if (COMSTACK_DEV_ERROR_DETECT == STD_ON)
 #include "../../CONFIG/Det.h"
@@ -95,14 +97,11 @@ static uint8 ComStack_CalculateChecksum(ComStack_CommandType Cmd, uint8 Len, con
 }
 
 /**
- * @brief Get current tick in milliseconds (placeholder)
+ * @brief Get current tick in milliseconds
  */
 static uint32 ComStack_GetTickMs(void)
 {
-    /* TODO: Implement using Timer or FreeRTOS tick */
-    static uint32 tickCounter = 0u;
-    tickCounter++;
-    return tickCounter;
+    return (uint32)(xTaskGetTickCount() * portTICK_PERIOD_MS);
 }
 
 /**
@@ -133,6 +132,7 @@ static void ComStack_ProcessRxByte(uint8 Byte)
                 /* Invalid length, reset */
                 ComStack_RxContext.State = COMSTACK_RX_WAIT_START;
                 ComStack_ErrorCount++;
+                (void)Uart_SendString(UART_MODULE_0, (const uint8*)"[ComStack] Invalid Length!\r\n");
             }
             else if (Byte == 0u)
             {
@@ -178,6 +178,10 @@ static void ComStack_ProcessRxByte(uint8 Byte)
                     ComStack_RxPacketCount++;
                     ComStack_LastRxTime = ComStack_GetTickMs();
                     ComStack_Connected = TRUE;
+                    if (ComStack_RxContext.CurrentPacket.Command == COMSTACK_CMD_TIME_SYNC)
+                    {
+                        (void)Uart_SendString(UART_MODULE_0, (const uint8*)"[ComStack] RX TIME_SYNC Packet Valid!\r\n");
+                    }
                     
                     #if (COMSTACK_RX_CALLBACK_API == STD_ON)
                     if (ComStack_RxCallback != NULL_PTR)
@@ -200,12 +204,14 @@ static void ComStack_ProcessRxByte(uint8 Byte)
                 {
                     /* Checksum error */
                     ComStack_ErrorCount++;
+                    (void)Uart_SendString(UART_MODULE_0, (const uint8*)"[ComStack] Checksum Error!\r\n");
                 }
             }
             else
             {
                 /* Invalid end byte */
                 ComStack_ErrorCount++;
+                (void)Uart_SendString(UART_MODULE_0, (const uint8*)"[ComStack] Invalid End Byte!\r\n");
             }
             
             /* Reset state machine */
@@ -404,6 +410,7 @@ void ComStack_MainFunction(void)
             /* Timeout, reset state machine */
             ComStack_RxContext.State = COMSTACK_RX_WAIT_START;
             ComStack_ErrorCount++;
+            (void)Uart_SendString(UART_MODULE_0, (const uint8*)"[ComStack] RX Timeout!\r\n");
         }
     }
     

@@ -372,8 +372,8 @@ void Robot_UpdateControl(void)
         boolean rightSameDir = (targetRightMps >= 0.0f) == (pidOutputRight >= 0.0f);
         
         /* Boost only when accelerating in the target direction */
-        if (leftSameDir && leftCmd > 0 && leftCmd < 50)  leftCmd = 50;
-        if (rightSameDir && rightCmd > 0 && rightCmd < 50) rightCmd = 50;
+        if (leftSameDir && leftCmd > 0 && leftCmd < 90)  leftCmd = 90;
+        if (rightSameDir && rightCmd > 0 && rightCmd < 90) rightCmd = 90;
     }
     
     (void)Motor_SetDirection(MOTOR_CHANNEL_LEFT, leftDir);
